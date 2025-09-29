@@ -1,6 +1,6 @@
 # SilkRoad
 
-## 安裝依賴
+## Install Dependencies
 
 ```bash
 cd silkroad-frontend-react
@@ -12,16 +12,16 @@ npm install        # 安裝後端依賴
 npm run dev        # 啟動後端 API 伺服器
 ```
 
-## 執行網頁
+## Run Website
 
 ```bash
 cd silkroad-frontend-react
 npm run dev
 ```
 
-## 專案結構
+## Project Structure
 
-> **後端結構參考**
+> **後端結構(參考)**
 ```css
 silkroad-backend/
 ├─ src/
@@ -37,7 +37,7 @@ silkroad-backend/
 ```
 
 #
-> **前端結構參考**
+> **前端結構**
 ```css
 silkroad-frontend-react/
 ├─ node_modules/          ← npm 套件安裝目錄 (前端套件)
