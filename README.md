@@ -38,7 +38,7 @@ silkroad-backend/
 
 #
 > **前端結構**
-```css
+```text
 silkroad-frontend-react/
 ├─ node_modules/          ← npm 套件安裝目錄 (前端套件)
 ├─ public/                ← 公開靜態資源 (favicon, images)
