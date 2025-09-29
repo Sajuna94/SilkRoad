@@ -2,7 +2,7 @@
 
 ## Install Dependencies
 
-```bash
+```c++
 cd silkroad-frontend-react
 npm install        # 安裝前端依賴
 npm run dev        # 啟動開發伺服器
@@ -14,7 +14,7 @@ npm run dev        # 啟動後端 API 伺服器
 
 ## Run Website
 
-```bash
+```shell
 cd silkroad-frontend-react
 npm run dev
 ```
@@ -22,7 +22,7 @@ npm run dev
 ## Project Structure
 
 > **後端結構(參考)**
-```console
+```js
 silkroad-backend/
 ├─ src/
 │  ├─ controllers/       ← 處理 API 請求
