@@ -2,7 +2,7 @@
 
 ## Install Dependencies
 
-```c++
+```bash
 cd silkroad-frontend-react
 npm install        # 安裝前端依賴
 npm run dev        # 啟動開發伺服器
@@ -14,7 +14,7 @@ npm run dev        # 啟動後端 API 伺服器
 
 ## Run Website
 
-```shell
+```bash
 cd silkroad-frontend-react
 npm run dev
 ```
@@ -38,7 +38,7 @@ silkroad-backend/
 
 #
 > **前端結構**
-```markdown
+```c++
 silkroad-frontend-react/
 ├─ node_modules/          ← npm 套件安裝目錄 (前端套件)
 ├─ public/                ← 公開靜態資源 (favicon, images)
