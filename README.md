@@ -22,7 +22,7 @@ npm run dev
 ## Project Structure
 
 > **後端結構(參考)**
-```js
+```c++
 silkroad-backend/
 ├─ src/
 │  ├─ controllers/       ← 處理 API 請求
@@ -63,7 +63,7 @@ silkroad-frontend-react/
 
 #
 > **共用資源結構**
-```bash
+```c++
 silkroad-shared/
 ├─ src/
 │  ├─ utils/          ← 工具函式，例如驗證、日期格式化
