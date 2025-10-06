@@ -1,12 +1,14 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "@pages/Home";
-import About from "@pages/About"
+import HomePage from "@/pages/HomePage";
+import AboutPage from "@/pages/AboutPage";
+import ProductDetailPage from "@/pages/ProductDetailPage";
 
 export default function Router() {
-	return (
-		<Routes>
-			<Route path="/" element={<Home />} />
-			<Route path="/about" element={<About />} />
-		</Routes>
-	);
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/product" element={<ProductDetailPage />} />
+    </Routes>
+  );
 }
