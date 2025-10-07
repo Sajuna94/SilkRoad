@@ -1,3 +1,16 @@
-export default function LoadingSkeleton() {
-  return <h1>LoadingSkeleton</h1>;
+interface LoadingSkeletonProps {
+  width: string;
+  height: string;
+}
+
+export default function LoadingSkeleton({
+  width,
+  height,
+}: LoadingSkeletonProps) {
+  return (
+    <div
+      className="bg-gray-200 animate-pulse rounded"
+      style={{ width, height }}
+    ></div>
+  );
 }
