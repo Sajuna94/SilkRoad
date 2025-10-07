@@ -1,0 +1,41 @@
+name: Deploy React Frontend to GitHub Pages
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout 專案
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.20.0
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        working-directory: silkroad-frontend-react
+        run: npm install
+
+      # 4. Build the React app
+      - name: Build
+        working-directory: silkroad-frontend-react
+        run: npm run build
+
+      # 5. Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: silkroad-frontend-react/dist
+          clean: true
