@@ -32,7 +32,7 @@ jobs:
 
       # 5️⃣ Deploy 到 GitHub Pages
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v6
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: silkroad-frontend-react/dist
