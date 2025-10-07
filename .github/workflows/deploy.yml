@@ -1,37 +1,39 @@
-name: Deploy to GitHub Pages
+name: Deploy React Frontend to GitHub Pages
+
 on:
   push:
-    branches: [main]
-
-permissions:
-  contents: write
+    branches:
+      - main  # 每次 push 到 main 都會自動部署
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: silkroad-frontend-react
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      # 1️⃣ 取得程式碼
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Setup Node
+      # 2️⃣ 設定 Node.js 環境
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 22.12.0
+          node-version: '20'  # 可依你專案 Node 版本調整
 
-      - name: Install deps
+      # 3️⃣ 安裝依賴
+      - name: Install dependencies
+        working-directory: silkroad-frontend-react
         run: npm ci
 
+      # 4️⃣ Build 專案
       - name: Build
+        working-directory: silkroad-frontend-react
         run: npm run build
 
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v3
+      # 5️⃣ Deploy 到 GitHub Pages
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: dist
-          publish_branch: gh-pages
-          force_orphan: true
+          publish_dir: silkroad-frontend-react/dist
+          # base_url 與 Vite 的 base 設定一致
