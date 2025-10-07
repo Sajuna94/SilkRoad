@@ -4,7 +4,7 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/silkroad-frontend-react/',
+  base: '/SilkRoad/',
   plugins: [
     react({
       babel: {
