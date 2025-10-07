@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'  # 可依你專案 Node 版本調整
+          node-version: '20.12.0'  # 可依你專案 Node 版本調整
 
       # 3️⃣ 安裝依賴
       - name: Install dependencies
