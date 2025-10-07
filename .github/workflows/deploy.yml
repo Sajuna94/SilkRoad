@@ -12,13 +12,13 @@ jobs:
     steps:
       # 1️⃣ 取得程式碼
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # 2️⃣ 設定 Node.js 環境
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20.22'  # 可依你專案 Node 版本調整
+          node-version: '22.12.0'  # 可依你專案 Node 版本調整
 
       # 3️⃣ 安裝依賴
       - name: Install dependencies
