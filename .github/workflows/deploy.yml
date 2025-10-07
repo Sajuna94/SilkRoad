@@ -14,24 +14,24 @@ jobs:
         working-directory: silkroad-frontend-react
 
     steps:
-      - name: checkout
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: setup node
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 22.12.0
 
-      - name: install deps
+      - name: Install deps
         run: npm ci
 
-      - name: build
+      - name: Build
         run: npm run build
 
-      - name: deploy to gh-pages
+      - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
           publish_dir: dist
+          publish_branch: gh-pages
           force_orphan: true
