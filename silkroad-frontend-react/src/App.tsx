@@ -5,7 +5,7 @@ import Router from '@/router';
 
 function App() {
 	return (
-		<BrowserRouter basename="/silkroad-frontend-react">
+		<BrowserRouter basename="/Silkroad">
 			<Header />
 			<Router />
 		</BrowserRouter>
