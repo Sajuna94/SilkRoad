@@ -1,20 +1,58 @@
-interface ToastProps {
-  message: string;
-  type?: "success" | "error" | "info"; // 可選的字串聯合型別
+import React, { createContext, useContext, useState } from "react";
+import type { ReactNode } from "react";
+
+type ToastType = "success" | "error" | "info";
+
+interface ToastContextProps {
+  showToast: (message: string, type?: ToastType) => void;
 }
 
-export function Toast({ message, type = "info" }: ToastProps) {
-  const color =
-    type === "error"
-      ? "bg-red-500"
-      : type === "success"
-      ? "bg-green-500"
-      : "bg-blue-500";
-  return (
-    <div
-      className={`${color} text-white px-4 py-2 rounded shadow-md fixed top-4 right-4`}
-    >
-      {message}
-    </div>
-  );
+const ToastContext = createContext<ToastContextProps>({
+  showToast: () => {},
+});
+
+export const useToast = () => useContext(ToastContext);
+
+interface ToastProviderProps {
+  children: ReactNode;
 }
+
+interface ToastItem {
+  id: number;
+  message: string;
+  type: ToastType;
+}
+
+export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  const showToast = (message: string, type: ToastType = "info") => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3000);
+  };
+
+  return (
+    <ToastContext.Provider value={{ showToast }}>
+      {children}
+      <div className="fixed top-4 right-4 space-y-2 z-50">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`${
+              toast.type === "error"
+                ? "bg-red-500"
+                : toast.type === "success"
+                ? "bg-green-500"
+                : "bg-blue-500"
+            } text-white px-4 py-2 rounded shadow-md`}
+          >
+            {toast.message}
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+};

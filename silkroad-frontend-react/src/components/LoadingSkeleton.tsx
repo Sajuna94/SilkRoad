@@ -11,6 +11,8 @@ export default function LoadingSkeleton({
     <div
       className="bg-gray-200 animate-pulse rounded"
       style={{ width, height }}
-    ></div>
+    >
+      Loading...
+    </div>
   );
 }
