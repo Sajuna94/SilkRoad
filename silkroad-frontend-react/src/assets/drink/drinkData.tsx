@@ -9,7 +9,7 @@ import redHat from "./redHat.jpg";
 import cheer from "./cheer.jpg";
 import coffee from "./coffee.jpg";
 import tea from "./tea.jpg";
-import honeytea from "./honeytea.jpg";
+import honeytea from "./honeyTea.jpg";
 import greenHat from "./greenHat.jpg";
 
 export const drinks = [
