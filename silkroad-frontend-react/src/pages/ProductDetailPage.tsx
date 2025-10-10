@@ -10,7 +10,7 @@ export default function ProductDetailPage() {
   // 從 router state 或 drinkData 找商品
   const product =
     (location.state as any) ||
-    drinks.find((p, index) => index + 1 === Number(id));
+    drinks.find((_, index) => index + 1 === Number(id));
 
   if (!product) {
     return (
