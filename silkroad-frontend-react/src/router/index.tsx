@@ -10,7 +10,7 @@ export default function Router() {
       <Route path="/" element={<HomePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/product" element={<ProductDetailPage />} />
+      <Route path="/product/:id" element={<ProductDetailPage />} />
     </Routes>
   );
 }

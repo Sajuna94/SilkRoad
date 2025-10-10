@@ -11,6 +11,10 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 a {
@@ -44,18 +48,19 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #333;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: 0.25s;
 }
 
 button:hover {
-  border-color: #646cff;
+  border-color: #343764;
+  transform: scale(1.05);
 }
 
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  /* outline: 4px auto -webkit-focus-ring-color; */
 }
 
 @media (prefers-color-scheme: light) {
@@ -69,6 +74,7 @@ button:focus-visible {
   }
 
   button {
-    background-color: #f9f9f9;
+    /* background-color: #f9f9f9; */
+    color: white;
   }
 }

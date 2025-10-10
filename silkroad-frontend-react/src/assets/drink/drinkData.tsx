@@ -1,0 +1,97 @@
+import cola from "./cola.jpg";
+import watermelonJuice from "./watermelonJuice.jpg";
+import cauliflowerSmoothie from "./cauliflowerSmoothie.jpg";
+import threeJuice from "./threeJuice.jpg";
+import orangeJuice from "./orangeJuice.jpg";
+import mintMojitoCocktail from "./mintMojitoCocktail.jpg";
+import threeJuice2 from "./threeJuice2.jpg";
+import redHat from "./redHat.jpg";
+import cheer from "./cheer.jpg";
+import coffee from "./coffee.jpg";
+import tea from "./tea.jpg";
+import honeytea from "./honeytea.jpg";
+import greenHat from "./greenHat.jpg";
+
+export const drinks = [
+  {
+    name: "可樂",
+    price: 30,
+    description: "渴了就來一瓶冰涼可樂，經典滋味，爽快直達心底！",
+    img: cola,
+  },
+  {
+    name: "花椰菜奶昔",
+    price: 50,
+    description: "品嘗新滋味的最佳選擇，蔬菜也能這麼順口！",
+    img: cauliflowerSmoothie,
+  },
+  {
+    name: "西瓜汁",
+    price: 50,
+    description: "夏日必備，一杯沁涼西瓜汁，清甜又解渴。",
+    img: watermelonJuice,
+  },
+  {
+    name: "柳橙汁",
+    price: 50,
+    description: "現榨柳橙，酸甜適中，補充滿滿活力。",
+    img: orangeJuice,
+  },
+  {
+    name: "薄荷莫吉托雞尾酒",
+    price: 90,
+    description: "一杯清爽的莫吉托，薄荷與氣泡交織出的微醺時光。",
+    img: mintMojitoCocktail,
+  },
+  {
+    name: "三杯汁",
+    price: 140,
+    description: "三杯雞的黃金搭檔，三杯汁，讓經典更有味。",
+    img: threeJuice,
+  },
+  {
+    name: "三杯汁V2",
+    price: 140,
+    description:
+      "三杯汁系列全新進化版！由檸檬、柳橙、莓果合奏的水果風味曲，Part II 閃亮登場！",
+    img: threeJuice2,
+  },
+  {
+    name: "紅帽",
+    price: 120,
+    description: "帽子系列經典款！這杯紅色雞尾酒，清爽又迷人",
+    img: redHat,
+  },
+  {
+    name: "乾杯",
+    price: 100,
+    description:
+      "與餅乾工坊聯名推出！紅酒搭配香酥餅乾，前所未有的新奇組合，等你來嚐鮮。",
+    img: cheer,
+  },
+  {
+    name: "咖啡",
+    price: 60,
+    description: "Coffee or tea？不如試試這杯冰涼香濃的咖啡，提神首選！",
+    img: coffee,
+  },
+  {
+    name: "茶",
+    price: 40,
+    description: "Coffee or tea？別再猶豫，來杯熱茶暖暖身子吧！",
+    img: tea,
+  },
+  {
+    name: "蜜茶",
+    price: 50,
+    description: "甜蜜的蜂蜜加上溫潤熱茶，溫暖你的每個早晨與午後。",
+    img: honeytea,
+  },
+  {
+    name: "綠帽",
+    price: 999,
+    description:
+      "帽子系列主角登場！找到剛失戀的好友送他一杯，保證感動到說不出話。",
+    img: greenHat,
+  },
+];
