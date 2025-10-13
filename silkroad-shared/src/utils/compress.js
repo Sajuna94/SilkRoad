@@ -8,38 +8,50 @@ const __dirname = path.dirname(__filename);
 
 const inputDir = path.resolve(__dirname, '../../../silkroad-frontend-react/public/images');
 const outputDir = path.join(inputDir, 'compressed');
-
-// 先清空 compress 資料夾
 fs.rmSync(outputDir, { recursive: true, force: true });
+fs.mkdirSync(outputDir, { recursive: true });
 
-// 壓縮設定
-const size = 200;
-const quality = 40;
+const size = 250;
+const quality = 60;
 
-// 遞迴處理資料夾
-function compressFolder(srcDir, destDir) {
-    fs.readdirSync(srcDir, { withFileTypes: true }).forEach(dirent => {
-        console.log(`處理資料夾: ${srcDir}`);
-        const srcPath = path.join(srcDir, dirent.name);
+const srcsetMap = {}; // 用來記錄 srcset 對應表
 
-        // 排除 compress 資料夾
-        if (dirent.isDirectory() && dirent.name.toLowerCase() === 'compress') return;
+async function compressFolder(srcDir, destDir) {
+  const tasks = [];
 
-        const destPath = path.join(destDir, dirent.name);
+  for (const dirent of fs.readdirSync(srcDir, { withFileTypes: true })) {
+    const srcPath = path.join(srcDir, dirent.name);
+    const destPath = path.join(destDir, dirent.name);
 
-        if (dirent.isDirectory()) {
-            compressFolder(srcPath, destPath);
-        } else if (dirent.isFile() && dirent.name.match(/\.(jpg|jpeg|png)$/i)) {
-            const outputFile = destPath.replace(/\.(jpg|jpeg|png)$/i, `-${size}-${quality}.webp`);
-            sharp(srcPath)
-                .resize({ width: size })
-                .webp({ quality })
-                .toFile(outputFile)
-                .then(() => console.log(`✅ ${srcPath} → ${outputFile}`))
-                .catch(err => console.error(`❌ ${srcPath} 壓縮失敗`, err));
-        }
-    });
+    if (dirent.isDirectory()) {
+      if (dirent.name.toLowerCase() === 'compressed') continue;
+      fs.mkdirSync(destPath, { recursive: true });
+      await compressFolder(srcPath, destPath);
+    } else if (dirent.isFile() && dirent.name.match(/\.(jpg|jpeg|png)$/i)) {
+      const outputFile = destPath.replace(/\.(jpg|jpeg|png)$/i, `-${size}-${quality}.webp`);
+      const relativeKey = path.relative(inputDir, srcPath).replace(/\\/g, '/');
+
+      tasks.push(
+        sharp(srcPath)
+          .resize({ width: size, height: size, fit: 'inside' })
+          .webp({ quality })
+          .toFile(outputFile)
+          .then(() => {
+            console.log(`✅ ${srcPath} → ${outputFile}`);
+            if (!srcsetMap[relativeKey]) srcsetMap[relativeKey] = [];
+            srcsetMap[relativeKey].push(path.relative(inputDir, outputFile).replace(/\\/g, '/'));
+          })
+          .catch(err => console.error(`❌ ${srcPath} 壓縮失敗`, err))
+      );
+    }
+  }
+
+  await Promise.all(tasks);
 }
 
-// 執行
-compressFolder(inputDir, outputDir);
+await compressFolder(inputDir, outputDir);
+
+// 寫入 srcset.json
+const jsonPath = path.join(outputDir, 'srcset.json');
+fs.writeFileSync(jsonPath, JSON.stringify(srcsetMap, null, 2));
+console.log(`📦 srcset 對應表已產生 → ${jsonPath}`);

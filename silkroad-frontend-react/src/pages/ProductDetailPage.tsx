@@ -1,16 +1,13 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import "./ProductDetailPage.css";
 import { drinks } from "@/assets/data/drink";
 
 export default function ProductDetailPage() {
 	const { id } = useParams(); // 讀取網址 /product/:id
-	const location = useLocation();
 	const navigate = useNavigate();
 
 	// 從 router state 或 drinkData 找商品
-	const product =
-		(location.state as any) ||
-		drinks.find((_, index) => index + 1 === Number(id));
+	const product = drinks.find(drink => drink.id === Number(id));
 
 	if (!product) {
 		return (
@@ -24,7 +21,7 @@ export default function ProductDetailPage() {
 	return (
 		<div className="detail-page">
 			<div className="detail-image">
-				<img src={product.img} alt={product.name} />
+				<img src={`/SilkRoad/images/drink/${product.img}.jpg`} alt={product.img} />
 			</div>
 
 			<div className="detail-info">

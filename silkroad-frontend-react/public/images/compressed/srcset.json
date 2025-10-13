@@ -1,0 +1,41 @@
+{
+  "drink/cola.jpg": [
+    "compressed/drink/cola-250-60.webp"
+  ],
+  "drink/cauliflowerSmoothie.jpg": [
+    "compressed/drink/cauliflowerSmoothie-250-60.webp"
+  ],
+  "drink/cheer.jpg": [
+    "compressed/drink/cheer-250-60.webp"
+  ],
+  "drink/greenHat.jpg": [
+    "compressed/drink/greenHat-250-60.webp"
+  ],
+  "drink/mintMojitoCocktail.jpg": [
+    "compressed/drink/mintMojitoCocktail-250-60.webp"
+  ],
+  "drink/orangeJuice.jpg": [
+    "compressed/drink/orangeJuice-250-60.webp"
+  ],
+  "drink/coffee.jpg": [
+    "compressed/drink/coffee-250-60.webp"
+  ],
+  "drink/tea.jpg": [
+    "compressed/drink/tea-250-60.webp"
+  ],
+  "drink/threeJuice2.jpg": [
+    "compressed/drink/threeJuice2-250-60.webp"
+  ],
+  "drink/redHat.jpg": [
+    "compressed/drink/redHat-250-60.webp"
+  ],
+  "drink/honeyTea.jpg": [
+    "compressed/drink/honeyTea-250-60.webp"
+  ],
+  "drink/watermelonJuice.jpg": [
+    "compressed/drink/watermelonJuice-250-60.webp"
+  ],
+  "drink/threeJuice.jpg": [
+    "compressed/drink/threeJuice-250-60.webp"
+  ]
+}
