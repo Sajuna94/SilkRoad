@@ -24,7 +24,7 @@ export default function HomePage() {
 					setVisibleCount((prev) => prev + 10);
 				}
 			},
-			{ threshold: 1 }
+			{ threshold: 0.5 }
 		);
 
 		if (loaderRef.current) {
@@ -56,7 +56,7 @@ export default function HomePage() {
 					))}
 				</div>
 				{visibleCount < repeatedDrinks.length && (
-					<div ref={loaderRef} style={{ height: "40px", marginTop: "1.5rem" }}>
+					<div ref={loaderRef} style={{ height: "60px", marginTop: "1.5rem" }}>
 						<p style={{ textAlign: "center" }}>載入中...</p>
 					</div>
 				)}
