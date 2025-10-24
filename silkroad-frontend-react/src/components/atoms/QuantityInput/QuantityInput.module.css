@@ -1,0 +1,50 @@
+:root {
+	/* === 顏色變數 === */
+	--quantity-border-color: #666;
+	--quantity-bg: #444;
+	--quantity-btn-bg: #666;
+	--quantity-btn-hover-bg: #777;
+	--quantity-text-color: #eee;
+}
+
+.quantity-group {
+	display: inline-flex;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.quantity-group button,
+.quantity-group input {
+	border: none;
+	padding: 6px 12px;
+	font-size: 16px;
+	outline: none;
+	background-color: var(--quantity-bg);
+	color: var(--quantity-text-color);
+}
+
+.quantity-group button {
+	all: unset;
+	padding: 10px;
+	background-color: var(--quantity-btn-bg);
+	color: var(--quantity-text-color);
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.quantity-group button:hover {
+	background-color: var(--quantity-btn-hover-bg);
+}
+
+.quantity-group input {
+	width: 48px;
+	text-align: center;
+	border-left: 1px solid var(--quantity-border-color);
+	border-right: 1px solid var(--quantity-border-color);
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
