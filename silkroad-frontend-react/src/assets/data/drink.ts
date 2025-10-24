@@ -1,12 +1,6 @@
-export interface Drink {
-    id: number;
-    name: string;
-    price: number;
-    description: string;
-    img: string; // 圖片檔名，不含副檔名
-}
+import { type Product } from "@/types/store";
 
-export const drinks: Drink[] = [
+export const products: Product[] = [
     {
         id: 1,
         name: "可樂",
