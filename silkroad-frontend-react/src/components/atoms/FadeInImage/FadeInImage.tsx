@@ -1,14 +1,14 @@
 import { useState } from "react";
 import styles from "./FadeInImage.module.css";
+import React from "react";
 
 interface FadeInImageProps {
 	src: string;
 	alt: string;
 }
 
-export default function FadeInImage({ src, alt }: FadeInImageProps) {
+export const FadeInImage = React.memo(({ src, alt }: FadeInImageProps) => {
 	const [loaded, setLoaded] = useState(false);
-
 	return (
 		<img
 			src={src}
@@ -18,4 +18,4 @@ export default function FadeInImage({ src, alt }: FadeInImageProps) {
 			className={loaded ? styles.fadeIn : styles.hidden}
 		/>
 	);
-}
+});

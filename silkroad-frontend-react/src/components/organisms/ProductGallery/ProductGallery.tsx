@@ -8,8 +8,6 @@ import { useSrcsetMap } from "@/hooks/useSrcsetMap";
 
 interface ProductGalleryProps {
 	products: Product[];
-	hasMore: boolean;
-	loadMore: () => void;
 	onAddToCart?: (product: Product) => void;
 }
 

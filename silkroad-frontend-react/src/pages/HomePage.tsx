@@ -9,8 +9,6 @@ export default function HomePage() {
 		<>
 			<ProductGallery
 				products={repeatedProducts}
-				hasMore={false}
-				loadMore={() => { }}
 				onAddToCart={(product) => console.log("加入購物車", product.id)}
 			/>
 

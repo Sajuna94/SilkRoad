@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./ProductCard.module.css";
-import FadeInImage from "@/components/atoms/FadeInImage/FadeInImage";
+import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
 
 interface ProductCardProps {
 	name: string;
@@ -9,7 +9,7 @@ interface ProductCardProps {
 	onClick?: () => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ name, price, img, onClick }) => (
+const ProductCard = React.memo(({ name, price, img, onClick }: ProductCardProps) => (
 	<article className={styles.card} onClick={onClick}>
 		<header className={styles.imageArea}>
 			<FadeInImage src={img} alt={name} />
@@ -19,6 +19,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ name, price, img, onClick }) 
 			<p className={styles.price}>NT ${price}</p>
 		</section>
 	</article>
-);
+));
 
 export default ProductCard;

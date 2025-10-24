@@ -1,5 +1,5 @@
 import styles from "./ProductModal.module.css";
-import FadeInImage from "@/components/atoms/FadeInImage/FadeInImage";
+import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
 
 interface ProductModalProps {
 	imgSrc: string;
