@@ -4,22 +4,16 @@
 <head>
     <meta charset="UTF-8" />
     <title>Redirecting...</title>
+    <script>
+        // 儲存原始路徑到 sessionStorage
+        sessionStorage.redirect = location.pathname + location.search + location.hash;
+    </script>
+    <!-- 自動導回 index.html -->
+    <meta http-equiv="refresh" content="0;URL='/SilkRoad/index.html'" />
 </head>
 
 <body>
     <p>Redirecting...</p>
-    <script>
-        const repo = "/SilkRoad";
-        const fullPath = location.pathname + location.search + location.hash;
-
-        // 如果不是以 repo 開頭，就導回正確路徑
-        if (!location.pathname.startsWith(repo)) {
-            window.location.replace(repo + fullPath);
-        } else {
-            // 已經在 repo 路徑下，不再重導，避免 loop
-            document.body.innerHTML = "<p>404 - Page not found</p>";
-        }
-    </script>
 </body>
 
 </html>
