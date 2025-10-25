@@ -3,16 +3,17 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Redirecting...</title>
-    <script>
-        // 儲存原始路徑到 sessionStorage
-        sessionStorage.redirect = location.pathname + location.search + location.hash;
-    </script>
-    <!-- 自動導回 index.html -->
-    <meta http-equiv="refresh" content="0;URL='/SilkRoad/index.html'" />
+    <title>SilkRoad</title>
 </head>
 
-<body>
+<body style="background-color: #242424;">
+    <script>
+        // 儲存原始路徑（包含 query/hash）
+        sessionStorage.redirect = location.pathname + location.search + location.hash;
+
+        // 使用 JS redirect，避免 /index.html 出現在網址列
+        window.location.replace("/SilkRoad/");
+    </script>
     <p>Redirecting...</p>
 </body>
 
