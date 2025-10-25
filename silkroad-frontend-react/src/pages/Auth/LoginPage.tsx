@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import LoginForm from "@/components/molecules/LoginForm/LoginForm";
 
 export default function LoginPage() {
