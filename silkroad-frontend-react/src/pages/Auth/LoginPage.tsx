@@ -1,8 +1,4 @@
 import { useState, useEffect } from "react";
-import LoadingSkeleton from "@/components/LoadingSkeleton";
-import AdminDashboard from "../Admin/AdminDashboard";
-import Input from "@/components/atoms/Input/Input";
-import RegisterForm from "@/components/molecules/RegisterForm/RegisterForm";
 import LoginForm from "@/components/molecules/LoginForm/LoginForm";
 
 export default function LoginPage() {
@@ -30,8 +26,6 @@ export default function LoginPage() {
 	//   fetchData();
 	// }, []);
 
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
 
 	return (
 		<>
