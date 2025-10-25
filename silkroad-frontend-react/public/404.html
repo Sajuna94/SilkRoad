@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Redirecting...</title>
+    <meta http-equiv="refresh" content="0; URL=/SilkRoad/index.html" />
+    <script>
+        // Preserve full path and query/hash
+        const pathname = window.location.pathname;
+        const search = window.location.search;
+        const hash = window.location.hash;
+        const fullPath = pathname + search + hash;
+
+        // Redirect to index.html with original path
+        window.location.replace("/SilkRoad" + fullPath);
+    </script>
+</head>
+
+<body>
+    <p>Redirecting...</p>
+</body>
+
+</html>

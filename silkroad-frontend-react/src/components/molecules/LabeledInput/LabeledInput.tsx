@@ -1,9 +1,9 @@
 import { useState } from "react";
-import styles from "./Input.module.css";
+import styles from "./LabeledInput.module.css";
 import hide from "@/assets/icons/hide.png"
 import show from "@/assets/icons/show.png"
 
-interface InputProps {
+interface LabeledInputProps {
 	label: string;
 	type?: "text" | "email" | "password";
 	value: string;
@@ -12,14 +12,14 @@ interface InputProps {
 	error?: string;
 }
 
-export default function Input({
+export default function LabeledInput({
 	label,
 	type = "text",
 	value,
 	onChange,
 	required = false,
 	error,
-}: InputProps) {
+}: LabeledInputProps) {
 	const [showPassword, setShowPassword] = useState(false);
 	const isPassword = type === "password";
 

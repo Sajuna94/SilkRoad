@@ -1,4 +1,4 @@
-import LoginForm from "@/components/molecules/LoginForm/LoginForm";
+import LoginForm from "@/components/organisms/LoginForm/LoginForm";
 
 export default function LoginPage() {
 	// const [isLoading, setIsLoading] = useState(true);

@@ -1,23 +1,31 @@
 import { useState } from "react";
-import Input from "@/components/atoms/Input/Input";
-import styles from "./LoginForm.module.css";
+import LabeledInput from "@/components/molecules/LabeledInput/LabeledInput";
+import styles from "./RegisterForm.module.css";
 import { Link } from "react-router-dom";
 
-export default function LoginForm() {
+export default function RegisterForm() {
+	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		console.log("Login:", { email, password });
-		// TODO: Add login logic
+		console.log("Register:", { name, email, password });
+		// TODO: Add registration logic
 	};
 
 	return (
 		<form className={styles.form} onSubmit={handleSubmit}>
-			<h2 className={styles.title}>登入帳號</h2>
+			<h2 className={styles.title}>註冊帳號</h2>
 
-			<Input
+			<LabeledInput
+				label="Name"
+				value={name}
+				onChange={setName}
+				required
+			/>
+
+			<LabeledInput
 				label="Email"
 				type="email"
 				value={email}
@@ -25,7 +33,7 @@ export default function LoginForm() {
 				required
 			/>
 
-			<Input
+			<LabeledInput
 				label="Password"
 				type="password"
 				value={password}
@@ -34,12 +42,12 @@ export default function LoginForm() {
 			/>
 
 			<button type="submit" className={styles.button}>
-				登入
+				註冊
 			</button>
 
-			<div className={styles.footer}>
-				尚未註冊？
-				<Link to="/register">建立帳號</Link>
+			<div>
+				已有帳號?
+				<Link to='/login'> 登入</Link>
 			</div>
 		</form>
 	);
