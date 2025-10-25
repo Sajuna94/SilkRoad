@@ -2,15 +2,15 @@ import { useState, useEffect } from "react";
 import LoginForm from "@/components/molecules/LoginForm/LoginForm";
 
 export default function LoginPage() {
-	const [isLoading, setIsLoading] = useState(true);
+	// const [isLoading, setIsLoading] = useState(true);
 
-	// 模擬載入 1 秒後結束
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setIsLoading(false);
-		}, 1000);
-		return () => clearTimeout(timer);
-	}, []);
+	// // 模擬載入 1 秒後結束
+	// useEffect(() => {
+	// 	const timer = setTimeout(() => {
+	// 		setIsLoading(false);
+	// 	}, 1000);
+	// 	return () => clearTimeout(timer);
+	// }, []);
 
 	//   將來要接後端 API，例如登入、取得資料，可以這樣搭配使用
 	//   useEffect(() => {
