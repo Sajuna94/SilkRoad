@@ -1,0 +1,66 @@
+.field {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 1.5rem;
+}
+
+.input {
+	padding: 1rem 0.75rem 0.25rem;
+	border: none;
+	border-bottom: 2px solid #ccc;
+	font-size: 1.2em;
+	background: transparent;
+	transition: border-color 0.2s ease;
+	color: var(--color-accent-hover);
+}
+
+.input:focus {
+	border-color: var(--color-accent-primary);
+	outline: none;
+}
+
+.label {
+	position: absolute;
+	top: 0.5rem;
+	left: 0.75rem;
+	font-size: 1rem;
+	color: #777;
+	pointer-events: none;
+	transition: all 0.2s ease;
+}
+
+.filled .label,
+.input:focus+.label {
+	top: -0.5rem;
+	font-size: 0.75rem;
+	color: var(--color-accent-primary);
+}
+
+.toggle {
+	position: absolute;
+	right: 0;
+	top: 0.5rem;
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-size: 1rem;
+}
+
+img:hover {
+	scale: 1.1;
+}
+
+.message {
+	font-size: 0.8rem;
+	color: #d33;
+	margin-top: 0.25rem;
+}
+
+.error .input {
+	border-color: #d33;
+}
+
+.error .label {
+	color: #d33;
+}

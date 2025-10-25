@@ -1,7 +1,6 @@
 .card {
 	width: 220px;
 	border-radius: 12px;
-	background-color: #fff;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 	overflow: hidden;
 	cursor: pointer;
@@ -17,19 +16,17 @@
 
 .imageArea {
 	height: 200px;
-	background-color: #f0f0f0;
+	position: relative;
 }
 
-.imageArea img {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	display: block;
+.imageArea div {
+	background-color: var(--color-surface-lighter);
 }
 
 .info {
 	padding: 12px;
 	text-align: center;
+	background-color: var(--color-surface-light);
 }
 
 .name {

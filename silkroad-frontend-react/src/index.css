@@ -1,4 +1,16 @@
 :root {
+	--color-surface-light: #f0f0f0;
+	--color-surface-lighter: #e0e0e0;
+
+	--color-link-hover: #bfd8ff;
+	--color-accent-primary: #705555;
+	--color-accent-hover: #5b3e3e;
+
+	--color-surface-header: #2e2e2e;
+	--color-surface-main: #242424;
+	--color-surface-footer: #1f1f1f;
+
+
 	font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
 	font-weight: 400;
@@ -55,13 +67,7 @@ button {
 
 button:hover {
 	border-color: #343764;
-	transform: scale(1.05);
 }
-
-/* button:focus,
-button:focus-visible {
-	outline: 4px auto -webkit-focus-ring-color;
-} */
 
 @media (prefers-color-scheme: light) {
 	:root {

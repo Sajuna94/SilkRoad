@@ -8,11 +8,13 @@ import { useSrcsetMap } from "@/hooks/useSrcsetMap";
 
 interface ProductGalleryProps {
 	products: Product[];
+	pageSize: number;
 	onAddToCart?: (product: Product) => void;
 }
 
 export default function ProductGallery({
 	products,
+	pageSize,
 	onAddToCart,
 }: ProductGalleryProps) {
 	const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -24,7 +26,7 @@ export default function ProductGallery({
 				<div className={styles.gallery}>
 					<InfiniteList<Product>
 						fullItems={products}
-						pageSize={5}
+						pageSize={pageSize}
 						renderItem={(product, index) => (
 							<ProductCard
 								key={index}

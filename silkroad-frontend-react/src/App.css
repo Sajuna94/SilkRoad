@@ -1,3 +1,9 @@
+#root {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
 /* #root {
 	max-width: 50vh;
 	margin: 0 2rem;

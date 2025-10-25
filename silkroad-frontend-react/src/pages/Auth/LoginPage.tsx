@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
-import AdminDashboard from "./Admin/AdminDashboard";
+import AdminDashboard from "../Admin/AdminDashboard";
+import Input from "@/components/atoms/Input/Input";
+import RegisterForm from "@/components/molecules/RegisterForm/RegisterForm";
+import LoginForm from "@/components/molecules/LoginForm/LoginForm";
 
 export default function LoginPage() {
 	const [isLoading, setIsLoading] = useState(true);
@@ -27,16 +30,21 @@ export default function LoginPage() {
 	//   fetchData();
 	// }, []);
 
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+
 	return (
 		<>
-			<h1>Login Page</h1>
-			{isLoading ? (
+			<div style={{height: '3rem'}}></div>
+			<LoginForm />
+
+			{/* {isLoading ? (
 				<>
 					<LoadingSkeleton width="100%" height="200px" />
 				</>
 			) : (
 				<AdminDashboard />
-			)}
+			)} */}
 		</>
 	);
 }

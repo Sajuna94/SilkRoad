@@ -12,7 +12,7 @@ interface ProductCardProps {
 const ProductCard = React.memo(({ name, price, img, onClick }: ProductCardProps) => (
 	<article className={styles.card} onClick={onClick}>
 		<header className={styles.imageArea}>
-			<FadeInImage src={img} alt={name} />
+			<FadeInImage src={img} />
 		</header>
 		<section className={styles.info}>
 			<h2 className={styles.name}>{name}</h2>

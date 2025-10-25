@@ -3,13 +3,13 @@ import { useEffect, useRef, useState } from 'react';
 type InfiniteListProps<T> = {
 	fullItems: T[]; // 全部資料
 	renderItem: (item: T, index: number) => React.ReactNode;
-	pageSize?: number; // 每次載入幾筆，預設 6
+	pageSize: number; // 每次載入幾筆，預設 6
 };
 
 export function InfiniteList<T>({
 	fullItems,
 	renderItem,
-	pageSize = 5,
+	pageSize,
 }: InfiniteListProps<T>) {
 	const [visibleItems, setVisibleItems] = useState<T[]>(fullItems.slice(0, pageSize));
 	const [page, setPage] = useState(1);
