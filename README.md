@@ -2,24 +2,6 @@
 
 [Web Link](https://sajuna94.github.io/SilkRoad/)
 
-## Install Dependencies
-
-```bash
-cd silkroad-frontend-react
-npm install        # 安裝前端依賴
-npm run dev        # 啟動開發伺服器
-
-cd silkroad-backend
-npm install        # 安裝後端依賴
-npm run dev        # 啟動後端 API 伺服器
-```
-
-## Run Website
-
-```bash
-cd silkroad-frontend-react
-npm run dev
-```
 
 ## Project Structure
 
