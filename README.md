@@ -50,44 +50,22 @@ silkroad-frontend-react/
 ├─ src/                   ← 前端主要程式碼
 │   ├─ assets/            ← 圖片、字型等靜態資源
 │   ├─ components/        ← React 可重用元件
-│   │   ├─ Header.tsx               ← 通用導覽列，依角色切換選單
-│   │   ├─ Footer.tsx               ← 通用頁尾
-│   │   ├─ ProductCard.tsx          ← 商品卡片 (商品列表 & 商店)
-│   │   ├─ CartItem.tsx             ← 購物車商品項目
-│   │   ├─ ReviewCard.tsx           ← 評價卡片
-│   │   ├─ StarRating.tsx           ← 星級評分元件
-│   │   ├─ Modal.tsx                ← 全域 Modal 組件
-│   │   ├─ Toast.tsx                ← 全域提示訊息
-│   │   ├─ Pagination.tsx           ← 分頁組件
-│   │   └─ LoadingSkeleton.tsx      ← 載入骨架組件
+│   │   ├─ atoms/         ← 最小、不可拆的 UI 元件
+│   │   ├─ molecules/     ← 原子元件組合成的小元件
+│   │   └─ organisms/     ← 複雜組件（多個 molecule/atom 組合）
 │   │
+│   ├─ hooks/             ← 自訂 React Hook
+│   ├─ layout/            ← 共用版面配置 (Layout 元件)
 │   ├─ pages/             ← 各頁面元件
-│   │   ├─ Home.tsx             ← 首頁 / 商品總覽
-│   │   ├─ ProductDetail.tsx    ← 商品詳細頁
-│   │   ├─ Login.tsx            ← 顧客 / 店家登入頁
-│   │   ├─ Register.tsx         ← 顧客 / 店家註冊頁
-│   │   ├─ Cart.tsx             ← 顧客購物車
-│   │   ├─ OrderHistory.tsx     ← 顧客訂單歷史
-│   │   ├─ Review.tsx           ← 顧客撰寫評價
-│   │   │
-│   │   ├─ Vendor/
-│   │   │   ├─ VendorDashboard.tsx  ← 店家首頁儀表板
-│   │   │   ├─ VendorProductList.tsx← 商品列表管理
-│   │   │   ├─ ProductForm.tsx      ← 新增/編輯商品
-│   │   │   ├─ DiscountManagement.tsx ← 折扣設定
-│   │   │   └─ SalesDashboard.tsx   ← 銷售統計
-│   │   │
-│   │   └─ Admin/
-│   │       ├─ AdminDashboard.tsx   ← 管理員首頁儀表板
-│   │       ├─ UserManagement.tsx   ← 顧客管理
-│   │       ├─ VendorManagement.tsx ← 店家管理
-│   │       └─ SystemDashboard.tsx  ← 系統監控
+│   │   ├─ HomePage.tsx         ← 首頁 / 商品總覽
+│   │   ├─ Auth/                ← 認證相關頁面或組件
+│   │   ├─ Vendor/              ← 店家後台頁面
+│   │   └─ Admin/               ← 管理員後台頁面
 │   │
 │   ├─ router/            ← 前端路由設定 (React Router)
-│   │   ├─ index.tsx                ← React Router 路由設定
-│   │   ├─ PrivateRoute.tsx         ← 登入保護路由
-│   │   └─ RoleRoute.tsx            ← 角色權限保護路由
-│   │
+│   │   ├─ index.tsx            ← React Router 路由設定
+│   │   └─ private.tsx          ← 登入保護路由
+│   ├─ types/             ← TypeScript 型別定義
 │   ├─ store/             ← (尚未實作) 狀態管理 (Redux / Zustand / Context API)
 │   │   ├─ index.ts                 ← Redux / Zustand / Context 全域狀態
 │   │   ├─ authStore.ts             ← 登入狀態管理
@@ -105,7 +83,7 @@ silkroad-frontend-react/
 ├─ index.html             ← 專案 HTML 模板
 ├─ package.json           ← npm 套件與 script
 ├─ vite.config.ts         ← Vite 打包/開發設定
-└─ README.md
+└─ README.md              ← 專案說明文件
 ```
 
 #
