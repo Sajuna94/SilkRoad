@@ -2,7 +2,8 @@ import styles from "./ProductModal.module.css";
 import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
 
 interface ProductModalProps {
-	imgSrc: string;
+	previewSrc?: string;
+	fullSrc: string;
 	name: string;
 	price: number;
 	description: string;
@@ -10,7 +11,8 @@ interface ProductModalProps {
 }
 
 export default function ProductModal({
-	imgSrc,
+	previewSrc,
+	fullSrc,
 	name,
 	price,
 	description,
@@ -19,7 +21,7 @@ export default function ProductModal({
 	return (
 		<section className={styles.modal}>
 			<div className={styles.imageArea}>
-				<FadeInImage src={imgSrc} alt={name} />
+				<FadeInImage previewSrc={previewSrc} fullSrc={fullSrc} alt={name}/>
 			</div>
 
 			<div className={styles.content}>

@@ -18,8 +18,8 @@ CREATE TABLE `order`.`discount_policies` (
 );
 
 CREATE TABLE `order`.`orders` (
-  `id` uuid PRIMARY KEY DEFAULT (uuid_generate_v4()),
-  `user_id` uuid NOT NULL,
+  `id` int PRIMARY KEY AUTO_INCREMENT,
+  `user_id` int NOT NULL,
   `vendor_id` int NOT NULL,
   `policy_id` int,
   `total_price` int NOT NULL,
@@ -27,7 +27,6 @@ CREATE TABLE `order`.`orders` (
   `payment_methods` ENUM ('cash', 'credit') NOT NULL COMMENT '付款方式',
   `refund_status` ENUM ('refunded', 'rejected') COMMENT '未退款為 NULL',
   `refund_at` timestamp COMMENT '未退款為 NULL',
-  `order_status` order.order_status NOT NULL DEFAULT 'pending' COMMENT '訂單狀態',
   `is_completed` boolean NOT NULL DEFAULT false,
   `is_delivered` boolean NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now()),
@@ -42,20 +41,20 @@ CREATE TABLE `order`.`order_items` (
 );
 
 CREATE TABLE `order`.`carts` (
-  `customer_id` uuid NOT NULL,
-  `vendor_id` uuid NOT NULL,
+  `customer_id` int PRIMARY KEY,
+  `vendor_id` int NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE `order`.`cart_items` (
-  `cart_id` uuid NOT NULL,
+  `cart_id` int NOT NULL,
   `product_id` int NOT NULL,
   `quantity` int NOT NULL DEFAULT 1,
   PRIMARY KEY (`cart_id`, `product_id`)
 );
 
 CREATE TABLE `auth`.`users` (
-  `id` uuid PRIMARY KEY DEFAULT (uuid_generate_v4()),
+  `id` int PRIMARY KEY AUTO_INCREMENT,
   `name` text,
   `email` varchar(255) UNIQUE NOT NULL,
   `password` varchar(255) NOT NULL,
@@ -64,26 +63,26 @@ CREATE TABLE `auth`.`users` (
 );
 
 CREATE TABLE `auth`.`admins` (
-  `user_id` uuid NOT NULL
+  `user_id` int PRIMARY KEY
 );
 
 CREATE TABLE `auth`.`block_records` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
-  `admin_id` uuid NOT NULL,
-  `user_id` uuid NOT NULL,
+  `admin_id` int NOT NULL,
+  `user_id` int NOT NULL,
   `reason` text NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE `auth`.`system_announcements` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
-  `admin_id` uuid NOT NULL,
+  `admin_id` int NOT NULL,
   `message` text NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE `auth`.`vendors` (
-  `user_id` uuid NOT NULL,
+  `user_id` int PRIMARY KEY,
   `vendor_manager_id` int NOT NULL,
   `is_active` boolean NOT NULL DEFAULT true,
   `revenue` int NOT NULL DEFAULT 0 COMMENT '營業額',
@@ -100,9 +99,10 @@ CREATE TABLE `auth`.`vendor_managers` (
 );
 
 CREATE TABLE `auth`.`customers` (
-  `user_id` uuid NOT NULL,
+  `user_id` int PRIMARY KEY,
   `membership_level` int NOT NULL DEFAULT 0,
   `is_active` boolean NOT NULL DEFAULT true,
+  `stored_balance` int NOT NULL DEFAULT 0,
   `address` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
@@ -113,19 +113,21 @@ CREATE TABLE `store`.`products` (
   `name` varchar(50) NOT NULL,
   `price` int NOT NULL,
   `description` text,
-  `image_url` text,
+  `image_url` text UNIQUE,
   `is_listed` boolean NOT NULL DEFAULT true COMMENT '上架狀態',
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE `store`.`reviews` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
-  `customer_id` uuid NOT NULL,
+  `customer_id` int NOT NULL,
   `vendor_id` int NOT NULL,
   `rating` int NOT NULL,
   `review_content` text,
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
+
+CREATE UNIQUE INDEX `customer_vendor_unique_idx` ON `store`.`reviews` (`customer_id`, `vendor_id`);
 
 ALTER TABLE `auth`.`admins` ADD FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`);
 

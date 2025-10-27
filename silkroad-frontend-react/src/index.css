@@ -6,10 +6,12 @@
 	--color-accent-primary: #705555;
 	--color-accent-hover: #5b3e3e;
 
-	--color-surface-header: #2e2e2e;
+	/* --color-surface-header: #2e2e2e;
+	--color-surface-main: #242424;
+	--color-surface-footer: #1f1f1f; */
+	--color-surface-header: #1f1f1f;
 	--color-surface-main: #242424;
 	--color-surface-footer: #1f1f1f;
-
 
 	font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
@@ -17,7 +19,7 @@
 
 	color-scheme: light dark;
 	color: rgba(255, 255, 255, 0.87);
-	background-color: #242424;
+	background-color: var(--color-surface-main);
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;

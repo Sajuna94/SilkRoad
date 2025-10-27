@@ -1,6 +1,6 @@
 // Auth System
 Table auth.users as U {
-  id uuid [pk, default: `uuid_generate_v4()`]
+  id int [pk, increment]
   name text
   email varchar(255) [not null, unique]
   password varchar(255) [not null]
@@ -9,26 +9,26 @@ Table auth.users as U {
 }
 
 Table auth.admins {
-  user_id uuid [not null, ref: > U.id]
+  user_id int [pk, ref: > U.id]
 }
 
 Table auth.block_records {
   id int [pk, increment]
-  admin_id uuid [not null, ref: > auth.admins.user_id]
-  user_id uuid [not null, ref: > U.id]
+  admin_id int [not null, ref: > auth.admins.user_id]
+  user_id int [not null, ref: > U.id]
   reason text [not null]
   created_at timestamp [not null, default: `now()`]
 }
 
 Table auth.system_announcements {
   id int [pk, increment]
-  admin_id uuid [not null, ref: > auth.admins.user_id]
+  admin_id int [not null, ref: > auth.admins.user_id]
   message text [not null]
   created_at timestamp [not null, default: `now()`]
 }
 
 Table auth.vendors {
-  user_id uuid [not null, ref: > U.id]
+  user_id int [pk, ref: > U.id]
   vendor_manager_id int [not null, ref: > auth.vendor_managers.id]
   is_active boolean [not null, default: true]
   revenue int [not null, default: 0, note: '營業額']
@@ -45,9 +45,10 @@ Table auth.vendor_managers {
 }
 
 Table auth.customers {
-  user_id uuid [not null, ref: > U.id]
+  user_id int [pk, ref: > U.id]
   membership_level int [not null, default: 0]
   is_active boolean [not null, default: true]
+  stored_balance int [not null, default: 0]
   address varchar(255) [not null]
   created_at timestamp [not null, default: `now()`]
 }
@@ -59,18 +60,22 @@ Table store.products {
   name varchar(50) [not null]
   price int [not null]
   description text
-  image_url text
+  image_url text [unique]
   is_listed boolean [not null, default: true, note: '上架狀態']
   created_at timestamp [not null, default: `now()`]
 }
 
 Table store.reviews {
   id int [pk, increment]
-  customer_id uuid [not null, ref: > auth.customers.user_id]
+  customer_id int [not null, ref: > auth.customers.user_id]
   vendor_id int [not null, ref: > auth.vendors.user_id]
   rating int [not null]
   review_content text
   created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (customer_id, vendor_id) [unique, name: "customer_vendor_unique_idx"]
+  }
 }
 
 // Order System
@@ -103,8 +108,8 @@ Enum order.refund_status {
 }
 
 Table order.orders {
-  id uuid [pk, default: `uuid_generate_v4()`]
-  user_id uuid [not null, ref: > U.id]
+  id int [pk, increment]
+  user_id int [not null, ref: > U.id]
   vendor_id int [not null, ref: > auth.vendors.user_id]
   policy_id int [ref: > order.discount_policies.id]
   total_price int [not null]
@@ -112,7 +117,6 @@ Table order.orders {
   payment_methods order.payment_methods [not null, note: '付款方式']
   refund_status order.refund_status [note: '未退款為 NULL']
   refund_at timestamp [note: '未退款為 NULL']
-  order_status order.order_status [not null, default: 'pending', note: '訂單狀態']
   is_completed boolean [not null, default: false]
   is_delivered boolean [not null]
   created_at timestamp [not null, default: `now()`]
@@ -130,13 +134,13 @@ Table order.order_items {
 }
 
 Table order.carts {
-  customer_id uuid [not null, ref: > auth.customers.user_id]
-  vendor_id uuid [not null, ref: > auth.vendors.user_id]
+  customer_id int [pk, ref: > auth.customers.user_id]
+  vendor_id int [not null, ref: > auth.vendors.user_id]
   created_at timestamp [not null, default: `now()`]
 }
 
 Table order.cart_items {
-  cart_id uuid [not null, ref: > order.carts.customer_id]
+  cart_id int [not null, ref: > order.carts.customer_id]
   product_id int [not null, ref: > store.products.id]
   quantity int [not null, default: 1]
 

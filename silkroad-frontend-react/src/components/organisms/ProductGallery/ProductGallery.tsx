@@ -44,7 +44,8 @@ export default function ProductGallery({
 				<div className={styles.modalOverlay} onClick={() => setSelectedProduct(null)}>
 					<div onClick={(e) => e.stopPropagation()}>
 						<ProductModal
-							imgSrc={`/SilkRoad/images/drink/${selectedProduct.img}.jpg`}
+							previewSrc={`/SilkRoad/images/${srcsetMap[`drink/${selectedProduct.img}.jpg`]?.[0]}`}
+							fullSrc={`/SilkRoad/images/drink/${selectedProduct.img}.jpg`}
 							name={selectedProduct.name}
 							price={selectedProduct.price}
 							description={selectedProduct.description}

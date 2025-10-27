@@ -4,12 +4,11 @@
 	gap: 1.5rem;
 	padding: 2rem;
 	border-radius: 8px;
-	background-color: var(--color-surface-light);
+	background-color: var(--color-surface-lighter);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	width: 100%;
 	max-width: 350px;
 	margin: 0 auto;
-	background-color: var(--color-surface-light);
 	color: #333;
 }
 

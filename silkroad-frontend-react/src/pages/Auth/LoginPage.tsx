@@ -1,4 +1,5 @@
 import LoginForm from "@/components/organisms/LoginForm/LoginForm";
+import styles from "./LoginPage.module.css"
 
 export default function LoginPage() {
 	// const [isLoading, setIsLoading] = useState(true);
@@ -28,8 +29,13 @@ export default function LoginPage() {
 
 	return (
 		<>
-			<div style={{height: '3rem'}}></div>
-			<LoginForm />
+			<div className={styles.page}>
+				<div className={styles.background} />
+				<div className={styles.centered}>
+					<LoginForm />
+				</div>
+			</div>
+
 
 			{/* {isLoading ? (
 				<>
