@@ -32,9 +32,9 @@ silkroad-frontend-react/
 ├─ src/                   ← 前端主要程式碼
 │   ├─ assets/            ← 圖片、字型等靜態資源
 │   ├─ components/        ← React 可重用元件
-│   │   ├─ atoms/         ← 最小、不可拆的 UI 元件
-│   │   ├─ molecules/     ← 原子元件組合成的小元件
-│   │   └─ organisms/     ← 複雜組件（多個 molecule/atom 組合）
+│   │   ├─ atoms/               ← 最小、不可拆的 UI 元件
+│   │   ├─ molecules/           ← 原子元件組合成的小元件
+│   │   └─ organisms/           ← 複雜組件（多個 molecule/atom 組合）
 │   ├─ hooks/             ← 自訂 React Hook
 │   ├─ layout/            ← 共用版面配置 (Layout 元件)
 │   ├─ pages/             ← 各頁面元件
