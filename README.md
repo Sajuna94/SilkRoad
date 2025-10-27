@@ -35,7 +35,6 @@ silkroad-frontend-react/
 │   │   ├─ atoms/         ← 最小、不可拆的 UI 元件
 │   │   ├─ molecules/     ← 原子元件組合成的小元件
 │   │   └─ organisms/     ← 複雜組件（多個 molecule/atom 組合）
-│   │
 │   ├─ hooks/             ← 自訂 React Hook
 │   ├─ layout/            ← 共用版面配置 (Layout 元件)
 │   ├─ pages/             ← 各頁面元件
@@ -43,24 +42,22 @@ silkroad-frontend-react/
 │   │   ├─ Auth/                ← 認證相關頁面或組件
 │   │   ├─ Vendor/              ← 店家後台頁面
 │   │   └─ Admin/               ← 管理員後台頁面
-│   │
 │   ├─ router/            ← 前端路由設定 (React Router)
 │   │   ├─ index.tsx            ← React Router 路由設定
 │   │   └─ private.tsx          ← 登入保護路由
 │   ├─ types/             ← TypeScript 型別定義
+│   │
 │   ├─ store/             ← (尚未實作) 狀態管理 (Redux / Zustand / Context API)
 │   │   ├─ index.ts                 ← Redux / Zustand / Context 全域狀態
 │   │   ├─ authStore.ts             ← 登入狀態管理
 │   │   ├─ cartStore.ts             ← 購物車狀態管理
 │   │   └─ vendorStore.ts           ← 店家資料管理
-│   │
 │   ├─ utils/             ← (尚未實作) 工具函式、API 呼叫
 │   │   └─ api.ts                   ← API 封裝 (axios/fetch)
 │   │
 │   ├─ App.tsx            ← React 根組件
 │   ├─ main.tsx           ← 專案入口，掛載 React 到 DOM
 │   └─ index.css          ← 全域 css
-│
 ├─ .gitignore             ← Git 忽略設定
 ├─ index.html             ← 專案 HTML 模板
 ├─ package.json           ← npm 套件與 script
