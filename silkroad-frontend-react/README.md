@@ -15,9 +15,10 @@ npm run dev
 
 ## Structure
 
-```js
 <details>
 <summary>silkroad-frontend-react/src/ 目錄結構</summary>
+```js
+
 src/
 ├─ assets/ ← 圖片、字型等靜態資源
 ├─ components/ ← React 可重用元件
@@ -87,6 +88,7 @@ src/
 ├─ App.tsx ← 根組件
 ├─ main.tsx ← 專案入口
 └─ index.css ← 全域樣式
-</details>
+
 
 ```
+</details>
