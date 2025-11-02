@@ -34,6 +34,8 @@ cd silkroad-backend
 python3 src/app.py
 ```
 
+### You can not run with this version because I just complete modles part :-)
+
 
 ## structure
 ```bash

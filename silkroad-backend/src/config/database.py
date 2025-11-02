@@ -10,7 +10,7 @@ db = SQLAlchemy()
 
 
 """ Initialize the database with the Flask app. 
-You have to Create the Database first in your SQL server(or localhst)
+You have to Create the Database first in your SQL server(or localhost)
 and get the Database URL, then put it in your .env file as DATABASE_URL variable.
 format: 
     DATA_BASE = mysql://<username>:<password>@<host>:<port>/<db_name>

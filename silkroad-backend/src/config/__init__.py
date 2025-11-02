@@ -1,3 +1,3 @@
 
 
-from database import db, init_db
+from .database import db, init_db
