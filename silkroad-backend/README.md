@@ -34,6 +34,19 @@ cd silkroad-backend
 python3 src/app.py
 ```
 
+### windows powershell (不知道為啥這樣能執行)
+```bash
+cd silkroad-backend
+# 創建 .venv 虛擬環境 (如已存在則不用執行)
+python -m venv .venv
+# 進到虛擬環境
+.venv\Scripts\activate
+# 安裝依賴
+pip install -e .
+# 執行
+flask run
+```
+
 ### You can not run with this version because I just complete modles part :-)
 
 
