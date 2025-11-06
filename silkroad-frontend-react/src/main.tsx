@@ -1,7 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import '@/index.css'
 import App from '@/App'
+
+const queryClient = new QueryClient();
 
 const redirect = sessionStorage.redirect;
 if (redirect && redirect !== window.location.pathname) {
@@ -10,7 +13,9 @@ if (redirect && redirect !== window.location.pathname) {
 }
 
 createRoot(document.getElementById('root')!).render(
-	<StrictMode>
-		<App />
+	<StrictMode> 
+		<QueryClientProvider client={queryClient}>
+			<App />
+		</QueryClientProvider>,
 	</StrictMode>,
 )

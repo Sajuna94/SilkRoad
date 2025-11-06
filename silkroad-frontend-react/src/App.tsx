@@ -5,15 +5,12 @@ import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";
 import Router from "@/router";
 
-import { useEffect } from "react";
-import axios from "axios";
+import { usePing } from "./hooks";
 
 function App() {
-	useEffect(() => {
-		axios.get("/api/ping")
-			.then(res => console.log("Backend response:", res.data.message))
-			.catch(err => console.log("Error:", err.message));
-	}, []);
+	const ping = usePing();
+	if (ping.isSuccess)
+		console.log("Backend response:", ping.data);
 
 	return (
 		<ToastProvider>
