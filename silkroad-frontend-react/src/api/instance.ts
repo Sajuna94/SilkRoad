@@ -8,8 +8,8 @@ export const api = axios.create({
 api.interceptors.response.use(
     res => res,
     err => {
-        const status = err.response?.status
-        const message = err.response?.data?.error ?? err.message
+        // const status = err.response?.status
+        // const message = err.response?.data?.error ?? err.message
 
         // switch (status) {
         //     case 400:
