@@ -1,4 +1,4 @@
-from ..config.database import db
+from config.database import db
 
 class System_Announcement(db.Model):
     __tablename__ = "system_announcements"

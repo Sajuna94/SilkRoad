@@ -1,5 +1,5 @@
-from ..config.database import db
-from .user import User
+from config.database import db
+from models.user import User
 
 class Admin(User):
     __tablename__ = "admins"

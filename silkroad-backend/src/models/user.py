@@ -1,4 +1,4 @@
-from ..config.database import db
+from config.database import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # 定義一個 User 類別，代表資料庫中的 "users" 資料表

@@ -1,4 +1,4 @@
-from ..config.database import db
+from config.database import db
 from sqlalchemy import Enum
 
 class Order(db.Model):

@@ -2,7 +2,7 @@
 Cart model : 定義購物車資料表結構 (SQLAlchemy ORM)
 每個cart必須由一個 'user' 一個 'shop' 組成
 """
-from ..config.database import db
+from config.database import db
 
 class Cart(db.Model):
     __tablename__ = "carts"

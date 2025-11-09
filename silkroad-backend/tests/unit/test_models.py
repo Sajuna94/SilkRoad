@@ -23,7 +23,7 @@ def test_model_schema():
         all_pass = True
 
         for full_table_name, table in db.metadata.tables.items():
-            print(f"\check Table: {full_table_name}")
+            print(f"\ncheck Table: {full_table_name}")
 
             if '.' in full_table_name:
                 schema, table_name = full_table_name.split('.', 1)
