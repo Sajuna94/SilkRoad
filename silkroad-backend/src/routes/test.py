@@ -2,11 +2,13 @@ from flask import Blueprint, jsonify
 
 test_routes = Blueprint("test", __name__)
 
+
 # for frontend testing purpose
 @test_routes.route("/ping", methods=["GET"])
 def ping():
     # Returns "pong" to show the backend is running
     return jsonify({"message": "pong"}), 401
+
 
 # for cloudinary upload signature generation
 import cloudinary
@@ -15,13 +17,14 @@ import time
 
 # Could use env variables to store sensitive info
 cloudinary.config(
-    cloud_name = "your_cloud_name",  # Replace with your Cloudinary cloud name
-    api_key = "your_api_key",
-    api_secret = "your_api_secret"  # Replace with your Cloudinary API secret
+    cloud_name="your_cloud_name",  # Replace with your Cloudinary cloud name
+    api_key="your_api_key",
+    api_secret="your_api_secret",  # Replace with your Cloudinary API secret
 )
 
+
 # Maybe folder name could name by "vendor_{vendor_id}/product_images"
-# Maybe need @login_required decorator or other auth methods 
+# Maybe need @login_required decorator or other auth methods
 @test_routes.route("/cloudinary-signature", methods=["GET"])
 def generate_signature():
     timestamp = int(time.time())
@@ -30,11 +33,26 @@ def generate_signature():
         "timestamp": timestamp,
         "folder": folder_name,
     }
-    signature = cloudinary.utils.api_sign_request(params, cloudinary.config().api_secret)
-    return jsonify({
-        "api_key": cloudinary.config().api_key,
-        "timestamp": timestamp,
-        "signature": signature,
-        "folder": folder_name,
-        "cloud_name": cloudinary.config().cloud_name,
-    }) 
+    signature = cloudinary.utils.api_sign_request(
+        params, cloudinary.config().api_secret
+    )
+    return jsonify(
+        {
+            "api_key": cloudinary.config().api_key,
+            "timestamp": timestamp,
+            "signature": signature,
+            "folder": folder_name,
+            "cloud_name": cloudinary.config().cloud_name,
+        }
+    )
+
+# for testing database connection and ORM
+from models.auth.vendor import Vendor
+
+# Maybe need @login_required decorator or other auth methods
+@test_routes.route("/vendors/<int:vendor_id>", methods=["GET"])
+def get_vendor_by_id(vendor_id):
+    vendor = Vendor.query.get(vendor_id)
+    if vendor:
+        return jsonify({"id": vendor.id, "name": vendor.name, "email": vendor.email})
+    return jsonify({"error": "Vendor not found"}), 404
