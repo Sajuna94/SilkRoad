@@ -1,4 +1,4 @@
-import { getPing } from "@/api/instance";
+import { getPing } from "@/api/test";
 import { useQuery } from "@tanstack/react-query";
 
 export function usePing() {
