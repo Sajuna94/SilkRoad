@@ -5,7 +5,7 @@ import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";
 import Router from "@/router";
 
-import { usePing } from "./hooks";
+import { usePing } from "@/hooks/test/usePing";
 
 function App() {
 	const ping = usePing();
