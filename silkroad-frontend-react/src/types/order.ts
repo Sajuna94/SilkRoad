@@ -1,6 +1,14 @@
+export interface Cart {
+    customerId: number; // PK + ref
+    vendorId: number;
+    createdAt: string;
+    note: string;
+    items?: CartItem[];
+}
+
 export interface CartItem {
-    id: number;
-    productId: number;
+    cartId: number; // PK + ref
+    productId: number; // PK + ref
     quantity: number;
     options: {
         size: string;
@@ -9,8 +17,8 @@ export interface CartItem {
     };
 }
 
-// all fields except id are required to insert a new cart item
-export type InsertCartItemInput = Omit<CartItem, "id">;
+// all fields except cartId are required to insert a new cart item
+export type InsertCartItemInput = Omit<CartItem, "cartId">;
 
-// requires id to identify which cart item to update
-export type UpdateCartItemInput = Partial<Omit<CartItem, "id">> & { id: number };
+// requires cartId and productId to identify which cart item to update
+export type UpdateCartItemInput = Partial<Omit<CartItem, "cartId" | "productId">> & { cartId: number; productId: number };
