@@ -1,8 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import "./CartPage.css";
+import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal/ProductModal";
+import { useRef } from "react";
+import { products } from "@/assets/data/drink";
 // import { useCart } from "@/components/molecules/CartContext";
 
 export default function CartPage() {
+	const modalRef = useRef<ProductModalRef>(null);
+
 	// const { cartItems, clearCart } = useCart();
 
 	const cartItems = [
@@ -51,7 +56,7 @@ export default function CartPage() {
 				<>
 					<ul className="cart-list">
 						{cartItems.map((item, index) => (
-							<li key={index} className="cart-item">
+							<li key={index} className="cart-item" onClick={() => modalRef.current?.open(products[index])}>
 								<div>
 									<strong>{item.name}</strong>
 									<div className="cart-item-details">
@@ -78,6 +83,8 @@ export default function CartPage() {
 					</div>
 				</>
 			)}
+
+			<ProductModal isEditMode={true} ref={modalRef} />
 		</section>
 	);
 }
