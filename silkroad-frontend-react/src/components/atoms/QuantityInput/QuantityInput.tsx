@@ -24,6 +24,7 @@ export const QuantityInput = React.memo(
 				<button onClick={() => updateValue(internalValue - 1)}>-</button>
 				<input
 					ref={ref}
+					name="quantity"
 					type="number"
 					value={internalValue}
 					onChange={(e) => updateValue(Number(e.target.value))}
