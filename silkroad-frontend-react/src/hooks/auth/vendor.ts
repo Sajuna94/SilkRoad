@@ -9,10 +9,10 @@ export const useVendors = () => {
     });
 };
 
-export const useVendor = (user_id: number) => {
+export const useVendor = (vendorId: number) => {
     return useQuery<Vendor>({
-        queryKey: ['vendor', user_id],
-        queryFn: () => getVendorById(user_id),
-        enabled: !!user_id
+        queryKey: ['vendor', vendorId],
+        queryFn: async () => getVendorById(vendorId),
+        enabled: !!vendorId
     })
 }

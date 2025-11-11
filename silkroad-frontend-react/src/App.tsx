@@ -6,7 +6,7 @@ import Footer from "@/layout/Footer";
 import Router from "@/router";
 
 import { usePing } from "@/hooks/test/usePing";
-import { CartProvider } from "@/components/molecules/CartConText";
+// import { CartProvider } from "@/components/molecules/CartConText";
 
 function App() {
   const ping = usePing();
@@ -14,13 +14,13 @@ function App() {
 
   return (
     <ToastProvider>
-      <CartProvider>
+      {/* <CartProvider> */}
         <BrowserRouter basename="/SilkRoad">
           <Header />
           <Router />
           <Footer />
         </BrowserRouter>
-      </CartProvider>
+      {/* </CartProvider> */}
     </ToastProvider>
   );
 }
