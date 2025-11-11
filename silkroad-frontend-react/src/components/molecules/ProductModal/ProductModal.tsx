@@ -30,7 +30,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>((prop
 		open: (product: Product) => {
 			const safeProduct: Product = {
 				...product,
-				imageUrl: "https://www.mastercarefully.com/archive/image/model/images/inner_ph.webp",
+				imageUrl: "https://png.pngtree.com/thumb_back/fw800/background/20241025/pngtree-green-smoothie-with-broccoli-image_16378995.jpg",
 				options: product.options || {
 					size: ["小", "中", "大"],
 					sugar: ["無糖", "少糖", "正常糖"],
