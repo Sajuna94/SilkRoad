@@ -1,3 +1,10 @@
+"""
+    =============================================================================
+    This file is the basic test for any functionality you want to try out.
+    The path is /api/test/...
+    =============================================================================
+"""
+
 from flask import Blueprint, jsonify
 from models.auth.user import User
 from config import db
@@ -72,49 +79,49 @@ NOTE: 這段code的依賴本身沒有寫到pyproject.toml裡面
       如果讓它運行會導致module not found error
       所以先把它註解起來
 '''
-# # for cloudinary upload signature generation
-# import cloudinary
-# import cloudinary.utils
-# import time
+# for cloudinary upload signature generation
+import cloudinary
+import cloudinary.utils
+import time
 
-# # Could use env variables to store sensitive info
-# cloudinary.config(
-#     cloud_name="your_cloud_name",  # Replace with your Cloudinary cloud name
-#     api_key="your_api_key",
-#     api_secret="your_api_secret",  # Replace with your Cloudinary API secret
-# )
+# Could use env variables to store sensitive info
+cloudinary.config(
+    cloud_name="your_cloud_name",  # Replace with your Cloudinary cloud name
+    api_key="your_api_key",
+    api_secret="your_api_secret",  # Replace with your Cloudinary API secret
+)
 
 
-# # Maybe folder name could name by "vendor_{vendor_id}/product_images"
-# # Maybe need @login_required decorator or other auth methods
-# @test_routes.route("/cloudinary-signature", methods=["GET"])
-# def generate_signature():
-#     timestamp = int(time.time())
-#     folder_name = "your_folder_name"  # TODO: Replace with your desired folder name
-#     params = {
-#         "timestamp": timestamp,
-#         "folder": folder_name,
-#     }
-#     signature = cloudinary.utils.api_sign_request(
-#         params, cloudinary.config().api_secret
-#     )
-#     return jsonify(
-#         {
-#             "api_key": cloudinary.config().api_key,
-#             "timestamp": timestamp,
-#             "signature": signature,
-#             "folder": folder_name,
-#             "cloud_name": cloudinary.config().cloud_name,
-#         }
-#     )
+# Maybe folder name could name by "vendor_{vendor_id}/product_images"
+# Maybe need @login_required decorator or other auth methods
+@test_routes.route("/cloudinary-signature", methods=["GET"])
+def generate_signature():
+    timestamp = int(time.time())
+    folder_name = "your_folder_name"  # TODO: Replace with your desired folder name
+    params = {
+        "timestamp": timestamp,
+        "folder": folder_name,
+    }
+    signature = cloudinary.utils.api_sign_request(
+        params, cloudinary.config().api_secret
+    )
+    return jsonify(
+        {
+            "api_key": cloudinary.config().api_key,
+            "timestamp": timestamp,
+            "signature": signature,
+            "folder": folder_name,
+            "cloud_name": cloudinary.config().cloud_name,
+        }
+    )
 
-# # for testing database connection and ORM
-# from models.auth.vendor import Vendor
+# for testing database connection and ORM
+from models.auth.vendor import Vendor
 
-# # Maybe need @login_required decorator or other auth methods
-# @test_routes.route("/vendors/<int:vendor_id>", methods=["GET"])
-# def get_vendor_by_id(vendor_id):
-#     vendor = Vendor.query.get(vendor_id)
-#     if vendor:
-#         return jsonify({"id": vendor.id, "name": vendor.name, "email": vendor.email})
-#     return jsonify({"error": "Vendor not found"}), 404
+# Maybe need @login_required decorator or other auth methods
+@test_routes.route("/vendors/<int:vendor_id>", methods=["GET"])
+def get_vendor_by_id(vendor_id):
+    vendor = Vendor.query.get(vendor_id)
+    if vendor:
+        return jsonify({"id": vendor.id, "name": vendor.name, "email": vendor.email})
+    return jsonify({"error": "Vendor not found"}), 404
