@@ -67,10 +67,11 @@ def test_select():
         })
     return jsonify({"error": "user.1 not found"}), 404
 
-
-# 這段code的依賴本身沒有寫到pyproject.toml裡面
-# 如果讓它運行會導致module not found error
-# 所以先把它註解起來
+'''
+NOTE: 這段code的依賴本身沒有寫到pyproject.toml裡面
+      如果讓它運行會導致module not found error
+      所以先把它註解起來
+'''
 # # for cloudinary upload signature generation
 # import cloudinary
 # import cloudinary.utils
