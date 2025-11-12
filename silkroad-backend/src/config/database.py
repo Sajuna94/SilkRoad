@@ -24,9 +24,5 @@ def init_db(app: Flask):
     db.init_app(app)
 
     print("[database] 資料庫已初始化")
-    # print(db)
     with app.app_context():
-            # 嘗試執行一個簡單 SQL 查詢
-            # result = db.session.execute(text("SELECT 1"))
-        print("[database] ✅ 成功連線到資料庫")
         db.create_all()
