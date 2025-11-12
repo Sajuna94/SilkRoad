@@ -10,4 +10,4 @@ class Block_Record(db.Model):
     reason      = db.Column(db.Text, nullable=False)
     created_at  = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
 
-    admin = db.relationship("Admin", backref="block_records")
+    admin = db.relationship("Admin", backref="block_records", foreign_keys=[admin_id])

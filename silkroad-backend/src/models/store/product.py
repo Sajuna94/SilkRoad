@@ -9,7 +9,7 @@ class Product(db.Model):
     name         = db.Column(db.String(50), nullable=False)
     price        = db.Column(db.Integer, nullable=False)
     description  = db.Column(db.Text)
-    image_url    = db.Column(db.Text, unique=True)
+    image_url    = db.Column(db.String(255), unique=True)
     is_listed    = db.Column(db.Boolean, nullable=False, server_default=db.text("true"))
     created_at   = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
 

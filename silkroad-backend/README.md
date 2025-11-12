@@ -18,6 +18,11 @@ cd silkroad-backend
 .\sync.ps1
 ```
 
+```bash
+#jfgsfioejf
+.venv/bin/activate
+```
+
 ## Run backend server
 ### uv 
 ```bash
