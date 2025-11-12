@@ -19,7 +19,7 @@ class Discount_Policy(db.Model):
     'TODO: Add ON UPDATE ON UPDATE CURRENT_TIMESTAMP (follow database aka main.sql)'
 
     #python
-    vendor = db.relationship("Vendor", back_populates="discount_policies")
+    # vendor = db.relationship("Vendor", back_populates="discount_policies")
 
     def __repr__(self):
         return f"<DiscountPolicy {self.policy_name} - {self.discount_rate*100}%>"

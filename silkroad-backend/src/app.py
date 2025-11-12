@@ -1,7 +1,8 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from config import init_db
-from routes import user_routes, cart_routes, shop_routes, test_routes
+from routes import user_routes, cart_routes, shop_routes
+from utils.test import test_routes
 
 app = Flask(__name__)
 
@@ -31,7 +32,7 @@ init_db(app)
 
 # 註冊路由
 print("[app] 註冊路由...")
-app.register_blueprint(test_routes, url_prefix='/api')
+app.register_blueprint(test_routes, url_prefix='/api/test')
 # app.register_blueprint(user_routes, url_prefix='/api/user')
 # app.register_blueprint(cart_routes, url_prefix='/api/cart')
 # app.register_blueprint(shop_routes, url_prefix='/api/shop')
@@ -44,22 +45,22 @@ from config.database import db
 from sqlalchemy import text
 from models.auth.user import User
 
-@app.route("/test-insert")
-def test_insert():
-    try:
-        new_user = User(
-            name="Test User",
-            email="testuser@example.com",
-            password="12434544",  # 密碼要 hash
-            phone_number="0912345678"
-        )
+# @app.route("/test-insert")
+# def test_insert():
+#     try:
+#         new_user = User(
+#             name="Test User",
+#             email="testuser@example.com",
+#             password="12434544",  # 密碼要 hash
+#             phone_number="0912345678"
+#         )
 
-        # 加入 session
-        db.session.add(new_user)  
-        db.session.commit()
-        return {"status": "insert success"}
-    except Exception as e:
-        return {"error": str(e)}
+#         # 加入 session
+#         db.session.add(new_user)  
+#         db.session.commit()
+#         return {"status": "insert success"}
+#     except Exception as e:
+#         return {"error": str(e)}
 
 if __name__ == '__main__':
     route_info_printer(True)
