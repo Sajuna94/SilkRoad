@@ -27,7 +27,7 @@ def route_info_printer(bool_debug: bool = True):
 
 # 初始化資料庫
 print("[app] 初始化資料庫...")
-#init_db(app)
+init_db(app) 
 
 # 註冊路由
 print("[app] 註冊路由...")
@@ -40,7 +40,30 @@ app.register_blueprint(test_routes, url_prefix='/api')
 def index():
     return "test"
 
+from config.database import db
+from sqlalchemy import text
+from models.auth.user import User
+
+@app.route("/test-insert")
+def test_insert():
+    try:
+        new_user = User(
+            name="Test User",
+            email="testuser@example.com",
+            password="12434544",  # 密碼要 hash
+            phone_number="0912345678"
+        )
+
+        # 加入 session
+        db.session.add(new_user)  
+        db.session.commit()
+        return {"status": "insert success"}
+    except Exception as e:
+        return {"error": str(e)}
+
 if __name__ == '__main__':
     route_info_printer(True)
     print("[app] 啟動 Flask 伺服器...")
     app.run(debug=True)
+
+

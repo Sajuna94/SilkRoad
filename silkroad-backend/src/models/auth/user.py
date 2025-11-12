@@ -1,6 +1,8 @@
 from config.database import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from sqlalchemy import Column, Integer, String, DateTime, Text
+
 # 定義一個 User 類別，代表資料庫中的 "users" 資料表
 class User(db.Model):
     #指定這個模型所對應的資料表名稱
