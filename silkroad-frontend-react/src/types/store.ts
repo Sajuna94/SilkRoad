@@ -11,7 +11,6 @@ export interface Product {
   };
   imageUrl: string;
   isListed: boolean;
-  createdAt: string;
 
   //
   quantity: number;

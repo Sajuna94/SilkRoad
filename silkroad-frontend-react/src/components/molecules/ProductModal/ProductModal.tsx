@@ -56,6 +56,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>((prop
 
 	if (!open || !product) return null;
 
+
 	const handleAddToCart = () => {
 		insertCartItem.mutate({
 			productId: product.id,
@@ -67,9 +68,12 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>((prop
 			},
 		}, {
 			onSuccess: () => {
-				console.log("Add to cart:", form);
+				console.log("Add to cart:", insertCartItem.data);
 				navigate("/cart");
-			}
+			},
+			onError: () => {
+				console.log("From:", form)
+			},
 		});
 	}
 

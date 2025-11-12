@@ -1,16 +1,12 @@
-import type { CartItem, InsertCartItemInput, InsertOrderInput, Order, UpdateCartItemInput } from "@/types/order";
+import type { CartItem, InsertCartItemInput, UpdateCartItemInput } from "@/types/order";
 import { api } from "./instance";
 
 // 可能之後整合功能 讓所有 table 都支援這四種資料操作
 // 權限問題交給後端處理
 
-export async function addOrder(input: InsertOrderInput): Promise<Order> {
-    const res = await api.post<Order>(`/order`, input);
-    return res.data;
-}
 
 // 取得購物車所有商品（透過 customer_id）
-export async function getOrderItems(customerId: number): Promise<CartItem[]> {
+export async function getCartItems(customerId: number): Promise<CartItem[]> {
     const res = await api.get<CartItem[]>(`/cart/${customerId}`);
     return res.data;
 }

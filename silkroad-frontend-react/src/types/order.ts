@@ -22,3 +22,11 @@ export type InsertCartItemInput = Omit<CartItem, "cartId">;
 
 // requires cartId and productId to identify which cart item to update
 export type UpdateCartItemInput = Partial<Omit<CartItem, "cartId" | "productId">> & { cartId: number; productId: number };
+
+
+export interface Order {
+    // ...
+    id: number
+}
+
+export type InsertOrderInput = Omit<Order, "id">;

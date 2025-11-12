@@ -1,5 +1,5 @@
 import { BrowserRouter } from "react-router-dom";
-import { ToastProvider } from "@/components/Toast";
+import { ToastProvider } from "@/components/atoms/Toast";
 import "@/App.css";
 import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";

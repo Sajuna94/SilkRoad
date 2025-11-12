@@ -3,6 +3,7 @@ import "./CartPage.css";
 import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal/ProductModal";
 import { useRef } from "react";
 import { products } from "@/assets/data/drink";
+import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
 // import { useCart } from "@/components/molecules/CartContext";
 
 export default function CartPage() {
@@ -35,6 +36,38 @@ export default function CartPage() {
 			quantity: 1,
 			note: "",
 		},
+		{
+			name: "抹茶拿鐵",
+			price: 70,
+			sugar: "無糖",
+			ice: "去冰",
+			quantity: 1,
+			note: "",
+		},
+		{
+			name: "抹茶拿鐵",
+			price: 70,
+			sugar: "無糖",
+			ice: "去冰",
+			quantity: 1,
+			note: "",
+		},
+		{
+			name: "抹茶拿鐵",
+			price: 70,
+			sugar: "無糖",
+			ice: "去冰",
+			quantity: 1,
+			note: "",
+		},
+		{
+			name: "抹茶拿鐵",
+			price: 70,
+			sugar: "無糖",
+			ice: "去冰",
+			quantity: 1,
+			note: "",
+		},
 	];
 
 	// 假的 clearCart function
@@ -46,37 +79,44 @@ export default function CartPage() {
 	const total = cartItems.reduce((sum, item) => sum + item.price, 0);
 	const backToProductPage = () => navigate("/");
 
+	const url = "https://png.pngtree.com/thumb_back/fw800/background/20241025/pngtree-green-smoothie-with-broccoli-image_16378995.jpg";
+
 	return (
-		<section className="cart-container">
-			<h1 className="cart-title">購物車</h1>
+		<section className="container">
+			<h2>購物車</h2>
 
 			{cartItems.length === 0 ? (
 				<p className="cart-empty">購物車是空的，快去逛逛吧！</p>
 			) : (
 				<>
-					<ul className="cart-list">
+					<ul className="list">
 						{cartItems.map((item, index) => (
-							<li key={index} className="cart-item" onClick={() => modalRef.current?.open(products[index])}>
-								<div>
-									<strong>{item.name}</strong>
-									<div className="cart-item-details">
-										{item.sugar && `糖度：${item.sugar} `}
-										{item.ice && `冰量：${item.ice} `}
-										{item.quantity && `數量：${item.quantity}`}
-										{item.note && <div>備註：{item.note}</div>}
+							<li key={index} className="item">
+								<div className={"itemImgArea"}>
+									<FadeInImage fullSrc={url} />
+								</div>
+								<div className={"itemContent"} onClick={() => modalRef.current?.open(products[index])}>
+									<div className="contentLeft">
+										<h3>{item.name}</h3>
+										<div>小</div>
+										<div>{item.ice}</div>
+										<div>{item.sugar}</div>
+									</div>
+									<div className="contentRight">
+										<h3>NT$ {item.price}</h3>
+										<div>數量: {item.quantity}</div>
 									</div>
 								</div>
-								<span className="cart-item-price">NT${item.price}</span>
 							</li>
 						))}
 					</ul>
 
-					<div className="cart-footer">
-						<div className="cart-total">
-							總金額：<span className="cart-total-amount">NT${total}</span>
+					<div className="footer">
+						<div className="total">
+							NT${total}
 						</div>
 
-						<div className="cart-buttons">
+						<div className="buttons">
 							<button onClick={backToProductPage}>繼續加點</button>
 							<button onClick={clearCart}>清空</button>
 						</div>

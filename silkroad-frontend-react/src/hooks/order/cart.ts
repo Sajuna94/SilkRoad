@@ -1,4 +1,4 @@
-import { addCartItem, deleteCartItem, getCartItem, getCartItems, updateCartItem } from "@/api/order";
+import { addCartItem, deleteCartItem, getCartItem, getCartItems, updateCartItem } from "@/api/cart";
 import type { CartItem, InsertCartItemInput, UpdateCartItemInput } from "@/types/order";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
