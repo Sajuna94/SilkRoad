@@ -1,4 +1,4 @@
-from ..config.database import db
+from config.database import db
 
 class Cart_Item(db.Model):
     __tablename__ = "cart_items"

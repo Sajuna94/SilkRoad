@@ -1,14 +1,13 @@
-from ..config.database import db
+from config.database import db
 
-class System_Announcement(db.Model):
-    __tablename__ = "system_announcements"
+class Block_Record(db.Model):
+    __tablename__ = "block_records"
     __table_args__ = {"schema": "auth"}
 
     id          = db.Column(db.Integer, primary_key=True, autoincrement=True)
     admin_id    = db.Column(db.Integer, db.ForeignKey("auth.admins.user_id"), nullable=False)
-    message     = db.Column(db.Text, nullable=False)
+    user_id     = db.Column(db.Integer, db.ForeignKey("auth.users.id"), nullable=False)
+    reason      = db.Column(db.Text, nullable=False)
     created_at  = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
-    
 
-    def __repr__(self):
-        return f"<System_Announcement {self.id} - {self.title}>"
+    admin = db.relationship("Admin", backref="block_records")

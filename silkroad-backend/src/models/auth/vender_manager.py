@@ -1,4 +1,4 @@
-from ..config.database import db
+from config.database import db
 
 class Vender_Mananger(db.Model):
     __tablename__ = "vendor_managers"

@@ -4,7 +4,7 @@ import ProductCard from "@/components/molecules/ProductCard/ProductCard";
 import ProductModal from "@/components/molecules/ProductModal/ProductModal";
 import { InfiniteList } from "@/components/atoms/InfiniteList/InfiniteList";
 import { type Product } from "@/types/store";
-import { useSrcsetMap } from "@/hooks/useSrcsetMap";
+import { useSrcsetMap } from "@/hooks/test/useSrcsetMap";
 
 interface ProductGalleryProps {
 	products: Product[];

@@ -1,5 +1,5 @@
-from ..config.database import db
-from .user import User
+from config.database import db
+from models.auth.user import User
 
 """
 NOTE: 
@@ -14,7 +14,6 @@ class Vendor(User):
     is_active           = db.Column(db.Boolean, nullable = False, server_default = db.text('true')) 
     revenue             = db.Column(db.Integer, nullable = False, server_default = db.text('0'))
     address             = db.Column(db.String(255) , unique = True, nullable = False)
-    created_at          = db.Column(db.DateTime, nullable = False, server_default = db.func.now())
     
 
 
