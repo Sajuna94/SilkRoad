@@ -1,12 +1,12 @@
 import { BrowserRouter } from "react-router-dom";
-import { ToastProvider } from "@/components/Toast";
+import { ToastProvider } from "@/components/atoms/Toast";
 import "@/App.css";
 import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";
 import Router from "@/router";
 
 import { usePing } from "@/hooks/test/usePing";
-import { CartProvider } from "@/components/molecules/CartConText";
+// import { CartProvider } from "@/components/molecules/CartConText";
 
 function App() {
   const ping = usePing();
@@ -14,13 +14,13 @@ function App() {
 
   return (
     <ToastProvider>
-      <CartProvider>
+      {/* <CartProvider> */}
         <BrowserRouter basename="/SilkRoad">
           <Header />
           <Router />
           <Footer />
         </BrowserRouter>
-      </CartProvider>
+      {/* </CartProvider> */}
     </ToastProvider>
   );
 }

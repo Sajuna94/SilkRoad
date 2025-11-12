@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import StarRating from "./StarRating";
-import { useToast } from "../components/Toast";
+import StarRating from "../atoms/StarRating";
+import { useToast } from "../atoms/Toast";
 
 export default function ReviewCard() {
 	const { showToast } = useToast();

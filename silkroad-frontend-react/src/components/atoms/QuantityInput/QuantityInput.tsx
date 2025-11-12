@@ -11,8 +11,7 @@ type Props = {
 
 export const QuantityInput = React.memo(
 	React.forwardRef<HTMLInputElement, Props>(function QuantityInput(
-		{ value = 1, min = 1, max = 99, onChange },
-		ref
+		{ value = 1, min = 1, max = 99, onChange }, ref
 	) {
 		const [internalValue, setInternalValue] = useState(value);
 		const updateValue = (newValue: number) => {
@@ -21,10 +20,11 @@ export const QuantityInput = React.memo(
 			onChange?.(clamped);
 		};
 		return (
-			<div className={styles.quantityInput}>
+			<div className={styles.quantityGroup}>
 				<button onClick={() => updateValue(internalValue - 1)}>-</button>
 				<input
 					ref={ref}
+					name="quantity"
 					type="number"
 					value={internalValue}
 					onChange={(e) => updateValue(Number(e.target.value))}

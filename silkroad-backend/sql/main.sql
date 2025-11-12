@@ -4,6 +4,26 @@ CREATE SCHEMA `auth`;
 
 CREATE SCHEMA `store`;
 
+-- order schema
+DROP TABLE IF EXISTS `order`.`cart_items`;
+DROP TABLE IF EXISTS `order`.`carts`;
+DROP TABLE IF EXISTS `order`.`order_items`;
+DROP TABLE IF EXISTS `order`.`orders`;
+DROP TABLE IF EXISTS `order`.`discount_policies`;
+
+-- store schema
+DROP TABLE IF EXISTS `store`.`reviews`;
+DROP TABLE IF EXISTS `store`.`products`;
+
+-- auth schema
+DROP TABLE IF EXISTS `auth`.`customers`;
+DROP TABLE IF EXISTS `auth`.`vendors`;
+DROP TABLE IF EXISTS `auth`.`vendor_managers`;
+DROP TABLE IF EXISTS `auth`.`system_announcements`;
+DROP TABLE IF EXISTS `auth`.`block_records`;
+DROP TABLE IF EXISTS `auth`.`admins`;
+DROP TABLE IF EXISTS `auth`.`users`;
+
 CREATE TABLE `order`.`discount_policies` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `vendor_id` int NOT NULL,
@@ -113,7 +133,7 @@ CREATE TABLE `store`.`products` (
   `name` varchar(50) NOT NULL,
   `price` int NOT NULL,
   `description` text,
-  `image_url` text UNIQUE,
+  `image_url` varchar(255) UNIQUE,
   `is_listed` boolean NOT NULL DEFAULT true COMMENT '上架狀態',
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
@@ -167,4 +187,7 @@ ALTER TABLE `order`.`carts` ADD FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`ven
 
 ALTER TABLE `order`.`cart_items` ADD FOREIGN KEY (`cart_id`) REFERENCES `order`.`carts` (`customer_id`);
 
-ALTER TABLE `order`.`cart_items` ADD FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`);
+ALTER TABLE `order`.`cart_items`
+ADD CONSTRAINT `fk_cart_items_product`
+FOREIGN KEY (`product_id`)
+REFERENCES `store`.`products` (`id`);

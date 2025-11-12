@@ -16,10 +16,13 @@ format:
     DATA_BASE = mysql://<username>:<password>@<host>:<port>/<db_name>
 NOTE: Do not push .env file to github"""
 
+
 def init_db(app: Flask):
     load_dotenv()
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
+
+    print("[database] 資料庫已初始化")
     with app.app_context():
         db.create_all()

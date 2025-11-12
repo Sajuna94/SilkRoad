@@ -1,16 +1,24 @@
 import { products } from "@/assets/data/drink";
-import ReviewCard from "@/components/ReviewCard";
+import ReviewCard from "@/components/molecules/ReviewCard";
 import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery";
+import { useInsertOrder, useOrder } from "@/hooks/order/order";
 
 export default function HomePage() {
 	const repeatedProducts = Array.from({ length: 5 }, () => products).flat();
+
+	var order = useOrder();
+
+	if (order.isSuccess) {
+		console.log("Order", order);
+	}
+
+
 
 	return (
 		<>
 			<ProductGallery
 				products={repeatedProducts}
 				pageSize={10}
-				onAddToCart={(product) => console.log("加入購物車", product.id)}
 			/>
 
 			<div style={{ marginTop: "40px" }}>

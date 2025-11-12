@@ -1,130 +1,257 @@
 import styles from "./ProductModal.module.css";
 import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
-import { useCart } from "@/components/molecules/CartConText";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useState } from "react";
+import type { Product } from "@/types/store";
+import { QuantityInput } from "@/components/atoms/QuantityInput/QuantityInput";
+import { useInsertCartItem } from "@/hooks/order/cart";
 
 interface ProductModalProps {
-  previewSrc?: string;
-  fullSrc: string;
-  name: string;
-  price: number;
-  description: string;
-  isEditMode?: boolean; // 是否為修改模式
-  defaultValues?: {
-    sugar?: string;
-    ice?: string;
-    quantity?: number;
-    note?: string;
-  };
-  onConfirm?: (item: any) => void; // 編輯完成後回傳更新資料
+	isEditMode?: boolean; // 是否為修改模式
+	quantity?: number;
+	note?: string;
 }
 
-export default function ProductModal({
-  previewSrc,
-  fullSrc,
-  name,
-  price,
-  description,
-  isEditMode = false,
-  defaultValues,
-  onConfirm,
-}: ProductModalProps) {
-  const { addToCart } = useCart();
-  const navigate = useNavigate();
-
-  // 狀態管理
-  const [sugar, setSugar] = useState(defaultValues?.sugar || "正常糖");
-  const [ice, setIce] = useState(defaultValues?.ice || "正常冰");
-  const [quantity, setQuantity] = useState(defaultValues?.quantity || 1);
-  const [note, setNote] = useState(defaultValues?.note || "");
-
-  const handleSubmit = () => {
-    const item = {
-      name,
-      price: price * quantity,
-      img: fullSrc,
-      sugar,
-      ice,
-      quantity,
-      note,
-      description,
-      id: Math.floor(Math.random() * 1000000), // 簡易產生唯一 id
-    };
-
-    if (isEditMode) {
-      onConfirm?.(item); // 回傳更新的商品資料
-    } else {
-      addToCart(item);
-      navigate("/cart");
-    }
-  };
-
-  return (
-    <section className={styles.modal}>
-      <div className={styles.imageArea}>
-        <FadeInImage previewSrc={previewSrc} fullSrc={fullSrc} alt={name} />
-      </div>
-
-      <div className={styles.content}>
-        <h1 className={styles.name}>{name}</h1>
-        <p className={styles.price}>NT ${price}</p>
-        <p className={styles.description}>{description}</p>
-
-        {/* --- 客製化選項區 --- */}
-        <div className={styles.options}>
-          <label>
-            糖度：
-            <select value={sugar} onChange={(e) => setSugar(e.target.value)}>
-              <option>正常糖</option>
-              <option>半糖</option>
-              <option>無糖</option>
-            </select>
-          </label>
-
-          <label>
-            冰量：
-            <select value={ice} onChange={(e) => setIce(e.target.value)}>
-              <option>正常冰</option>
-              <option>少冰</option>
-              <option>去冰</option>
-            </select>
-          </label>
-
-          <label>
-            數量：
-            <div className={styles.quantityControl}>
-              <button
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className={styles.qtyBtn}
-              >
-                -
-              </button>
-              <span>{quantity}</span>
-              <button
-                onClick={() => setQuantity((q) => q + 1)}
-                className={styles.qtyBtn}
-              >
-                +
-              </button>
-            </div>
-          </label>
-
-          <label>
-            備註：
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="例如：不要吸管、去冰少糖..."
-              className={styles.noteArea}
-            />
-          </label>
-        </div>
-
-        <button className={styles.button} onClick={handleSubmit}>
-          {isEditMode ? "修改完成" : "加入購物車"}
-        </button>
-      </div>
-    </section>
-  );
+export interface ProductModalRef {
+	open: (product: Product) => void;
+	close: () => void;
 }
+
+export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>((props, ref) => {
+	const navigate = useNavigate();
+	const insertCartItem = useInsertCartItem();
+
+	// Modal state
+	const [open, setOpen] = useState(false);
+	const [product, setProduct] = useState<Product | null>(null);
+
+	// Expose open and close methods via ref
+	useImperativeHandle(ref, () => ({
+		open: (product: Product) => {
+			const safeProduct: Product = {
+				...product,
+				imageUrl: "https://png.pngtree.com/thumb_back/fw800/background/20241025/pngtree-green-smoothie-with-broccoli-image_16378995.jpg",
+				options: product.options || {
+					size: ["小", "中", "大"],
+					sugar: ["無糖", "少糖", "正常糖"],
+					ice: ["去冰", "微冰", "少冰", "正常冰"],
+				},
+			};
+			setProduct(safeProduct);
+			setForm(initForm(safeProduct));
+			setOpen(true);
+		},
+		close: () => setOpen(false),
+	}));
+
+	// Form state
+	const initForm = (product?: Product) => ({
+		size: product?.options?.size?.[0] || "",
+		sugar: product?.options?.sugar?.[0] || "",
+		ice: product?.options?.ice?.[0] || "",
+		quantity: props.quantity || 1,
+		note: props.note || "",
+	});
+	const [form, setForm] = useState(() => initForm());
+
+	if (!open || !product) return null;
+
+
+	const handleAddToCart = () => {
+		insertCartItem.mutate({
+			productId: product.id,
+			quantity: form.quantity,
+			options: {
+				size: form.size,
+				sugar: form.sugar,
+				ice: form.ice,
+			},
+		}, {
+			onSuccess: () => {
+				console.log("Add to cart:", insertCartItem.data);
+				navigate("/cart");
+			},
+			onError: () => {
+				console.log("From:", form)
+			},
+		});
+	}
+
+	const handleEditSubmit = () => {
+		// Handle edit mode submission
+		console.log("Edit submit:", form);
+	};
+
+	return (
+		<section className={styles.overlay} onClick={() => setOpen(false)}>
+			<div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+				{/* Modal content goes here */}
+				<div className={styles.imageArea}>
+					<FadeInImage fullSrc={product.imageUrl} alt={product.name} />
+				</div>
+
+				<div className={styles.content}>
+					<h1 className={styles.name}>{product.name}</h1>
+					<p className={styles.price}>NT ${product.price}</p>
+					<p className={styles.description}>{product.description}</p>
+					{/* Additional form fields and buttons can be added here */}
+
+					<div className={styles.dropdown}>
+						<label htmlFor="size">大小</label>
+						<select id="size" value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value })}>
+							{product.options?.size?.map((option) => (
+								<option key={option} value={option}>
+									{option}
+								</option>
+							))}
+						</select>
+					</div>
+					<div className={styles.dropdown}>
+						<label htmlFor="sugar">糖度</label>
+						<select id="sugar" value={form.sugar} onChange={(e) => setForm({ ...form, sugar: e.target.value })}>
+							{product.options?.sugar?.map((option) => (
+								<option key={option} value={option}>
+									{option}
+								</option>
+							))}
+						</select>
+					</div>
+					<div className={styles.dropdown}>
+						<label htmlFor="ice">冰度</label>
+						<select id="ice" value={form.ice} onChange={(e) => setForm({ ...form, ice: e.target.value })}>
+							{product.options?.ice?.map((option) => (
+								<option key={option} value={option}>
+									{option}
+								</option>
+							))}
+						</select>
+					</div>
+
+					<QuantityInput
+						value={form.quantity}
+						onChange={(value) => setForm({ ...form, quantity: value })}
+					/>
+
+					{props.isEditMode ? (
+						<button className={styles.submit} onClick={handleEditSubmit}>修改完成</button>
+					) : (
+						<button className={styles.submit} onClick={handleAddToCart} disabled={insertCartItem.isPending}>加入購物車</button>
+					)}
+				</div>
+			</div>
+		</section>
+	)
+});
+
+// export default function ProductModal({
+// 	isEditMode = false,
+// 	product,
+// 	quantity = 1,
+// 	note = "",
+// }: ProductModalProps) {
+// 	const navigate = useNavigate();
+
+// 	// 狀態管理
+// 	const [form, setForm] = useState({
+// 		size: product.options?.size?.[0] || "",
+// 		sugar: product.options?.sugar?.[0] || "",
+// 		ice: product.options?.ice?.[0] || "",
+// 		quantity: quantity,
+// 		note: note,
+// 	});
+
+// 	const handleSubmit = () => {
+// 		if (!isEditMode) {
+// 			navigate("/cart");
+// 			return;
+// 		}
+// 	};
+
+// 	// fake data for options
+// 	if (!product.options) {
+// 		product.options = {
+// 			size: ["小", "中", "大"],
+// 			sugar: ["無糖", "少糖", "正常糖"],
+// 			ice: ["去冰", "微冰", "少冰", "正常冰"],
+// 		};
+// 	}
+
+// 	return (
+// 		<section className={styles.modal}>
+// 			<div className={styles.imageArea}>
+// 				<FadeInImage fullSrc={product.imageUrl} alt={product.name} />
+// 			</div>
+
+// 			<div className={styles.content}>
+// 				<h1 className={styles.name}>{product.name}</h1>
+// 				<p className={styles.price}>NT ${product.price}</p>
+// 				<p className={styles.description}>{product.description}</p>
+
+// 				<div className={styles.dropdown}>
+// 					<label htmlFor="size">大小</label>
+// 					<select
+// 						id="size"
+// 						value={form.size}
+// 						onChange={(e) => setForm({ ...form, size: e.target.value })}
+// 					>
+// 						{product.options?.size?.map((sizeOption) => (
+// 							<option key={sizeOption} value={sizeOption}>
+// 								{sizeOption}
+// 							</option>
+// 						))}
+// 					</select>
+// 				</div>
+// 				<div className={styles.dropdown}>
+// 					<label htmlFor="ice">冰度</label>
+// 					<select
+// 						id="ice"
+// 						value={form.ice}
+// 						onChange={(e) => setForm({ ...form, ice: e.target.value })}
+// 					>
+// 						{product.options?.ice?.map((iceOption) => (
+// 							<option key={iceOption} value={iceOption}>
+// 								{iceOption}
+// 							</option>
+// 						))}
+// 					</select>
+// 				</div>
+// 				<div className={styles.dropdown}>
+// 					<label htmlFor="sugar">糖度</label>
+// 					<select
+// 						id="sugar"
+// 						value={form.sugar}
+// 						onChange={(e) => setForm({ ...form, sugar: e.target.value })}
+// 					>
+// 						{product.options?.sugar?.map((sugarOption) => (
+// 							<option key={sugarOption} value={sugarOption}>
+// 								{sugarOption}
+// 							</option>
+// 						))}
+// 					</select>
+// 				</div>
+
+// 				<QuantityInput
+// 					value={form.quantity}
+// 					onChange={(value) => setForm({ ...form, quantity: value })}
+// 				/>
+
+// 				<button className={styles.submitButton} onClick={handleSubmit}>
+// 					{isEditMode ? "修改完成" : "加入購物車"}
+// 				</button>
+
+// 				{/* --- 客製化選項區 --- */}
+// 				<div className={styles.options}>
+// 					{/* <label>
+// 						備註：
+// 						<textarea
+// 							value={note}
+// 							onChange={(e) => setNote(e.target.value)}
+// 							placeholder="例如：不要吸管、去冰少糖..."
+// 							className={styles.noteArea}
+// 						/>
+// 					</label> */}
+// 				</div>
+// 			</div>
+// 		</section>
+// 	);
+// }

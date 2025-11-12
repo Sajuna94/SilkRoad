@@ -1,7 +1,13 @@
 import axios from "axios";
 
+
+const apiBaseURL =
+    window.location.hostname === "localhost"
+        ? "http://localhost:5000/api"      // 本地開發
+        : "https://my-backend.com/api";    // 部署後端
+
 export const api = axios.create({
-    baseURL: "/api",
+    baseURL: apiBaseURL,
     timeout: 10000,
 });
 
