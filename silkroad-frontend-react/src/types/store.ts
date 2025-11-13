@@ -5,9 +5,9 @@ export interface Product {
   price: number;
   description: string;
   options: {
-    size?: string[];
-    sugar?: string[];
-    ice?: string[];
+    size: string[];
+    sugar: string[];
+    ice: string[];
   };
   imageUrl: string;
   isListed: boolean;

@@ -9,7 +9,7 @@
         "editor.detectIndentation": false,
         "editor.insertSpaces": false
 	},
-    "[css]": {
+    "[css][scss]": {
         "editor.tabSize": 2,
         "editor.detectIndentation": false,
         "editor.insertSpaces": false

@@ -5,8 +5,6 @@
 	overflow: hidden;
 	cursor: pointer;
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
-	display: flex;
-	flex-direction: column;
 }
 
 .card:hover {
@@ -15,8 +13,8 @@
 }
 
 .imageArea {
+	
 	height: 200px;
-	position: relative;
 }
 
 .imageArea div {
@@ -25,7 +23,6 @@
 
 .info {
 	padding: 12px;
-	text-align: center;
 	background-color: var(--color-surface-light);
 }
 

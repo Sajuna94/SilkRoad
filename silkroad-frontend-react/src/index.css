@@ -36,6 +36,7 @@ a {
 	font-weight: 600;
 	color: #a98;
 	text-decoration: inherit;
+	cursor: pointer;
 }
 
 a:hover {
@@ -98,9 +99,7 @@ button:hover {
 	border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-}
-
 ::-webkit-scrollbar-track {
 	background: transparent;
 }
+

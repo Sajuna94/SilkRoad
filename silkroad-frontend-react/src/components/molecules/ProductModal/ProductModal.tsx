@@ -96,36 +96,29 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>((prop
 					<p className={styles.description}>{product.description}</p>
 					{/* Additional form fields and buttons can be added here */}
 
-					<div className={styles.dropdown}>
-						<label htmlFor="size">大小</label>
-						<select id="size" value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value })}>
-							{product.options?.size?.map((option) => (
-								<option key={option} value={option}>
-									{option}
-								</option>
-							))}
-						</select>
-					</div>
-					<div className={styles.dropdown}>
-						<label htmlFor="sugar">糖度</label>
-						<select id="sugar" value={form.sugar} onChange={(e) => setForm({ ...form, sugar: e.target.value })}>
-							{product.options?.sugar?.map((option) => (
-								<option key={option} value={option}>
-									{option}
-								</option>
-							))}
-						</select>
-					</div>
-					<div className={styles.dropdown}>
-						<label htmlFor="ice">冰度</label>
-						<select id="ice" value={form.ice} onChange={(e) => setForm({ ...form, ice: e.target.value })}>
-							{product.options?.ice?.map((option) => (
-								<option key={option} value={option}>
-									{option}
-								</option>
-							))}
-						</select>
-					</div>
+					<OptionDropdown
+						id="size"
+						label="大小"
+						value={form.size}
+						options={product.options?.size ?? []}
+						onChange={(val) => setForm({ ...form, size: val })}
+					/>
+
+					<OptionDropdown
+						id="sugar"
+						label="糖度"
+						value={form.sugar}
+						options={product.options?.sugar ?? []}
+						onChange={(val) => setForm({ ...form, sugar: val })}
+					/>
+
+					<OptionDropdown
+						id="ice"
+						label="冰度"
+						value={form.ice}
+						options={product.options?.ice ?? []}
+						onChange={(val) => setForm({ ...form, ice: val })}
+					/>
 
 					<QuantityInput
 						value={form.quantity}
@@ -142,6 +135,30 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>((prop
 		</section>
 	)
 });
+
+interface OptionDropdownProps {
+	id: string;
+	label: string;
+	value: string;
+	options: string[];
+	onChange: (val: string) => void;
+}
+
+function OptionDropdown({ id, label, value, options, onChange }: OptionDropdownProps) {
+	return (
+		<div className={styles.dropdown}>
+			<label htmlFor={id}>{label}</label>
+			<select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
+				{options.map((option) => (
+					<option key={option} value={option}>
+						{option}
+					</option>
+				))}
+			</select>
+		</div>
+	);
+}
+
 
 // export default function ProductModal({
 // 	isEditMode = false,

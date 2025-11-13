@@ -20,10 +20,15 @@
 
 .modal {
 	display: flex;
-	max-width: 980px;
+	max-width: 780px;
+	width: 100%;
 	height: 560px;
 	border-radius: 14px;
 	overflow: hidden;
+}
+
+.imageArea {
+	flex: 1 1 0%;
 }
 
 .content {

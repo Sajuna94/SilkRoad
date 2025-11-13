@@ -1,6 +1,6 @@
 .page {
-	width: 100%;
-	overflow: hidden;
+	flex: 1;
+	display: flex;
 }
 
 .background {
@@ -23,8 +23,5 @@
 }
 
 .centered {
-	position: relative;
-	z-index: 1;
-	width: 100%;
-	margin-top: 5rem;
+	margin: auto;
 }
