@@ -1,6 +1,6 @@
 import { addOrder } from "@/api/order";
 import type { InsertOrderInput, Order } from "@/types/order";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
 export const useOrder = () => {
