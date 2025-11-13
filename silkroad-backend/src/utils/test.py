@@ -39,7 +39,7 @@ def test_insert():
 
 @test_routes.route("/Update")
 def test_update():
-    usr = User.query.get(1)
+    usr = User.query.filter_by(password="12434544").first()
     if not usr: 
         return jsonify({"error": "user.1 not found"}), 404
     usr.name = "Gay"
@@ -51,7 +51,7 @@ def test_update():
 
 @test_routes.route("/Delete")
 def test_delete():
-    usr = User.query.filter_by(id=1).first()
+    usr = User.query.filter_by(password="12434544").first()
     if not usr: 
         return jsonify({"error": "user.1 not found"}), 404
     try:
@@ -63,7 +63,7 @@ def test_delete():
     
 @test_routes.route("/Select")
 def test_select():
-    usr = User.query.filter_by(id=1).first()
+    usr = User.query.filter_by(password="12434544").first()
     if usr:
         return jsonify({
             "id": usr.id,
@@ -74,11 +74,6 @@ def test_select():
         })
     return jsonify({"error": "user.1 not found"}), 404
 
-'''
-NOTE: 這段code的依賴本身沒有寫到pyproject.toml裡面
-      如果讓它運行會導致module not found error
-      所以先把它註解起來
-'''
 # for cloudinary upload signature generation
 import cloudinary
 import cloudinary.utils
