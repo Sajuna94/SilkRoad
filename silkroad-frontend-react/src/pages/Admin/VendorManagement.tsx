@@ -1,7 +1,7 @@
 export default function VendorManagement() {
   const vendors = [
-    { id: 1, name: "Matcha Haven", status: "Active", drinks: 24 },
-    { id: 2, name: "CoffeeCloud", status: "Suspended", drinks: 12 },
+    { id: 1, name: "honeyTea", status: "Active", drinks: 24 },
+    { id: 2, name: "cauliflowerSmoothie", status: "Suspended", drinks: 12 },
   ];
 
   return (
