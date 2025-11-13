@@ -13,7 +13,7 @@ export const useOrder = () => {
 }
 
 export const useInsertOrder = () => {
-    const queryClient = useQueryClient();
+    // const queryClient = useQueryClient();
 
     return useMutation<Order, AxiosError, InsertOrderInput>({
         mutationFn: addOrder,
