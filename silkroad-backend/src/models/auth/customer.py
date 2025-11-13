@@ -10,7 +10,7 @@ class Customer(User):
     membership_level  = db.Column(db.Integer, nullable=False, server_default=db.text("0"))
     is_active         = db.Column(db.Boolean, nullable=False, server_default=db.text("true"))
     stored_balance    = db.Column(db.Integer, nullable=False, server_default=db.text("0"))
-    address           = db.Column(db.String(225), nullable=False)
+    address           = db.Column(db.String(255), nullable=False)
 
     def __repr__(self):
         return f"<Customer {self.name}>"

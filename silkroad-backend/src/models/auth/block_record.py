@@ -9,5 +9,5 @@ class Block_Record(db.Model):
     user_id     = db.Column(db.Integer, db.ForeignKey("auth.users.id"), nullable=False)
     reason      = db.Column(db.Text, nullable=False)
     created_at  = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
-
-    admin = db.relationship("Admin", backref="block_records", foreign_keys=[admin_id])
+    
+    # admin = db.relationship("Admin", backref="block_records", foreign_keys=[admin_id])

@@ -14,6 +14,9 @@ DROP TABLE IF EXISTS `order`.`discount_policies`;
 -- store schema
 DROP TABLE IF EXISTS `store`.`reviews`;
 DROP TABLE IF EXISTS `store`.`products`;
+DROP TABLE IF EXISTS `store`.`sugar_options`;
+DROP TABLE IF EXISTS `store`.`ice_options`;
+DROP TABLE IF EXISTS `store`.`sizes_options`;
 
 -- auth schema
 DROP TABLE IF EXISTS `auth`.`customers`;
@@ -138,6 +141,21 @@ CREATE TABLE `store`.`products` (
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
 
+CREATE TABLE `store`.`sugar_options` (
+  `product_id` int PRIMARY KEY,
+  `option` text NOT NULL COMMENT '糖度選項，使用逗號分隔 eg. 70%, 50%, sgrfree'
+);
+
+CREATE TABLE `store`.`ice_options` (
+  `product_id` int PRIMARY KEY,
+  `option` text NOT NULL COMMENT '冰量選項，使用逗號分隔 eg. 70%, 50%, 0%'
+);
+
+CREATE TABLE `store`.`sizes_options` (
+  `product_id` int PRIMARY KEY,
+  `option` text NOT NULL COMMENT '大小選項，使用逗號分隔 eg. L, M, S'
+);
+
 CREATE TABLE `store`.`reviews` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `customer_id` int NOT NULL,
@@ -168,6 +186,12 @@ ALTER TABLE `store`.`products` ADD FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`
 ALTER TABLE `store`.`reviews` ADD FOREIGN KEY (`customer_id`) REFERENCES `auth`.`customers` (`user_id`);
 
 ALTER TABLE `store`.`reviews` ADD FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`);
+
+ALTER TABLE `store` . `sugar_options` ADD FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`);
+
+ALTER TABLE `store` . `ice_options` ADD FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`);
+
+ALTER TABLE `store` . `sizes_options` ADD FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`);
 
 ALTER TABLE `order`.`discount_policies` ADD FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`);
 
