@@ -44,8 +44,6 @@ function CartList() {
 	if (items.length === 0)
 		return <p className="cart__empty">購物車是空的，快去逛逛吧！</p>;
 
-	const url = "https://png.pngtree.com/thumb_back/fw800/background/20241025/pngtree-green-smoothie-with-broccoli-image_16378995.jpg";
-
 	return (
 		<>
 			<ul className={styles['list']}>
@@ -53,8 +51,7 @@ function CartList() {
 					return (
 						<li key={index} className={styles['item']} onClick={() => modalRef.current?.open(item.product)}>
 							<div className={styles['area']}>
-								{/* TODO: fullSrc */}
-								<FadeInImage fullSrc={url} />
+								<FadeInImage fullSrc={item.product.url} />
 							</div>
 							<div className={styles['options']}>
 								<h3>{item.product.name}</h3>
@@ -78,7 +75,7 @@ function CartList() {
 }
 
 function Sidebar() {
-	const baseTotal = items.reduce((acc, t) => acc + t.product.price * t.product.quantity, 0);
+	const baseTotal = items.reduce((acc, t) => acc + t.product.price * t.quantity, 0);
 
 	// const [discount, setDiscount] = useState(0);
 	const [code, setCode] = useState('');

@@ -4,15 +4,17 @@ import AboutPage from "@/pages/AboutPage";
 import LoginPage from "@/pages/Auth/LoginPage";
 import RegisterPage from "@/pages/Auth/RegisterPage";
 import CartPage from "@/pages/CartPage";
+import VendorProductList from "@/pages/Vendor/VendorProductList";
 
 export default function Router() {
-  return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/cart" element={<CartPage />} />
-    </Routes>
-  );
+	return (
+		<Routes>
+			<Route path="/" element={<HomePage />} />
+			<Route path="/about" element={<AboutPage />} />
+			<Route path="/login" element={<LoginPage />} />
+			<Route path="/register" element={<RegisterPage />} />
+			<Route path="/cart" element={<CartPage />} />
+			<Route path="/vendor" element={<VendorProductList />} />
+		</Routes>
+	);
 }

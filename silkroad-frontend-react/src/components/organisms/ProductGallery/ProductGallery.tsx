@@ -28,7 +28,7 @@ export default function ProductGallery({
 								key={index}
 								name={product.name}
 								price={product.price}
-								img={'https://png.pngtree.com/thumb_back/fw800/background/20241025/pngtree-green-smoothie-with-broccoli-image_16378995.jpg'}
+								img={product.url}
 								onClick={() => modalRef.current?.open(product)}
 							/>
 						)}

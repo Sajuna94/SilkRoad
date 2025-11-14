@@ -14,33 +14,39 @@
 	backdrop-filter: blur(8px);
 	background: rgba(0, 0, 0, 0.5);
 	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 
 .modal {
 	display: flex;
 	max-width: 780px;
-	width: 100%;
-	height: 560px;
+	height: 500px;
 	border-radius: 14px;
 	overflow: hidden;
+	margin: auto;
 }
 
-.imageArea {
-	flex: 1 1 0%;
+.area {
+	height: 100%;
+}
+
+.area img {
+	display: block;
+	max-width: 100%;
+	width: auto;
+	height: 100%;
+	object-fit: cover;
 }
 
 .content {
-	color: var(--color-modal-text);
-	min-width: 130px;
-	width: 280px;
-	background-color: var(--color-modal-content-background);
-	padding: 24px;
-	gap: 12px;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+	min-width: 200px;
+	max-width: 220px;
+	padding: 24px;
+	gap: 12px;
+	background-color: var(--color-modal-content-background);
+	color: var(--color-modal-text);
 }
 
 .content>h1,

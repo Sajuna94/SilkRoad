@@ -1,5 +1,5 @@
 {
-    "[typescriptreact]": {
+    "[typescriptreact][typescript]": {
         "editor.tabSize": 4,
         "editor.detectIndentation": false,
         "editor.insertSpaces": false
@@ -8,7 +8,7 @@
         "editor.tabSize": 4,
         "editor.detectIndentation": false,
         "editor.insertSpaces": false
-	},
+    },
     "[css][scss]": {
         "editor.tabSize": 2,
         "editor.detectIndentation": false,

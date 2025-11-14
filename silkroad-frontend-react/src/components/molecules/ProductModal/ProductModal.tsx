@@ -1,5 +1,4 @@
 import styles from "./ProductModal.module.css";
-import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
 import { useNavigate } from "react-router-dom";
 import { forwardRef, useImperativeHandle, useState } from "react";
 import type { Product } from "@/types/store";
@@ -28,17 +27,8 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>((prop
 	// Expose open and close methods via ref
 	useImperativeHandle(ref, () => ({
 		open: (product: Product) => {
-			const safeProduct: Product = {
-				...product,
-				imageUrl: "https://png.pngtree.com/thumb_back/fw800/background/20241025/pngtree-green-smoothie-with-broccoli-image_16378995.jpg",
-				options: product.options || {
-					size: ["小", "中", "大"],
-					sugar: ["無糖", "少糖", "正常糖"],
-					ice: ["去冰", "微冰", "少冰", "正常冰"],
-				},
-			};
-			setProduct(safeProduct);
-			setForm(initForm(safeProduct));
+			setProduct(product);
+			setForm(initForm(product));
 			setOpen(true);
 		},
 		close: () => setOpen(false),
@@ -86,8 +76,8 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>((prop
 		<section className={styles.overlay} onClick={() => setOpen(false)}>
 			<div className={styles.modal} onClick={(e) => e.stopPropagation()}>
 				{/* Modal content goes here */}
-				<div className={styles.imageArea}>
-					<FadeInImage fullSrc={product.imageUrl} alt={product.name} />
+				<div className={styles.area}>
+					<img src={product.url} />
 				</div>
 
 				<div className={styles.content}>
