@@ -23,18 +23,6 @@ const dummyUrls = [
 	"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStMK9coo4PD6tr8ghbaKH5kafr_nocw_nGmh9C0qkrA83OPAeguHvrhjRVtD0pza59ahk&usqp=CAU",
 	"https://www.divvino.com.br/blog/wp-content/uploads/2023/09/drinks-com-prosecco-imagem-destacada.jpg",
 	"https://eventbotler.com/images/cocktails/shirley-temple-84bDzLRS.webp",
-	// 成都
-	"https://megapx-assets.dcard.tw/images/3a4e9ee8-816b-416b-b14c-a514f3054005/1280.jpeg",
-	// class
-	"https://media.discordapp.net/attachments/1152168310973149204/1308266078367125564/20241119_110052.jpg?ex=6917447b&is=6915f2fb&hm=2376fa24f7e09ae58f087348b428594735224fea2da3c9a47c6affc103d02e84&=&format=webp&width=899&height=899",
-	"https://cdn.discordapp.com/attachments/1146340329457455144/1374947850114568202/IMG_7185.jpg?ex=691746b8&is=6915f538&hm=4a1e2fddf700c96930db572569933341a710c96789ba3b927bacf9bc047231a9",
-	"https://cdn.discordapp.com/attachments/1146340329457455144/1365291403202003036/20250425_193730.jpg?ex=6917bdf4&is=69166c74&hm=60535e2d69725e81b4c322fab1488f87cfb43ab03e20f93054ba225bccdad4e3",
-	"https://cdn.discordapp.com/attachments/1146340329457455144/1365274786577780757/ponhouHandsomeFace.png?ex=6917ae7a&is=69165cfa&hm=95241c8ceda12338adc9a7ecb9e6c075f6d4d3434bdb702f7f4605dbe3768ef1",
-	"https://cdn.discordapp.com/attachments/1146340329457455144/1365274384259874826/1743046627786.jpg?ex=6917ae1a&is=69165c9a&hm=4cb4649d7048a2ace69f31e6c34970d73e6ea59a9a150dd654a1e4ae777fb353",
-	"https://cdn.discordapp.com/attachments/1146340329457455144/1365273241752436816/20250417_1152380.jpg?ex=6917ad0a&is=69165b8a&hm=37a97f9de00ce687e83839a77bf7304a2b7a3c39d9960abb6282cb90a94f5d85",
-	"https://cdn.discordapp.com/attachments/1146340329457455144/1365272944095268895/IMG20250219184910.jpg?ex=6917acc3&is=69165b43&hm=0d0bec1087c5eece6e6dab63d729c77f62cd8d6d4ad90853629f98a01c9362df",
-	"https://cdn.discordapp.com/attachments/1146340329457455144/1365272663978934313/20231026_114833.jpg?ex=6917ac80&is=69165b00&hm=72e4a737808d35fc06d05b0032af677f012d9d3b1dddfa3fa49c808de3d9b5d1",
-
 ]
 const dummyOptions = {
 	size: ["大", "中", "小", "超大", "家庭號", "自備", "台南水庫"],
@@ -76,9 +64,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["正常冰"], sugar: ["全糖"] },
 		url: "watermelonJuice",
 		isListed: true,
-
-
-
 	},
 	{
 		id: 4,
@@ -89,9 +74,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["正常冰"], sugar: ["全糖"] },
 		url: "orangeJuice",
 		isListed: true,
-
-
-
 	},
 	{
 		id: 5,
@@ -102,9 +84,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["正常冰"], sugar: ["全糖"] },
 		url: "mintMojitoCocktail",
 		isListed: true,
-
-
-
 	},
 	{
 		id: 6,
@@ -115,9 +94,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["正常冰"], sugar: ["全糖"] },
 		url: "threeJuice",
 		isListed: true,
-
-
-
 	},
 	{
 		id: 7,
@@ -128,9 +104,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["正常冰"], sugar: ["全糖"] },
 		url: "threeJuice2",
 		isListed: true,
-
-
-
 	},
 	{
 		id: 8,
@@ -141,9 +114,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["正常冰"], sugar: ["全糖"] },
 		url: "redHat",
 		isListed: true,
-
-
-
 	},
 	{
 		id: 9,
@@ -154,9 +124,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["正常冰"], sugar: ["全糖"] },
 		url: "cheer",
 		isListed: true,
-
-
-
 	},
 	{
 		id: 10,
@@ -167,9 +134,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["正常冰"], sugar: ["全糖"] },
 		url: "coffee",
 		isListed: true,
-
-
-
 	},
 	{
 		id: 11,
@@ -180,9 +144,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["去冰"], sugar: ["無糖"] },
 		url: "tea",
 		isListed: true,
-
-
-
 	},
 	{
 		id: 12,
@@ -193,9 +154,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["去冰"], sugar: ["無糖"] },
 		url: "honeyTea",
 		isListed: true,
-
-
-
 	},
 	{
 		id: 13,
@@ -207,9 +165,6 @@ export const baseProducts: Product[] = [
 		options: { size: ["大", "中"], ice: ["正常冰"], sugar: ["全糖"] },
 		url: "greenHat",
 		isListed: true,
-
-
-
 	},
 ];
 
