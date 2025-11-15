@@ -57,8 +57,8 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>((prop
 				ice: form.ice,
 			},
 		}, {
-			onSuccess: () => {
-				console.log("Add to cart:", insertCartItem.data);
+			onSuccess: (data) => {
+				console.log("Add to cart:", data);
 				navigate("/cart");
 			},
 			onError: () => {

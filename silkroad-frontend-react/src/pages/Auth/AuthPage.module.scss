@@ -1,0 +1,56 @@
+.background::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: -1;
+}
+
+.background::after {
+	content: "";
+	position: fixed;
+	inset: 0;
+	background-image: url("https://res.cloudinary.com/dq8jvjcv4/image/upload/v1763180444/stuttgart-bar-guide-die-besten-cocktailbars-der-stadt-2_v7g94h.jpg");
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: top;
+	filter: blur(8px);
+	z-index: -2;
+}
+
+.centered {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.form {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	padding: 2rem;
+	border-radius: 8px;
+	background-color: var(--color-surface-lighter);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	width: 350px;
+	color: #333;
+
+	.title {
+		font-size: 1.5rem;
+		font-weight: bold;
+		text-align: center;
+		color: #333;
+	}
+
+	.button {
+		padding: 0.75rem;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: background-color 0.2s ease;
+
+		:hover {
+			background-color: var(--color-accent-hover);
+		}
+	}
+}

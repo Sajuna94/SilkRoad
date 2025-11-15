@@ -1,9 +1,9 @@
-import LoginForm from "@/components/organisms/LoginForm/LoginForm";
-import styles from "./LoginPage.module.css"
+import styles from "./AuthPage.module.scss"
+import { useState } from "react";
+import LabeledInput from "@/components/molecules/LabeledInput/LabeledInput";
+import { Link } from "react-router-dom";
 
 export default function LoginPage() {
-	// const [isLoading, setIsLoading] = useState(true);
-
 	// // 模擬載入 1 秒後結束
 	// useEffect(() => {
 	// 	const timer = setTimeout(() => {
@@ -26,24 +26,49 @@ export default function LoginPage() {
 	//   fetchData();
 	// }, []);
 
+	const [form, setForm] = useState({
+		email: "", password: ""
+	})
+
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		console.log("Login:", form);
+		// TODO: Add login logic
+	};
 
 	return (
 		<>
-			<div className={styles.page}>
-				<div className={styles.background} />
-				<div className={styles.centered}>
-					<LoginForm />
-				</div>
+			<div className={styles['background']}></div>
+			<div className={styles['centered']}>
+				<form className={styles['form']} onSubmit={handleSubmit}>
+					<h2 className={styles['title']}>登入帳號</h2>
+
+					<LabeledInput
+						label="Email"
+						type="email"
+						value={form.email}
+						onChange={(value) => setForm({ ...form, email: value })}
+						required
+					/>
+
+					<LabeledInput
+						label="Password"
+						type="password"
+						value={form.password}
+						onChange={(value) => setForm({ ...form, password: value })}
+						required
+					/>
+
+					<button type="submit" className={styles['button']}>
+						登入
+					</button>
+
+					<div className={styles['footer']}>
+						尚未註冊?
+						<Link to="/register"> 建立帳號</Link>
+					</div>
+				</form>
 			</div>
-
-
-			{/* {isLoading ? (
-				<>
-					<LoadingSkeleton width="100%" height="200px" />
-				</>
-			) : (
-				<AdminDashboard />
-			)} */}
 		</>
 	);
 }
