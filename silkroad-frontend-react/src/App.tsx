@@ -13,15 +13,15 @@ function App() {
   if (ping.isSuccess) console.log("Backend response:", ping.data);
 
   return (
-    <ToastProvider>
+    <BrowserRouter basename="/SilkRoad">
       {/* <CartProvider> */}
-        <BrowserRouter basename="/SilkRoad">
-          <Header />
-          <Router />
-          <Footer />
-        </BrowserRouter>
+      <Header />
+      <ToastProvider>
+        <Router />
+      </ToastProvider>
+      <Footer />
       {/* </CartProvider> */}
-    </ToastProvider>
+    </BrowserRouter>
   );
 }
 

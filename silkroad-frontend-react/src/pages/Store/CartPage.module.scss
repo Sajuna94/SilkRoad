@@ -1,135 +1,222 @@
 :root {
-	--color-header-title: #333;
-	--color-main-bg: #f0f0f0;
-	// cart item
-	--color-item-hover: #ddd;
-	--color-item-name: #282828;
-	--color-item-options: #000000;
-	--color-item-price: #1d1d1d;
-	--color-item-quantity: #9d2cb4;
+  --color-header-title: #333;
+  --color-main-bg: #fdfdfd;
+  // cart item
+  --color-item-hover: #ddd;
+  --color-item-name: #282828;
+  --color-item-options: #000000;
+  --color-item-price: #1d1d1d;
+  --color-item-quantity: #9d2cb4;
+}
+// $color-item: #f77070;
+$color-item-chose: #70f7da;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 h3 {
-	margin: 0;
+  margin: 0;
 }
 
 .container {
-	display: flex;
-	flex-direction: column;
-	max-width: 980px;
-	width: 100%;
-	height: 60vh;
-	margin: auto;
-	padding: 30px;
-	background-color: var(--color-main-bg);
-	border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  max-width: 980px;
+  width: 100%;
+  height: 60vh;
+  margin: auto;
+  padding: 30px;
+  background-color: var(--color-main-bg);
+  border-radius: 1rem;
 
-	header {
-		color: var(--color-header-title);
-		font-size: 1.5rem;
-		font-weight: bold;
-	}
+  header {
+    color: var(--color-header-title);
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
 
-	main {
-		display: flex;
-		gap: 20px;
-		min-height: 0;
-	}
+  main {
+    display: flex;
+    gap: 20px;
+    min-height: 0;
+  }
 
-	footer {
-		display: flex;
-		padding: 10px;
-		gap: 10px
-	}
+  footer {
+    display: flex;
+    padding-top: 10px;
+    gap: 10px;
+    justify-content: space-between;
+
+    .cartOperation {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      a {
+        color: #333;
+      }
+
+      span {
+        color: #a98;
+      }
+    }
+
+    .totalArea {
+      gap: 10px;
+      display: flex;
+      align-items: center;
+      .total {
+        &::before {
+          content: "總共 ";
+        }
+        &::after {
+          content: " 元";
+        }
+      }
+    }
+  }
 }
 
 .list {
-	flex: 2;
-	list-style-type: none;
-	min-width: 300px;
-	padding: 0;
-	margin: 0;
-	overflow-y: auto;
+  flex: 2;
+  list-style-type: none;
+  min-width: 300px;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
 
-	.item {
-		display: flex;
-		padding: 6px;
-		gap: 15px;
-		border-bottom: 1px solid var(--color-item-hover);
-		border-radius: 0.5rem;
-		transition: 0.3s;
-		cursor: pointer;
+  .item {
+    display: flex;
+    padding: 6px;
+    gap: 15px;
+    border-bottom: 1px solid var(--color-item-hover);
+    border-radius: 0.5rem;
+    transition: 0.3s;
+    cursor: pointer;
 
-		.area {
-			border-radius: 8px;
-			overflow: hidden;
-			width: 100px;
-		}
+    .area {
+      border-radius: 8px;
+      overflow: hidden;
+      width: 100px;
+    }
 
-		.options {
-			flex: 1;
+    .options {
+      flex: 1;
 
-			h3 {
-				color: var(--color-item-name);
-			}
+      h3 {
+        color: var(--color-item-name);
+      }
 
-			div {
-				color: var(--color-item-options);
-			}
-		}
+      div {
+        color: var(--color-item-options);
+      }
+    }
 
-		.price {
-			h3 {
-				color: var(--color-item-price);
-			}
+    .price {
+      text-align: right;
+      h3 {
+        color: var(--color-item-price);
+      }
 
-			div {
-				color: var(--color-item-quantity);
-			}
-		}
-	}
+      .quantity {
+        color: var(--color-item-quantity);
+        &::before {
+          content: "x";
+          // margin-right: 4px;
+        }
+      }
+    }
+  }
 
-	.item:hover {
-		background-color: var(--color-item-hover);
-	}
+  .item:hover {
+    background-color: var(--color-item-hover);
+  }
 }
 
 .sidebar {
-	div {
-		background-color: rgb(31, 97, 75);
-		border: 1px solid aqua;
-	}
+  div {
+    // background-color: rgb(137, 226, 196);
+    // border: 1px solid aqua;
+    font-weight: bold;
+  }
 
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
-	// .code {}
+  .code {
+    display: flex;
+    justify-content: space-between;
+    border: #333 1px solid;
+    padding: 10px;
+    border-radius: 8px;
+    input {
+      border: #333 1px solid;
+    }
+  }
 
-	.list {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
+  .list {
+    border: #333 1px solid;
+    padding: 10px;
+    border-radius: 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 
-		ul {
-			flex: 1;
-			list-style-type: none;
-			margin: 0;
-			padding: 0;
-			overflow-y: auto;
+    hr {
+      width: 100%;
+    }
 
-			li {
-				height: 100px;
-			}
-		}
-	}
+    ul {
+      flex: 1;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
 
-	// .note {}
+      li {
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid var(--color-item-hover);
+        transition: 0.3s;
 
-	// .total {}
+        .discount {
+          &::before {
+            content: "折扣 ";
+          }
+          &::after {
+            content: " 元";
+          }
+        }
+      }
+
+      li:not(.selected):hover {
+        background-color: var(--color-item-hover);
+      }
+
+      .selected {
+        background-color: $color-item-chose;
+      }
+    }
+  }
+
+  .note {
+    textarea {
+      width: 100%;
+      height: 80px;
+      padding: 8px;
+      box-sizing: border-box;
+      resize: none;
+      border-radius: 8px;
+      border: 1px solid #333;
+    }
+  }
 }
-
 
 /* .container {
 	background-color: #f0f0f0;
@@ -223,26 +310,25 @@ h3 {
 }
 
 .footer {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .footer > .total {
-	color: red;
-	font-weight: bold;
-	font-size: 1.3rem;
+  color: red;
+  font-weight: bold;
+  font-size: 1.3rem;
 }
 
 .footer > .buttons {
-	display: flex;
-	gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .footer > .buttons > button {
-	padding: 10px;
+  padding: 10px;
 }  */
-
 
 /* .cart-container {
   max-width: 980px;
@@ -327,8 +413,6 @@ h3 {
 .cart-item-price {
   color: #444;
 } */
-
-
 
 /* 
 .cart-footer {
