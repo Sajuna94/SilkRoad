@@ -1,0 +1,164 @@
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animateFadeIn {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+.animateSlideUp {
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+.delay75 {
+  animation-delay: 0.1s;
+}
+.delay150 {
+  animation-delay: 0.2s;
+}
+.delay300 {
+  animation-delay: 0.35s;
+}
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, white, #f9fafb);
+  color: #333;
+}
+
+.banner {
+  position: relative;
+  width: 100%;
+  height: 16rem;
+  overflow: hidden;
+
+  @media (min-width: 768px) {
+    height: 20rem;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.9);
+    transform: scale(1.05);
+  }
+}
+
+.title {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  h1 {
+    color: white;
+    font-weight: 700;
+    font-size: 2.2rem;
+
+    @media (min-width: 768px) {
+      font-size: 3rem;
+    }
+
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+}
+
+.wrapper {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+
+  @media (min-width: 768px) {
+    font-size: 2rem;
+  }
+}
+
+.paragraph {
+  color: #4b5563;
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+.twoColumn {
+  display: grid;
+  gap: 2.5rem;
+  margin-bottom: 5rem;
+  align-items: center;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1.2fr 1fr;
+  }
+
+  img {
+    width: 100%;
+    height: 450px;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    object-fit: cover;
+  }
+}
+
+.features {
+  display: grid;
+  gap: 2rem;
+  margin-bottom: 6rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.featureBox {
+  background: white;
+  padding: 1.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  h3 {
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: #1f2937;
+  }
+
+  p {
+    color: #6b7280;
+    line-height: 1.6;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  }
+}
