@@ -32,9 +32,10 @@ h3 {
   border-radius: 1rem;
 
   header {
-    color: var(--color-header-title);
-    font-size: 1.5rem;
+    // color: var(--color-header-title);
+    font-size: 1.8rem;
     font-weight: bold;
+    margin-bottom: 10px;
   }
 
   main {
@@ -68,6 +69,7 @@ h3 {
       display: flex;
       align-items: center;
       .total {
+        font-weight: bold;
         &::before {
           content: "總共 ";
         }
@@ -116,6 +118,11 @@ h3 {
 
     .price {
       text-align: right;
+
+      ::before {
+        content: "NT$ ";
+      }
+
       h3 {
         color: var(--color-item-price);
       }
