@@ -13,6 +13,7 @@ export default function Header() {
         <Link to="/orders">Order</Link>
         <Link to="/about">About</Link>
         <Link to="/login">Login</Link>
+		<Link to="/admin">Admin</Link>
       </nav>
     </header>
   );

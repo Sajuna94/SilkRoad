@@ -7,6 +7,7 @@ import {
   RegisterPage,
   OrderHistoryPage,
 } from "@/pages";
+import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import VendorProductList from "@/pages/Vendor/VendorProductList";
 
 export default function Router() {
@@ -24,6 +25,7 @@ export default function Router() {
       <Route path="/orders" element={<OrderHistoryPage></OrderHistoryPage>} />
 
       <Route path="/vendor" element={<VendorProductList />} />
+	  <Route path="/admin" element={<AdminDashboard />} />
     </Routes>
   );
 }
