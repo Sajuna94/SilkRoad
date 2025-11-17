@@ -1,21 +1,31 @@
 import { Routes, Route } from "react-router-dom";
-import { AboutPage, CartPage, HomePage, LoginPage, RegisterPage } from "@/pages";
+import {
+  AboutPage,
+  CartPage,
+  HomePage,
+  LoginPage,
+  RegisterPage,
+  OrderHistoryPage,
+} from "@/pages";
+import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import VendorProductList from "@/pages/Vendor/VendorProductList";
 
 export default function Router() {
-	return (
-		<Routes>
-			<Route path="/" element={<HomePage />} />
-			<Route path="/about" element={<AboutPage />} />
-			
-			<Route>
-				<Route path="/login" element={<LoginPage />} />
-				<Route path="/register" element={<RegisterPage />} />
-			</Route>
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
 
-			<Route path="/cart" element={<CartPage />} />
+      <Route>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+      </Route>
 
-			<Route path="/vendor" element={<VendorProductList />} />
-		</Routes>
-	);
+      <Route path="/cart" element={<CartPage />} />
+      <Route path="/orders" element={<OrderHistoryPage></OrderHistoryPage>} />
+
+      <Route path="/vendor" element={<VendorProductList />} />
+	  <Route path="/admin" element={<AdminDashboard />} />
+    </Routes>
+  );
 }

@@ -29,7 +29,7 @@ export default function CartPage() {
   );
   return (
     <section className={styles["container"]}>
-      <header>購物車</header>
+      <header className={styles["title"]}>購物車</header>
 
       <main>
         <CartList />

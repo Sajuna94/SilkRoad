@@ -11,3 +11,5 @@ export { default as RegisterPage } from "./Auth/RegisterPage";
 // Store
 export { default as CartPage } from "./Store/CartPage";
 
+// Others
+export { default as OrderHistoryPage } from "./OrderHistoryPage";
