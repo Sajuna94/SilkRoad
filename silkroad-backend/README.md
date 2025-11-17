@@ -43,6 +43,7 @@ python3 src/app.py
 ```
 ### You can not run with this version because I just complete modles part :-)
 
+### If you want to test api, you can use postman.
 
 ## structure
 ```bash
