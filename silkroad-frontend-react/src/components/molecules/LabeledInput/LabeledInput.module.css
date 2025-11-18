@@ -49,6 +49,7 @@
 	background: none !important;
 	cursor: pointer;
 	font-size: 1rem;
+	user-select: none;
 }
 
 .toggle img:hover {

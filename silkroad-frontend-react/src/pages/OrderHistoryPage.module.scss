@@ -1,112 +1,116 @@
 :root {
-  --color-item-quantity: #9d2cb4;
+	--color-item-quantity: #9d2cb4;
 }
 
 $color-item-chose: #70f7da;
 
-* {
-  user-select: none;
-}
+// * {
+// 	user-select: none;
+// }
 
 .historySection {
-  padding: 2rem;
-  max-width: 980px;
-  margin: auto;
+	margin-top: 1rem;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	// padding: 2rem;
+	max-width: 980px;
+	margin: auto;
 }
 
 .title {
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin-bottom: 20px;
+	font-size: 1.8rem;
+	font-weight: bold;
+	margin: 0;
+	padding: 20px 0;
 }
 
 /* === 橫向訂單列 === */
 .orderRow {
-  display: flex;
-  gap: 16px;
-  overflow-x: auto;
-  padding-bottom: 16px;
+	display: flex;
+	gap: 16px;
+	overflow-x: auto;
+	padding-bottom: 16px;
 
-  &::-webkit-scrollbar {
-    height: 8px;
-  }
+	&::-webkit-scrollbar {
+		height: 8px;
+	}
 }
 
 .orderCard {
-  min-width: 200px;
-  padding: 16px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  cursor: pointer;
-  background: #fff;
-  transition: 0.3s;
+	min-width: 200px;
+	padding: 16px;
+	border: 1px solid #ccc;
+	border-radius: 10px;
+	cursor: pointer;
+	background: #fff;
+	transition: 0.3s;
 
-  h3 {
-    margin: 0;
-  }
+	h3 {
+		margin: 0;
+	}
 }
 
 /* 被選中的訂單 */
 .active {
-  border: solid 3px $color-item-chose;
+	border: solid 3px $color-item-chose;
 }
 
 .orderTotal {
-  margin-top: 8px;
-  font-weight: bold;
+	margin-top: 8px;
+	font-weight: bold;
 }
 
 /* === 商品列表：縱軸 + 可捲動 === */
 .itemList {
-  list-style-type: none;
-  padding: 0;
-  margin-top: 20px;
+	flex: 1;
+	list-style-type: none;
+	padding: 0;
 
-  /* 讓商品列表有自己的上下捲軸 */
-  max-height: 380px;
-  overflow-y: auto;
+	/* 讓商品列表有自己的上下捲軸 */
+	overflow-y: auto;
 
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
+	&::-webkit-scrollbar {
+		width: 8px;
+	}
 }
 
 .item {
-  display: flex;
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  gap: 15px;
+	display: flex;
+	padding: 10px;
+	border-bottom: 1px solid #ddd;
+	gap: 15px;
 
-  .area {
-    width: 90px;
-    border-radius: 8px;
-    overflow: hidden;
-  }
+	.area {
+		width: 90px;
+		border-radius: 8px;
+		overflow: hidden;
+	}
 
-  .options {
-    flex: 1;
+	.options {
+		flex: 1;
 
-    h3 {
-      margin: 0;
-      font-weight: bold;
-    }
-  }
+		h3 {
+			margin: 0;
+			font-weight: bold;
+		}
+	}
 
-  .price {
-    text-align: right;
+	.price {
+		text-align: right;
 
-    h3 {
-      margin: 0;
-      font-weight: bold;
-    }
+		h3 {
+			margin: 0;
+			font-weight: bold;
+		}
 
-    .quantity {
-      color: var(--color-item-quantity);
-      font-weight: bold;
+		.quantity {
+			color: var(--color-item-quantity);
+			font-weight: bold;
 
-      &::before {
-        content: "x";
-      }
-    }
-  }
+			&::before {
+				content: "x";
+			}
+		}
+	}
 }

@@ -7,6 +7,9 @@ export { default as LoginPage } from "./Auth/LoginPage";
 export { default as RegisterPage } from "./Auth/RegisterPage";
 
 // Vendor
+export { default as VendorPage } from "./Vendor/VendorProductList"
+export { default as VendorDashborad } from "./Vendor/VendorDashboard"
+
 
 // Store
 export { default as CartPage } from "./Store/CartPage";

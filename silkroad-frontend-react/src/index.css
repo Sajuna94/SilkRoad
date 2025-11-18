@@ -10,7 +10,7 @@
 	--color-surface-main: #242424;
 	--color-surface-footer: #1f1f1f; */
 	--color-surface-header: #1f1f1f;
-	--color-surface-main: #242424;
+	--color-surface-main: #f9fafb;
 	--color-surface-footer: #1f1f1f;
 
 	font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -18,7 +18,7 @@
 	font-weight: 400;
 
 	color-scheme: light dark;
-	color: rgba(255, 255, 255, 0.87);
+	/* color: rgba(255, 255, 255, 0.87); */
 	background-color: var(--color-surface-main);
 
 	font-synthesis: none;
@@ -63,6 +63,7 @@ button {
 	font-size: 1em;
 	font-weight: 500;
 	font-family: inherit;
+	color: #fff;
 	background-color: var(--color-accent-primary);
 	cursor: pointer;
 	transition: 0.25s;
@@ -103,3 +104,24 @@ button:hover {
 	background: transparent;
 }
 
+
+
+
+
+:root {
+	color: #213547;
+}
+
+dialog:not([open]) {
+	display: none;
+}
+
+h3 {
+	margin: 0;
+}
+
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
