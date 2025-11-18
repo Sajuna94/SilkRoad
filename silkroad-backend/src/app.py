@@ -33,8 +33,8 @@ init_db(app)
 # 註冊路由
 print("[app] 註冊路由...")
 app.register_blueprint(test_routes, url_prefix='/api/test')
-# app.register_blueprint(user_routes, url_prefix='/api/user')
-# app.register_blueprint(cart_routes, url_prefix='/api/cart')
+app.register_blueprint(user_routes, url_prefix='/api/user')
+app.register_blueprint(cart_routes, url_prefix='/api/cart')
 # app.register_blueprint(shop_routes, url_prefix='/api/shop')
 @app.route("/")
 def index():

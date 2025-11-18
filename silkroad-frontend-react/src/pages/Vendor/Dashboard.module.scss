@@ -1,0 +1,70 @@
+$sidebar-item-hover-color: red;
+
+.container {
+	flex: 1;
+	display: flex;
+
+	.sidebar {
+		background-color: rgb(207, 168, 101);
+
+		display: flex;
+		flex-direction: column;
+
+		h3 {
+			&:hover {
+				cursor: pointer;
+				background-color: red;
+			}
+
+			&.active {
+				background-color: red;
+			}
+		}
+	}
+
+	.content {
+		background-color: #777;
+
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+}
+
+.profile {
+	background-color: #c1c1c1;
+
+}
+
+.order-info {
+	background-color: #c1c1c1;
+
+}
+
+.product-info {
+	background-color: #c1c1c1;
+
+	.list {
+		.item {
+			border-bottom: 1px solid red;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 5px 10px;
+
+			.buttons {
+				display: flex;
+				gap: 10px;
+
+				button {
+					padding: 5px 10px;
+				}
+			}
+		}
+	}
+}
+
+.new-product {
+	background-color: #c1c1c1;
+
+}
