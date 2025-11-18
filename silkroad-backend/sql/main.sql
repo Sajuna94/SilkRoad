@@ -71,11 +71,9 @@ CREATE TABLE `order`.`carts` (
 
 CREATE TABLE `order`.`cart_items` (
   `id` int NOT NULL AUTO_INCREMENT,
-
   `cart_id` int NOT NULL,
   `product_id` int NOT NULL,
   `quantity` int NOT NULL DEFAULT 1,
-
   `selected_sugar` varchar(50) DEFAULT NULL COMMENT '使用者選的甜度, e.g., 50%',
   `selected_ice` varchar(50) DEFAULT NULL COMMENT '使用者選的冰塊, e.g., 0%',
   `selected_size` varchar(20) DEFAULT NULL COMMENT '使用者選的大小, e.g., L',

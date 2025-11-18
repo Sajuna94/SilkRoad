@@ -4,6 +4,6 @@ from flask import Blueprint
 cart_routes = Blueprint("cart", __name__)
 
 
-cart_routes.route('/add', methods=['GET'])(add_to_cart) # 記得改回POST
-cart_routes.route('/remove', methods=['GET'])(remove_from_cart) # 記得改回POST
-cart_routes.route('/view', methods=['GET'])(view_cart)
+cart_routes.route('/add', methods=['POST'])(add_to_cart)
+#cart_routes.route('/remove', methods=['POST'])(remove_from_cart)
+#cart_routes.route('/view', methods=['GET'])(view_cart)
