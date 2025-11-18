@@ -74,6 +74,29 @@ def test_select():
         })
     return jsonify({"error": "user.1 not found"}), 404
 
+@test_routes.route("/Clear")
+def clear_all_users():
+    """
+    刪除 "users" 表中的所有資料。
+    這是一個高效率的刪除，它會直接執行 "DELETE FROM users" 並返回刪除的行數。
+    """
+    try:
+        # .delete() 會執行一個 "DELETE" SQL 語句
+        # 它會返回被刪除的行數
+        num_deleted = db.session.query(User).delete(synchronize_session=False)
+        
+        # 提交事務
+        db.session.commit()
+        
+        return jsonify({
+            "message": "已清除所有使用者", 
+            "cleared_count": num_deleted
+        }), 200
+    except Exception as e:
+        # 發生錯誤時回滾
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 # for cloudinary upload signature generation
 import cloudinary
 import cloudinary.utils

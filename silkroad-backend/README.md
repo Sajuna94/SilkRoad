@@ -18,11 +18,16 @@ cd silkroad-backend
 .\sync.ps1
 ```
 
-## JFIOJEIOFJEOFJEIOFJIOFJ
+## if you dont want a single line xd
 ```bash
-#jfgsfioejf
+# 1. 用 py 重新建立虛擬環境 (它會使用 3.13)
+py -m venv .venv
+
+# 2. 啟動
 .\.venv\Scripts\Activate.ps1
-```
+
+# 3. 安裝套件
+pip install -e .
 
 ## Run backend server
 ### uv 
@@ -38,6 +43,7 @@ python3 src/app.py
 ```
 ### You can not run with this version because I just complete modles part :-)
 
+### If you want to test api, you can use postman.
 
 ## structure
 ```bash
