@@ -143,17 +143,17 @@ CREATE TABLE `store`.`products` (
 
 CREATE TABLE `store`.`sugar_options` (
   `product_id` int PRIMARY KEY,
-  `option` text NOT NULL COMMENT '糖度選項，使用逗號分隔 eg. 70%, 50%, sgrfree'
+  `options` text NOT NULL COMMENT '糖度選項，使用逗號分隔 eg. 70%, 50%, sgrfree'
 );
 
 CREATE TABLE `store`.`ice_options` (
   `product_id` int PRIMARY KEY,
-  `option` text NOT NULL COMMENT '冰量選項，使用逗號分隔 eg. 70%, 50%, 0%'
+  `options` text NOT NULL COMMENT '冰量選項，使用逗號分隔 eg. 70%, 50%, 0%'
 );
 
 CREATE TABLE `store`.`sizes_options` (
   `product_id` int PRIMARY KEY,
-  `option` text NOT NULL COMMENT '大小選項，使用逗號分隔 eg. L, M, S'
+  `options` text NOT NULL COMMENT '大小選項，使用逗號分隔 eg. L, M, S'
 );
 
 CREATE TABLE `store`.`reviews` (
