@@ -150,6 +150,7 @@ CREATE TABLE `store`.`products` (
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
 
+<<<<<<< HEAD
 -- CREATE TABLE `store`.`sugar_options` (  搬到cart_items了
 --   `product_id` int PRIMARY KEY,
 --   `option` text NOT NULL COMMENT '糖度選項，使用逗號分隔 eg. 70%, 50%, sgrfree'
@@ -164,6 +165,22 @@ CREATE TABLE `store`.`products` (
 --   `product_id` int PRIMARY KEY,
 --   `option` text NOT NULL COMMENT '大小選項，使用逗號分隔 eg. L, M, S'
 -- );
+=======
+CREATE TABLE `store`.`sugar_options` (
+  `product_id` int PRIMARY KEY,
+  `options` text NOT NULL COMMENT '糖度選項，使用逗號分隔 eg. 70%, 50%, sgrfree'
+);
+
+CREATE TABLE `store`.`ice_options` (
+  `product_id` int PRIMARY KEY,
+  `options` text NOT NULL COMMENT '冰量選項，使用逗號分隔 eg. 70%, 50%, 0%'
+);
+
+CREATE TABLE `store`.`sizes_options` (
+  `product_id` int PRIMARY KEY,
+  `options` text NOT NULL COMMENT '大小選項，使用逗號分隔 eg. L, M, S'
+);
+>>>>>>> b5575f6d084d304dcca7df9c7be085b8ba5350cd
 
 CREATE TABLE `store`.`reviews` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
