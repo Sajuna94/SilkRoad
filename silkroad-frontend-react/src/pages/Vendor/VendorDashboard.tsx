@@ -104,13 +104,13 @@ function NewProduct() {
         <div style={{ display: "flex" }}>
             <form>
                 <div style={{ display: "flex" }}>
-                    <div>名稱</div>
+                    <label>名稱</label>
                     <input value={form.name}
                         onChange={(e) => setForm({ ...form, name: e.target.value })}
                     />
                 </div>
                 <div style={{ display: "flex" }}>
-                    <div>價格</div>
+                    <label>價格</label>
                     <input type="number" value={form.price}
                         onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
                     />

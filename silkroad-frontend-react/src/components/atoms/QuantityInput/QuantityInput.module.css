@@ -4,10 +4,6 @@
 	--quantity-text-color: #333;
 }
 
-button {
-	background-color: var(--color-accent-primary);
-}
-
 .quantityGroup {
 	display: flex;
 	border-radius: 6px;
@@ -20,6 +16,7 @@ button {
 	flex: 0.05 0 auto;
 	padding: 5px;
 	font-size: 1.2rem;
+	user-select: none;
 }
 
 .quantityGroup input {

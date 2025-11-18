@@ -32,6 +32,7 @@
 	color: #777;
 	pointer-events: none;
 	transition: all 0.2s ease;
+	user-select: none;
 }
 
 .filled .label,
