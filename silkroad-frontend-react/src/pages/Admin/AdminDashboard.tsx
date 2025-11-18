@@ -17,7 +17,7 @@ export default function AdminDashboard() {
     <div className={`${styles.dashboard} flex`}>
       {/* Sidebar */}
       <aside className={`${styles.sidebar} animateSlideUp delay75`}>
-        <h1 className="text-2xl font-bold mb-8 text-gray-800">Admin Dashboard</h1>
+        <h2 className="text-2xl font-bold mb-8 text-gray-800">Admin Dashboard</h2>
         <nav className="space-y-3">
           {tabs.map((tab) => (
             <button
