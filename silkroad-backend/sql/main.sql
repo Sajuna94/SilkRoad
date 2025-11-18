@@ -70,10 +70,19 @@ CREATE TABLE `order`.`carts` (
 );
 
 CREATE TABLE `order`.`cart_items` (
+  `id` int NOT NULL AUTO_INCREMENT,
+
   `cart_id` int NOT NULL,
   `product_id` int NOT NULL,
   `quantity` int NOT NULL DEFAULT 1,
-  PRIMARY KEY (`cart_id`, `product_id`)
+
+  `selected_sugar` varchar(50) DEFAULT NULL COMMENT '使用者選的甜度, e.g., 50%',
+  `selected_ice` varchar(50) DEFAULT NULL COMMENT '使用者選的冰塊, e.g., 0%',
+  `selected_size` varchar(20) DEFAULT NULL COMMENT '使用者選的大小, e.g., L',
+
+  PRIMARY KEY (`id`),
+
+  KEY `idx_cart` (`cart_id`)
 );
 
 CREATE TABLE `auth`.`users` (
@@ -141,20 +150,20 @@ CREATE TABLE `store`.`products` (
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
 
-CREATE TABLE `store`.`sugar_options` (
-  `product_id` int PRIMARY KEY,
-  `option` text NOT NULL COMMENT '糖度選項，使用逗號分隔 eg. 70%, 50%, sgrfree'
-);
+-- CREATE TABLE `store`.`sugar_options` (  搬到cart_items了
+--   `product_id` int PRIMARY KEY,
+--   `option` text NOT NULL COMMENT '糖度選項，使用逗號分隔 eg. 70%, 50%, sgrfree'
+-- );
 
-CREATE TABLE `store`.`ice_options` (
-  `product_id` int PRIMARY KEY,
-  `option` text NOT NULL COMMENT '冰量選項，使用逗號分隔 eg. 70%, 50%, 0%'
-);
+-- CREATE TABLE `store`.`ice_options` (
+--   `product_id` int PRIMARY KEY,
+--   `option` text NOT NULL COMMENT '冰量選項，使用逗號分隔 eg. 70%, 50%, 0%'
+-- );
 
-CREATE TABLE `store`.`sizes_options` (
-  `product_id` int PRIMARY KEY,
-  `option` text NOT NULL COMMENT '大小選項，使用逗號分隔 eg. L, M, S'
-);
+-- CREATE TABLE `store`.`sizes_options` (
+--   `product_id` int PRIMARY KEY,
+--   `option` text NOT NULL COMMENT '大小選項，使用逗號分隔 eg. L, M, S'
+-- );
 
 CREATE TABLE `store`.`reviews` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
