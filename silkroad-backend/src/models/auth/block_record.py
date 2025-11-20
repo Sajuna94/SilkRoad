@@ -1,5 +1,4 @@
 from config.database import db
-
 class Block_Record(db.Model):
     __tablename__ = "block_records"
     __table_args__ = {"schema": "auth"}
@@ -10,4 +9,5 @@ class Block_Record(db.Model):
     reason      = db.Column(db.Text, nullable=False)
     created_at  = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     
-    # admin = db.relationship("Admin", backref="block_records", foreign_keys=[admin_id])
+    def __repr__(self):
+            return f"<Block_Record Admin:{self.admin_id} -> User:{self.user_id}>"

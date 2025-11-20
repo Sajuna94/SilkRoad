@@ -1,5 +1,4 @@
 from config.database import db
-
 class System_Announcement(db.Model):
     __tablename__ = "system_announcements"
     __table_args__ = {"schema": "auth"}
@@ -9,6 +8,6 @@ class System_Announcement(db.Model):
     message     = db.Column(db.Text, nullable=False)
     created_at  = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     
-
     def __repr__(self):
-        return f"<System_Announcement {self.id} - {self.title}>"
+        return f"<System_Announcement {self.id}>"
+    
