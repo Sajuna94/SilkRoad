@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./ProductGallery.module.css";
 import ProductCard from "@/components/molecules/ProductCard/ProductCard";
-import { ModalMode, ProductModal, type ModalRef } from "@/components/molecules/ProductModal/ProductModal";
+import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal/ProductModal";
 import { type Product } from "@/types/store";
 
 interface ProductGalleryProps {
@@ -13,11 +13,19 @@ export default function ProductGallery({
     products,
     pageSize,
 }: ProductGalleryProps) {
-    const modalRef = useRef<ModalRef>(null);
+    const modalRef = useRef<ProductModalRef>(null);
 
     return (
         <section>
-            <ProductModal ref={modalRef} />
+            <ProductModal ref={modalRef}
+                submitText="加入購物車"
+                onSubmit={async () => {
+                    // 模擬等待 2 秒
+                    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+                    console.log(modalRef.current?.getForm());
+                }}
+            />
 
             <div className={styles.container}>
                 <div className={styles.gallery}>
@@ -30,13 +38,12 @@ export default function ProductGallery({
                                 name={product.name}
                                 price={product.price}
                                 img={product.url}
-                                onClick={() => modalRef.current?.open(ModalMode.ADD, product)}
+                                onClick={() => modalRef.current?.open(product)}
                             />
                         )}
                     />
                 </div>
             </div>
-
         </section>
     );
 }

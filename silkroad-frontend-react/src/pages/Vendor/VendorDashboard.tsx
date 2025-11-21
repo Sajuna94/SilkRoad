@@ -1,7 +1,7 @@
 import { products } from "@/types/data/product";
 import styles from "./Dashboard.module.scss"
 import { useRef, useState } from "react";
-import { ModalMode, ProductModal, type ModalRef } from "@/components/molecules/ProductModal/ProductModal";
+import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal/ProductModal";
 import type { Product } from "@/types/store";
 import { useCloudinaryUpload } from "@/hooks/utils/cloudinary";
 import ProductCard from "@/components/molecules/ProductCard/ProductCard";
@@ -68,29 +68,67 @@ function OrderInfo() {
 
 
 function ProductInfo() {
-    const modalRef = useRef<ModalRef>(null);
+    const [productsList, setProducts] = useState<Product[]>(products);
+    const modalRef = useRef<ProductModalRef>(null);
+
+    const toggleListed = (id: number) => {
+        setProducts(prev =>
+            prev.map(item =>
+                item.id === id ? { ...item, isListed: !item.isListed } : item
+            )
+        );
+    };
 
     return (<section className={styles['product-info']}>
         <header></header>
-        <ul className={styles['list']}>
-            {products.map((item, index) => (
-                <li key={index} className={styles['item']}>
-                    <h3>{item.name}</h3>
-                    <div className={styles['buttons']}>
-                        {/* <button onClick={() => modalRef.current?.open(ModalMode.EDIT, item)}>修改</button> */}
-                        <button>上架</button>
-                        <button>下架</button>
-                    </div>
-                </li>
-            ))}
-        </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>商品名稱</th>
+                    <th colSpan={2}>上架狀態</th>
+                    {/* <th colSpan={2}>aaa</th> */}
+                </tr>
+            </thead>
+            <tbody>
+                {productsList.filter(item => item.isListed).map((item, index) => (
+                    <tr key={index}>
+                        <td>{item.name}</td>
+                        {/* <td>{item.isListed ? "上架" : "下架"}</td> */}
+                        <td>
+                            <button className={styles['listed']} onClick={() => toggleListed(item.id)}></button>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+        <table>
+            <thead>
+                <tr>
+                    <th>商品名稱</th>
+                    <th >上下架</th>
+                    {/* <th colSpan={2}>aaa</th> */}
+                </tr>
+            </thead>
+            <tbody>
+                {productsList.filter(item => !item.isListed).map((item, index) => (
+                    <tr key={index}>
+                        <td>{item.name}</td>
+                        {/* <td>{item.isListed ? "上架" : "下架"}</td> */}
+                        <td>
+                            <button className={styles['un-listed']} onClick={() => toggleListed(item.id)}></button>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
         <ProductModal ref={modalRef} />
     </section>)
 }
 
+
 function NewProduct() {
     const product = {} as Product;
-    const modalRef = useRef<ModalRef>(null);
+    const modalRef = useRef<ProductModalRef>(null);
 
     const [form, setForm] = useState({
         name: "", price: 0
@@ -124,7 +162,7 @@ function NewProduct() {
                 name={form.name}
                 price={form.price}
                 img={upload.data?.secure_url || ""}
-                onClick={() => modalRef.current?.open(ModalMode.PREVIEW, {
+                onClick={() => modalRef.current?.open({
                     ...product,
                     name: form.name,
                     price: form.price

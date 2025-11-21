@@ -1,6 +1,6 @@
 // import { useNavigate } from "react-router-dom";
 import styles from "./CartPage.module.scss";
-import { ModalMode, ProductModal, type ModalRef } from "@/components/molecules/ProductModal/ProductModal";
+import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal/ProductModal";
 import { useRef, useState } from "react";
 import { products } from "@/types/data/product";
 import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
@@ -58,20 +58,29 @@ export default function CartPage() {
 }
 
 function CartList() {
-    const modalRef = useRef<ModalRef>(null);
+    const modalRef = useRef<ProductModalRef>(null);
 
     if (items.length === 0)
         return <p className="cart__empty">購物車是空的，快去逛逛吧！</p>;
 
+    const handleEdit = () => {
+
+    }
+
     return (
         <>
+            <ProductModal ref={modalRef}
+                submitText="修改完成"
+                onSubmit={handleEdit}
+            />
+
             <ul className={styles["list"]}>
                 {items.map((item, index) => {
                     return (
                         <li
                             key={index}
                             className={styles["item"]}
-                            onClick={() => modalRef.current?.open(ModalMode.EDIT, item.product)}
+                            onClick={() => modalRef.current?.open(item.product)}
                         >
                             <div className={styles["area"]}>
                                 <FadeInImage fullSrc={item.product.url} />
@@ -92,7 +101,6 @@ function CartList() {
                     );
                 })}
             </ul>
-            <ProductModal ref={modalRef} />
         </>
     );
 }
