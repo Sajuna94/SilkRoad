@@ -4,20 +4,24 @@
     The path is /api/test/...
     =============================================================================
 """
-
+from werkzeug.security import generate_password_hash
 from flask import Blueprint, jsonify
 from models.auth.user import User
+from models.auth.admin import Admin
+from models.auth.vendor import Vendor
+from models.auth.customer import Customer
+from models.auth.vendor_manager import Vendor_Manager
+from models.auth.system_announcement import System_Announcement
+from models.auth.block_record import Block_Record
 from config import db
 
 test_routes = Blueprint("test", __name__)
-
 
 # for frontend testing purpose
 @test_routes.route("/ping", methods=["GET"])
 def ping():
     # Returns "pong" to show the backend is running
     return jsonify({"message": "pong"}), 401
-
 
 # CURD test route
 @test_routes.route("/Insert")
@@ -29,7 +33,6 @@ def test_insert():
             password="12434544",  # 密碼要 hash
             phone_number="0912345678"
         )
-
         # 加入 session
         db.session.add(new_user)  
         db.session.commit()
@@ -81,20 +84,109 @@ def clear_all_users():
     這是一個高效率的刪除，它會直接執行 "DELETE FROM users" 並返回刪除的行數。
     """
     try:
-        # .delete() 會執行一個 "DELETE" SQL 語句
-        # 它會返回被刪除的行數
-        num_deleted = db.session.query(User).delete(synchronize_session=False)
+        db.session.query(Block_Record).delete()
+        # 刪除系統公告 (依賴 Admin)
+        db.session.query(System_Announcement).delete()
+        # -----------------------------------------------------
+        # 第二波：刪除繼承表 (Inheritance Child Tables)
+        # -----------------------------------------------------
+        # 這些表依賴於 User (且 Vendor 依賴 VendorManager)
+        db.session.query(Vendor).delete()
+        db.session.query(Customer).delete()
+        db.session.query(Admin).delete()
+        # -----------------------------------------------------
+        # 第三波：刪除核心表 (Parent Tables)
+        # -----------------------------------------------------
+        # 刪除 User (所有人的基本資料)
+        db.session.query(User).delete()
         
-        # 提交事務
+        # 刪除 Vendor Manager (因為 Vendor 已經刪除，現在可以刪除 Manager 了)
+        db.session.query(Vendor_Manager).delete()
         db.session.commit()
         
         return jsonify({
-            "message": "已清除所有使用者", 
-            "cleared_count": num_deleted
+            "message": "已清除所有", 
         }), 200
     except Exception as e:
         # 發生錯誤時回滾
         db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+@test_routes.route("/init_manager")
+def init_manager():
+    """
+    初始化 Vendor Manager (如果不存在則建立)
+    """
+    email = "boss@manager.com"
+    manager = Vendor_Manager.query.filter_by(email=email).first()
+
+    if not manager:
+        manager = Vendor_Manager(
+            name="Big Boss",
+            email=email,
+            phone_number="0999999999"
+        )
+        db.session.add(manager)
+        db.session.commit()
+        print("[test] Vendor Manager created:", manager.id)
+        return jsonify({"message": "Manager Created", "id": manager.id}), 201
+    
+    return jsonify({"message": "Manager Already Exists", "id": manager.id}), 200
+
+@test_routes.route("/init_users")
+def init_data():
+    """
+    初始化 Admin 和 Vendor 測試資料
+    """
+    try:
+        # 1. 先確認是否有 Manager
+        manager = Vendor_Manager.query.first()
+        if not manager:
+            return jsonify({"error": "請先執行 /api/test/init_manager 建立經理資料"}), 400
+
+        # 2. 建立或獲取 Admin
+        admin_email = "admin@test.com"
+        admin = User.query.filter_by(email=admin_email).first() # 先嘗試獲取
+        
+        if not admin:
+            admin = Admin(
+                name="Super Admin", 
+                email=admin_email, 
+                password=generate_password_hash("password123"),
+                phone_number="0900000000"
+            )
+            db.session.add(admin)
+            print("[test] Admin created") # 移到這裡 print
+
+        # 3. 建立或獲取 Vendor
+        vendor_email = "vendor@test.com"
+        vendor = User.query.filter_by(email=vendor_email).first() # 先嘗試獲取
+
+        if not vendor:
+            vendor = Vendor(
+                name="Bad Vendor",
+                email=vendor_email,
+                password=generate_password_hash("password123"),
+                phone_number="0911111111",
+                address="Taipei City",
+                vendor_manager_id=manager.id,
+                is_active=True
+            )
+            db.session.add(vendor)
+            print("[test] Vendor created") # 移到這裡 print
+
+        db.session.commit()
+        
+        # 這裡可以安全地回傳，因為如果已經存在，我們就不需要 print ID 了，或者重新 query 也可以
+        return jsonify({
+            "status": "Admin and Vendor init success",
+            "admin_id": admin.id, 
+            "vendor_id": vendor.id
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[Error] {str(e)}") # 建議印出錯誤以便除錯
         return jsonify({"error": str(e)}), 500
 
 # for cloudinary upload signature generation
