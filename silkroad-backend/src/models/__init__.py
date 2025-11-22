@@ -1,7 +1,7 @@
 """
 modles package : 定義所有資料庫模型 (SQLAlchemy ORM)
 """
-
+from models.auth.user import User
 from models.auth.admin import Admin
 from models.auth.block_record import Block_Record
 from models.order.cart_item import Cart_Item
@@ -13,8 +13,7 @@ from models.order.order import Order
 from models.store.product import Product
 from models.store.review import Review
 from models.auth.system_announcement import System_Announcement
-from models.auth.user import User
-from models.auth.vender_manager import Vender_Mananger
+from models.auth.vendor_manager import Vendor_Manager
 from models.auth.vendor import Vendor
 
 """
@@ -34,6 +33,6 @@ __all__ = [
     "Review",
     "System_Announcement",
     "User",
-    "Vender_Mananger",
+    "Vendor_Manager",
     "Vendor",
 ]

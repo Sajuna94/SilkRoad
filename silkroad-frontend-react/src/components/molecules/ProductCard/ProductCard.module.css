@@ -13,7 +13,6 @@
 }
 
 .imageArea {
-	
 	height: 200px;
 }
 
@@ -22,8 +21,9 @@
 }
 
 .info {
+	text-align: center;
 	padding: 12px;
-	background-color: var(--color-surface-light);
+	background-color: var(--color-surface-main);
 }
 
 .name {

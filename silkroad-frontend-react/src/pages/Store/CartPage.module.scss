@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 	$color-header-title: #333;
 	$color-main-bg: #fdfdfd;
 	// cart item
@@ -242,23 +243,101 @@
 	max-width: 980px;
 	width: 400px;
 	height: 60vh;
-	display: flex;
-	flex-direction: column;
-	margin: 2rem auto;
-	padding: 20px;
-	gap: 20px;
-	border-radius: 20px;
+=======
+:root {
+	--color-header-title: #333;
+	--color-main-bg: #fdfdfd;
+	// cart item
+	--color-item-hover: #ddd;
+	--color-item-name: #282828;
+	--color-item-options: #000000;
+	--color-item-price: #1d1d1d;
+	--color-item-quantity: #9d2cb4;
 }
 
-.container > h2 {
-	margin: 0;
-	color: #333;
+// $color-item: #f77070;
+$color-item-chose: #70f7da;
+
+
+
+.container {
+>>>>>>> 9fd9ee90c430d410a4c4099e64b2e41e34283706
+	display: flex;
+	flex-direction: column;
+	max-width: 980px;
+	width: 100%;
+	height: 60vh;
+	margin: auto;
+	padding: 30px;
+	background-color: var(--color-main-bg);
+	border-radius: 1rem;
+
+	header {
+		// color: var(--color-header-title);
+		font-size: 1.8rem;
+		font-weight: bold;
+		margin-bottom: 10px;
+	}
+
+	main {
+		display: flex;
+		gap: 20px;
+		min-height: 0;
+	}
+
+	footer {
+		display: flex;
+		padding-top: 10px;
+		gap: 10px;
+		justify-content: space-between;
+
+		.cartOperation {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+
+			// a {
+				// color: #333;
+			// }
+
+			span {
+				color: #a98;
+				user-select: none;
+			}
+		}
+
+		.totalArea {
+			gap: 10px;
+			display: flex;
+			align-items: center;
+
+			.total {
+				font-weight: bold;
+
+				&::before {
+					content: "總共 ";
+				}
+
+				&::after {
+					content: " 元";
+				}
+			}
+
+			button {
+				padding: 8px 20px;
+			}
+		}
+	}
 }
 
 .list {
+	flex: 2;
+	list-style-type: none;
+	min-width: 300px;
 	padding: 0;
 	margin: 0;
 	overflow-y: auto;
+<<<<<<< HEAD
 	/* list-style: none;
   padding: 0;
   margin: 0;
@@ -313,38 +392,48 @@
 	color: #333;
 }
 
+=======
+>>>>>>> 9fd9ee90c430d410a4c4099e64b2e41e34283706
 
-.contentRight {
-	
-}
+	.item {
+		display: flex;
+		padding: 6px;
+		gap: 15px;
+		border-bottom: 1px solid var(--color-item-hover);
+		border-radius: 0.5rem;
+		transition: 0.3s;
+		cursor: pointer;
 
-.contentRight > h3 {
-	margin: 0;
+		.area {
+			border-radius: 8px;
+			overflow: hidden;
+			width: 100px;
+		}
 
-}
+		.options {
+			flex: 1;
 
-.discountCotainer {
-	background-color: aqua;
+			h3 {
+				color: var(--color-item-name);
+			}
 
-}
+			div {
+				color: var(--color-item-options);
+			}
+		}
 
-.footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+		.price {
+			text-align: right;
 
-.footer > .total {
-  color: red;
-  font-weight: bold;
-  font-size: 1.3rem;
-}
+			::before {
+				content: "NT$ ";
+			}
 
-.footer > .buttons {
-  display: flex;
-  gap: 10px;
-}
+			h3 {
+				color: var(--color-item-price);
+			}
 
+<<<<<<< HEAD
 .footer > .buttons > button {
   padding: 10px;
 }  */
@@ -362,31 +451,32 @@
   display: flex;
   flex-direction: column;
 }
+=======
+			.quantity {
+				color: var(--color-item-quantity);
+>>>>>>> 9fd9ee90c430d410a4c4099e64b2e41e34283706
 
-.cart-title {
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-  color: #222;
+				&::before {
+					content: "x";
+					// margin-right: 4px;
+				}
+			}
+		}
+	}
+
+	.item:hover {
+		background-color: var(--color-item-hover);
+	}
 }
 
-.cart-empty {
-  text-align: center;
-  color: #777;
-  font-size: 1.1rem;
-}
+.sidebar {
+	div {
+		// background-color: rgb(137, 226, 196);
+		// border: 1px solid aqua;
+		font-weight: bold;
+	}
 
-.cart-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  flex-grow: 1;
-  overflow-y: auto;
-  border-top: 1px solid #eee;
-	padding-right: 10px;
-}
-
-
+<<<<<<< HEAD
 
 .cart-item {
   display: flex;
@@ -447,21 +537,92 @@
 .cart-total {
   font-size: 1.2rem;
   font-weight: bold;
+=======
+	flex: 1;
+>>>>>>> 9fd9ee90c430d410a4c4099e64b2e41e34283706
 	display: flex;
-	justify-content: flex-start;
-}
+	flex-direction: column;
+	gap: 20px;
 
-.cart-total-amount {
-  color: #e53935;
-}
-
-
-.cart-buttons {
-  display: flex;
-  gap: 0.8rem;
-}
-
+<<<<<<< HEAD
 .cart-buttons > button {
 	padding: 5px;
 }
  */
+=======
+	.code {
+		display: flex;
+		justify-content: space-between;
+		border: #333 1px solid;
+		padding: 10px;
+		border-radius: 8px;
+
+		input {
+			border: #333 1px solid;
+		}
+	}
+
+	.list {
+		border: #333 1px solid;
+		padding: 10px;
+		border-radius: 8px;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+
+		hr {
+			width: 100%;
+		}
+
+		ul {
+			flex: 1;
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			overflow-y: auto;
+
+			li {
+				cursor: pointer;
+				display: flex;
+				justify-content: space-between;
+				padding: 10px;
+				border-bottom: 1px solid var(--color-item-hover);
+				transition: 0.3s;
+
+				.discount {
+					&::before {
+						content: "折扣 ";
+					}
+
+					&::after {
+						content: " 元";
+					}
+				}
+			}
+
+			li:not(.selected):hover {
+				background-color: var(--color-item-hover);
+			}
+
+			.selected {
+				background-color: $color-item-chose;
+			}
+		}
+	}
+
+	.note {
+		textarea {
+			width: 100%;
+			height: 80px;
+			padding: 8px;
+			box-sizing: border-box;
+			resize: none;
+			border-radius: 8px;
+			background-color: var(--color-main-bg);
+			border: 1px solid #333;
+			color: #213547;
+		}
+	}
+}
+>>>>>>> 9fd9ee90c430d410a4c4099e64b2e41e34283706
