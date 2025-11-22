@@ -14,9 +14,8 @@ class Cart_Item(db.Model):
     selected_size  = db.Column(db.String(20), nullable=True, comment='使用者選的大小, e.g. L')
     
     cart = db.relationship("Cart", back_populates="items")
-    # product = db.relationship("Product")
-    product = db.relationship("Product", primaryjoin="CartItem.product_id == Product.id", foreign_keys=[product_id], uselist=False)
+    product = db.relationship("Product", primaryjoin="Cart_Item.product_id == Product.id", foreign_keys=[product_id], uselist=False)
     
 
     def __repr__(self):
-        return f"<CartItem {self.cart_item_id} - Cart {self.cart_id} - Item {self.item_id} - Quantity {self.quantity}>"
+        return f"<Cart_Item {self.cart_item_id} - Cart {self.cart_id} - Item {self.item_id} - Quantity {self.quantity}>"
