@@ -11,6 +11,5 @@ __all__ = [
     'user_routes',
     'cart_routes',
     'shop_routes',
-    'test_routes',
     'admin_routes'
 ]
