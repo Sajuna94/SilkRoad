@@ -5,7 +5,7 @@ User controllers package : 定義所有api 被呼叫後要執行的function
 from controllers.user_controller import register_user, login_user
 from controllers.cart_controller import add_to_cart, remove_from_cart, view_cart
 from controllers.admin_controller import block_user, post_announcement
-from controllers.vendor_controller import register_vendor, login_vendor, logout_vendor
+from controllers.vendor_controller import register_vendor, login_vendor
 
 __all__ = [
     'register_user',
@@ -14,5 +14,7 @@ __all__ = [
     'remove_from_cart',
     'view_cart',
     'block_user',
-    'post_announcement'
+    'post_announcement',
+    'register_vendor',
+    'login_vendor'
 ]

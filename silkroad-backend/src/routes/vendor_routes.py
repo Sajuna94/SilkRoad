@@ -1,8 +1,8 @@
 from flask import Blueprint
 # from controllers import shop_controller   #WIP
-from controllers import register_vendor, login_vendor, logout_vendor
+from controllers import register_vendor, login_vendor
 
-vendor_routes = Blueprint('shop', __name__)
+vendor_routes = Blueprint('vendor', __name__)
 
 """
 function:
@@ -22,16 +22,10 @@ expected get:
     }
 }
 
-return (if success)
+return:
 {
-    "message": "Vendor registered successfully",
-    "status": "success"
-}
-
-return (if failure)
-{
-    "message": "Vendor registration failed",
-    "status": "failure"
+    "message": "...",
+    "success": true/false
 }
 """
 vendor_routes.route("/register", methods=["POST"])(register_vendor)
@@ -46,39 +40,37 @@ expected get:
     password: "string"
 }
 
-return:(if success)
+return:
 {
-    "message": "Vendor logged in successfully",
-    "status": "success"
+    "message": "...",
+    "success": True/False
 }
-
-return (if failure)
-{
-    "message": "Vendor login failed",
-    "status": "failure"
-    reason: "email or password is incorrect / email not found"
-}
-
-Note: reason欄位只有失敗才有，可能回傳
-"email or password is incorrect"
-"email not found"
 """
 vendor_routes.route("/login", methods=["POST"])(login_vendor)
-
 """
 function:
-    logout vendor
+    更新product(s)狀態
 
 expected get:
-{
-    email: "string",
-    password: "string"
-}
+[
+    {
+        "product_id": "int",
+        "behavior": {
+            "col_name": "string",
+            "value": "string"
+        }
+    },
+    ...
+]
 
 return:
 {
-    "message": "Vendor logged out successfully",
-    "status": "success"
+    "message": "...",
+    "success": True/False
 }
+Note:
+col_name欄位只接受
+name, price, description, image_url, is_listed
+這個function會根據指定的col做調整，因此value 應該為string
 """
-vendor_routes.route("/logout", methods=["POST"])(logout_vendor)
+# vendor_routes.route("/update_product", methods=["POST"])()
