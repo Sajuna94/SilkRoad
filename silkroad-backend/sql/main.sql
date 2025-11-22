@@ -92,6 +92,7 @@ CREATE TABLE `auth`.`users` (
   `email` varchar(255) UNIQUE NOT NULL,
   `password` varchar(255) NOT NULL,
   `phone_number` varchar(25) UNIQUE NOT NULL,
+  `role` varchar(20) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now())
 );
 

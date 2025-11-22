@@ -1,6 +1,6 @@
 from flask import Blueprint
 # from controllers import shop_controller   #WIP
-from controllers import register_vendor
+from controllers import register_vendor, login_vendor, logout_vendor
 
 vendor_routes = Blueprint('shop', __name__)
 
@@ -36,4 +36,49 @@ return (if failure)
 """
 vendor_routes.route("/register", methods=["POST"])(register_vendor)
 
-vendor_routes.route("/login", methods)
+"""
+function:
+    login vendor
+
+expected get:
+{
+    email: "string",
+    password: "string"
+}
+
+return:(if success)
+{
+    "message": "Vendor logged in successfully",
+    "status": "success"
+}
+
+return (if failure)
+{
+    "message": "Vendor login failed",
+    "status": "failure"
+    reason: "email or password is incorrect / email not found"
+}
+
+Note: reason欄位只有失敗才有，可能回傳
+"email or password is incorrect"
+"email not found"
+"""
+vendor_routes.route("/login", methods=["POST"])(login_vendor)
+
+"""
+function:
+    logout vendor
+
+expected get:
+{
+    email: "string",
+    password: "string"
+}
+
+return:
+{
+    "message": "Vendor logged out successfully",
+    "status": "success"
+}
+"""
+vendor_routes.route("/logout", methods=["POST"])(logout_vendor)

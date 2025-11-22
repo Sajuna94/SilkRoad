@@ -8,7 +8,9 @@ NOTE:
 class Vendor(User):
     __tablename__ = "vendors"
     __table_args__ = {"schema" : "auth"}
-
+    __mapper_args__ = {
+        'polymorphic_identity': 'vendor'
+    }
     user_id             = db.Column( db.Integer, db.ForeignKey("auth.users.id"), primary_key=True)
     vendor_manager_id   = db.Column(db.Integer, db.ForeignKey("auth.vendor_managers.id"), nullable = False)
     is_active           = db.Column(db.Boolean, nullable = False, server_default = db.text('true'))

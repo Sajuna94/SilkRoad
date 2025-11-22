@@ -12,10 +12,7 @@ class Cart_Item(db.Model):
     selected_ice    = db.Column(db.String(50), nullable=True, comment='使用者選的冰塊, e.g. 少冰')
     selected_size   = db.Column(db.String(20), nullable=True, comment='使用者選的大小, e.g. L')
 
-    selected_sugar = db.Column(db.String(50), nullable=True, comment='使用者選的甜度, e.g. 半糖')
-    selected_ice   = db.Column(db.String(50), nullable=True, comment='使用者選的冰塊, e.g. 少冰')
-    selected_size  = db.Column(db.String(20), nullable=True, comment='使用者選的大小, e.g. L')
-
+    #relationship
     cart = db.relationship("Cart", back_populates="items")
     product = db.relationship("Product", primaryjoin="Cart_Item.product_id == Product.id", foreign_keys=[product_id], uselist=False)
 
