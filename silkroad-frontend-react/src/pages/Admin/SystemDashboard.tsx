@@ -8,9 +8,9 @@ export default function SystemDashboard() {
     },
     {
       id: 2,
-      title: "Holiday Discounts",
+      title: "System Maintenance",
       date: "2025-11-10",
-      summary: "Enjoy 20% off all beverages this weekend!",
+      summary: "We've fixed certain bugs.",
     },
   ];
   return (
