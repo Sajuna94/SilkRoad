@@ -9,20 +9,20 @@ import { usePing } from "@/hooks/test/usePing";
 // import { CartProvider } from "@/components/molecules/CartConText";
 
 function App() {
-  const ping = usePing();
-  if (ping.isSuccess) console.log("Backend response:", ping.data);
+	const ping = usePing();
+	if (ping.isSuccess) console.log("Backend response:", ping.data);
 
-  return (
-    <BrowserRouter basename="/SilkRoad">
-      {/* <CartProvider> */}
-      <Header />
-      <ToastProvider>
-        <Router />
-      </ToastProvider>
-      <Footer />
-      {/* </CartProvider> */}
-    </BrowserRouter>
-  );
+	return (
+		<BrowserRouter basename="/SilkRoad">
+			{/* <CartProvider> */}
+			<Header />
+			<ToastProvider>
+				<Router />
+			</ToastProvider>
+			<Footer />
+			{/* </CartProvider> */}
+		</BrowserRouter>
+	);
 }
 
 export default App;
