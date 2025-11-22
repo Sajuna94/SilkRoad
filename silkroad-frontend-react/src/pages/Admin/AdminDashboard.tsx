@@ -8,7 +8,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("user");
 
   const tabs = [
-    { id: "user", name: "User Management" },
+    { id: "user", name: "Customer Management" },
     { id: "system", name: "System Announcements" },
     { id: "vendor", name: "Vendor Management" },
   ];
