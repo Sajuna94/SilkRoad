@@ -23,7 +23,7 @@ export const routes = [
 		],
 	},
 	{
-		path: "/user",
+		path: "/",
 		children: [
 			{ path: "login", element: <LoginPage /> },
 			{ path: "register", element: <RegisterPage /> },

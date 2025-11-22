@@ -1,5 +1,5 @@
 import { products } from "@/types/data/product";
-import styles from "./Dashboard.module.scss"
+import styles from "./index.module.scss"
 import { useEffect, useRef, useState } from "react";
 import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal/ProductModal";
 import type { Product } from "@/types/store";

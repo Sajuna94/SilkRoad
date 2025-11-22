@@ -8,7 +8,7 @@ export default function Header() {
 				<Link to="/">SilkRoad</Link>
 			</div>
 			<nav className={styles.navbarLinks}>
-				<Link to="/">Home</Link>
+				<Link to="/home">Home</Link>
 				<Link to="/cart">Cart</Link>
 				<Link to="/orders">Order</Link>
 				<Link to="/about">About</Link>
