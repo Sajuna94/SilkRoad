@@ -3,15 +3,6 @@ from models import Admin,Vendor,Customer
 from models import Block_Record,System_Announcement
 from config import db
 def block_user():
-    """
-    Admin 封鎖使用者 (Vendor 或 Customer)
-    Payload 範例:
-    {
-        "admin_id": 1,          <-- 因為沒有 JWT，需手動傳入操作者的 ID
-        "target_user_id": 5,    <-- 要被封鎖的人
-        "reason": "違反使用者規範"
-    }
-    """
     data = request.get_json()
     admin_id = data.get('admin_id')
     target_user_id = data.get('target_user_id')
@@ -70,15 +61,7 @@ def block_user():
 
 
 def post_announcement():
-    """
-    Admin 發布系統公告
-    Payload 範例:
-    {
-        "admin_id": 1,
-        "title": "系統維護通知",
-        "message": "本系統將於今晚進行維護..."
-    }
-    """
+
     data = request.get_json()
     admin_id = data.get('admin_id')
     message = data.get('message')

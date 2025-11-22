@@ -12,12 +12,12 @@ class User(db.Model):
     name            = db.Column(db.Text)
     email           = db.Column(db.String(255), unique=True, nullable = False)
     password        = db.Column(db.String(255), nullable=False)
-    phone_number    = db.Column(db.String(25), unique=True, nullable = False) 
+    phone_number    = db.Column(db.String(25), unique=True, nullable = False)
     created_at      = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
-    
+
     def check_password(self, password):
         return check_password_hash(self.password, password)
-    
-    # 用來定義物件在印出或除錯時的 " 字串表示方式 "    
+
+    # 用來定義物件在印出或除錯時的 " 字串表示方式 "
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f'<User {self.name}>'

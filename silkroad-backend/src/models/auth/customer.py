@@ -12,7 +12,7 @@ class Customer(User):
     stored_balance    = db.Column(db.Integer, nullable=False, server_default=db.text("0"))
     address           = db.Column(db.String(255), nullable=False)
 
+    cart = db.relationship("Cart", back_populates="owner", uselist=False)
+
     def __repr__(self):
         return f"<Customer {self.name}>"
-    
-    
