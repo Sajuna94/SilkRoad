@@ -23,10 +23,8 @@ user_routes.route('/login', methods=['POST'])(login_user)
 User登入
 範例:
 {
-    "name" = XXX,
     "email" = XXX,
-    "password" = XXX,
-    "phone_number" = XXX
+    "password" = XXX
 }
 return 
 {
