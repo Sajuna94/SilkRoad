@@ -70,12 +70,6 @@ def login_user():
         return jsonify({"message": "Email 或密碼錯誤"}), 401  # 401 Unauthorized
 
     # 4. 登入成功
-    # 
-    # 注意：在一個真正的應用中，你不應該只返回 "登入成功"。
-    # 你應該在這裡生成一個 JWT (JSON Web Token) 或設定一個 Session
-    # 並將 token 返回給客戶端，以便他們在後續請求中驗證身份。
-    #
-    
     return jsonify({
         "message": "登入成功",
         "user": {
