@@ -73,6 +73,7 @@ CREATE TABLE `order`.`carts` (
 );
 
 CREATE TABLE `order`.`cart_items` (
+  `id` int PRIMARY KEY AUTO_INCREMENT,
   `cart_id` int NOT NULL,
   `product_id` int NOT NULL,
   `quantity` int NOT NULL DEFAULT 1,
