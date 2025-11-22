@@ -1,33 +1,73 @@
+import React, { useState } from "react";
+import styles from "./SystemDashboard.module.scss";
+
+interface Announcement {
+  id: number;
+  date: string;
+  summary: string;
+}
+
 export default function SystemDashboard() {
-  const announcements = [
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+
+  const announcements: Announcement[] = [
     {
       id: 1,
-      title: "System Update",
       date: "2025-11-05",
       summary: "We’ve improved delivery tracking and site performance.",
     },
     {
       id: 2,
-      title: "System Maintenance",
       date: "2025-11-10",
       summary: "We've fixed certain bugs.",
     },
   ];
+
+  const filteredAnnouncements = announcements.filter(
+    (item) => 
+      (item.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       item.date.includes(searchTerm)) &&
+      (selectedDate === "" || item.date === selectedDate)
+  );
+
   return (
-    <div className="animate-fadeIn">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-900">系統公告 / System Announcements</h2>
-      <div className="space-y-4">
-        {announcements.map((item) => (
-          <div
-            key={item.id}
-            className="p-5 bg-white rounded-lg shadow-sm border hover:shadow-md cursor-pointer transition"
-          >
-            <h3 className="text-lg font-semibold text-blue-600">{item.title}</h3>
-            <p className="text-sm text-gray-500 mb-1">{item.date}</p>
-            <p className="text-gray-700">{item.summary}</p>
-          </div>
-        ))}
+    <div className={styles.container}>
+      <h2 className={styles.title}>系統公告 / System Announcements</h2>
+
+      <div className={styles.filters}>
+        <input
+          type="text"
+          placeholder="搜尋訊息或日期..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className={styles.input}
+        />
+
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className={styles.input}
+        />
       </div>
+
+      <table className={styles.table}>
+        <thead className={styles.thead}>
+          <tr>
+            <th className={styles.th}>Message</th>
+            <th className={styles.th}>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredAnnouncements.map((item) => (
+            <tr key={item.id} className={styles.tr}>
+              <td className={styles.td}>{item.summary}</td>
+              <td className={styles.td}>{item.date}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
