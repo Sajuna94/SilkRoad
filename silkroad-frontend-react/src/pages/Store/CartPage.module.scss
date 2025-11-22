@@ -1,224 +1,243 @@
-:root {
-  --color-header-title: #333;
-  --color-main-bg: #fdfdfd;
-  // cart item
-  --color-item-hover: #ddd;
-  --color-item-name: #282828;
-  --color-item-options: #000000;
-  --color-item-price: #1d1d1d;
-  --color-item-quantity: #9d2cb4;
-}
-// $color-item: #f77070;
-$color-item-chose: #70f7da;
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+	$color-header-title: #333;
+	$color-main-bg: #fdfdfd;
+	// cart item
+	$color-item-hover: #ddd;
+	$color-item-name: #282828;
+	$color-item-options: #414141;
+	$color-item-price: #1d1d1d;
+	$color-item-quantity: #7f20ac;
 
-h3 {
-  margin: 0;
-}
+	// $color-item: #f77070;
+	$color-item-chose: #70f7da;
 
-.container {
-  display: flex;
-  flex-direction: column;
-  max-width: 980px;
-  width: 100%;
-  height: 60vh;
-  margin: auto;
-  padding: 30px;
-  background-color: var(--color-main-bg);
-  border-radius: 1rem;
+	h3 {
+		margin: 0;
+	}
 
-  header {
-    color: var(--color-header-title);
-    font-size: 1.5rem;
-    font-weight: bold;
-  }
+	.container {
+		display: flex;
+		flex-direction: column;
+		max-width: 980px;
+		width: 100%;
+		height: 70vh;
+		margin: auto;
+		padding: 30px;
+		gap: 10px;
+		background-color: $color-main-bg;
+		border-radius: 1rem;
 
-  main {
-    display: flex;
-    gap: 20px;
-    min-height: 0;
-  }
+		header {
+			color: $color-header-title;
+			font-size: 1.5rem;
+			font-weight: bold;
+		}
 
-  footer {
-    display: flex;
-    padding-top: 10px;
-    gap: 10px;
-    justify-content: space-between;
+		main {
+			display: flex;
+			gap: 20px;
+			min-height: 0;
+		}
 
-    .cartOperation {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+		footer {
+			display: flex;
+			gap: 10px;
+			justify-content: space-between;
 
-      a {
-        color: #333;
-      }
+			.cartOperation {
+				display: flex;
+				align-items: center;
+				gap: 10px;
 
-      span {
-        color: #a98;
-      }
-    }
+				// a {
+				// 	color: #333;
+				// }
 
-    .totalArea {
-      gap: 10px;
-      display: flex;
-      align-items: center;
-      .total {
-        &::before {
-          content: "總共 ";
-        }
-        &::after {
-          content: " 元";
-        }
-      }
-    }
-  }
-}
+				span {
+					color: #a98;
+				}
+			}
 
-.list {
-  flex: 2;
-  list-style-type: none;
-  min-width: 300px;
-  padding: 0;
-  margin: 0;
-  overflow-y: auto;
+			.totalArea {
+				gap: 10px;
+				display: flex;
+				align-items: center;
 
-  .item {
-    display: flex;
-    padding: 6px;
-    gap: 15px;
-    border-bottom: 1px solid var(--color-item-hover);
-    border-radius: 0.5rem;
-    transition: 0.3s;
-    cursor: pointer;
 
-    .area {
-      border-radius: 8px;
-      overflow: hidden;
-      width: 100px;
-    }
+				.total {
+					font-size: 1.2rem;
+					font-weight: bold;
+					color: #c01818;
 
-    .options {
-      flex: 1;
+					&::before {
+						content: "總共 ";
+					}
 
-      h3 {
-        color: var(--color-item-name);
-      }
+					&::after {
+						content: " 元";
+					}
+				}
 
-      div {
-        color: var(--color-item-options);
-      }
-    }
+				button {
+					padding: 10px 20px;
+				}
+			}
+		}
+	}
 
-    .price {
-      text-align: right;
-      h3 {
-        color: var(--color-item-price);
-      }
+	.list {
+		flex: 2;
+		list-style-type: none;
+		min-width: 300px;
+		padding: 0;
+		margin: 0;
+		overflow-y: auto;
 
-      .quantity {
-        color: var(--color-item-quantity);
-        &::before {
-          content: "x";
-          // margin-right: 4px;
-        }
-      }
-    }
-  }
+		.item {
+			display: flex;
+			padding: 6px;
+			gap: 15px;
+			border-bottom: 1px solid $color-item-hover;
+			border-radius: 0.5rem;
+			transition: 0.3s;
+			cursor: pointer;
 
-  .item:hover {
-    background-color: var(--color-item-hover);
-  }
-}
+			.area {
+				border-radius: 8px;
+				overflow: hidden;
+				width: 100px;
+			}
 
-.sidebar {
-  div {
-    // background-color: rgb(137, 226, 196);
-    // border: 1px solid aqua;
-    font-weight: bold;
-  }
+			.options {
+				flex: 1;
 
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+				h3 {
+					color: $color-item-name;
+				}
 
-  .code {
-    display: flex;
-    justify-content: space-between;
-    border: #333 1px solid;
-    padding: 10px;
-    border-radius: 8px;
-    input {
-      border: #333 1px solid;
-    }
-  }
+				div {
+					color: $color-item-options;
+				}
+			}
 
-  .list {
-    border: #333 1px solid;
-    padding: 10px;
-    border-radius: 8px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+			.price {
+				text-align: right;
 
-    hr {
-      width: 100%;
-    }
+				h3 {
+					color: $color-item-price;
+				}
 
-    ul {
-      flex: 1;
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-      overflow-y: auto;
+				.quantity {
+					color: $color-item-quantity;
 
-      li {
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        padding: 10px;
-        border-bottom: 1px solid var(--color-item-hover);
-        transition: 0.3s;
+					&::before {
+						content: "x";
+						// margin-right: 4px;
+					}
+				}
+			}
+		}
 
-        .discount {
-          &::before {
-            content: "折扣 ";
-          }
-          &::after {
-            content: " 元";
-          }
-        }
-      }
+		.item:hover {
+			background-color: $color-item-hover;
+		}
+	}
 
-      li:not(.selected):hover {
-        background-color: var(--color-item-hover);
-      }
+	.sidebar {
+		div {
+			// background-color: rgb(137, 226, 196);
+			// border: 1px solid aqua;
+			font-weight: bold;
+		}
 
-      .selected {
-        background-color: $color-item-chose;
-      }
-    }
-  }
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
 
-  .note {
-    textarea {
-      width: 100%;
-      height: 80px;
-      padding: 8px;
-      box-sizing: border-box;
-      resize: none;
-      border-radius: 8px;
-      border: 1px solid #333;
-    }
-  }
-}
+		.code {
+			display: flex;
+			justify-content: space-between;
+			border: #333 1px solid;
+			padding: 10px;
+			border-radius: 8px;
 
-/* .container {
+			input {
+				border: #333 1px solid;
+			}
+		}
+
+		.list {
+			border: #333 1px solid;
+			padding: 10px;
+			border-radius: 8px;
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			color: $color-header-title;
+			overflow: hidden;
+
+			hr {
+				width: 100%;
+			}
+
+			ul {
+				flex: 1;
+				list-style-type: none;
+				margin: 0;
+				padding: 0;
+				overflow-y: auto;
+				color: $color-header-title;
+
+
+				li {
+					cursor: pointer;
+					display: flex;
+					justify-content: space-between;
+					padding: 10px;
+					border-bottom: 1px solid $color-item-hover;
+					transition: 0.3s;
+
+
+
+					.discount {
+						&::before {
+							content: "折扣 ";
+						}
+
+						&::after {
+							content: " 元";
+						}
+					}
+				}
+
+				li:not(.selected):hover {
+					background-color: $color-item-hover;
+				}
+
+				.selected {
+					background-color: $color-item-chose;
+				}
+			}
+		}
+
+		.note {
+			color: $color-header-title;
+
+			textarea {
+				background-color: #f0f0f0;
+				color: $color-header-title;
+				width: 100%;
+				height: 80px;
+				padding: 8px;
+				box-sizing: border-box;
+				resize: none;
+				border-radius: 8px;
+				border: 1px solid #333;
+			}
+		}
+	}
+
+	/* .container {
 	background-color: #f0f0f0;
 	max-width: 980px;
 	width: 400px;
@@ -247,7 +266,7 @@ h3 {
   overflow-y: auto;
   border-top: 1px solid #eee;
 	padding-right: 10px; */
-/* }
+	/* }
 
 .item {
 	display: flex;
@@ -277,7 +296,7 @@ h3 {
 	padding: 20px;
 
 	/* background-color: blueviolet; */
-/* color: black;
+	/* color: black;
 	height: auto;
 }
 
@@ -330,7 +349,7 @@ h3 {
   padding: 10px;
 }  */
 
-/* .cart-container {
+	/* .cart-container {
   max-width: 980px;
 	width: 400px;
   height: 60vh;
@@ -386,9 +405,9 @@ h3 {
 	width: 100%;
 	padding: 10px;
   /* justify-content: space-between; */
-/* } */
+	/* } */
 
-/* .itemDetails {
+	/* .itemDetails {
 	flex: 1;
 	color: #777;
 	font-size: 0.9rem;
@@ -404,7 +423,7 @@ h3 {
 	color: red;
 } */
 
-/* .cart-item-details {
+	/* .cart-item-details {
   font-size: 0.9rem;
 	display: block;
   color: #777;
@@ -414,7 +433,7 @@ h3 {
   color: #444;
 } */
 
-/* 
+	/* 
 .cart-footer {
   margin-top: 1rem;
   padding-top: 1rem;
