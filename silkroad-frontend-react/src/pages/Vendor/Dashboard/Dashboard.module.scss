@@ -44,16 +44,17 @@ $sidebar-item-hover-color: red;
 .product-info {
 	background-color: #c1c1c1;
 
-	.product-list {
+	.list {
+		width: 500px;
 		display: flex;
 
-		td {
-			border: 1px solid red;
+		div {
+			flex: 1;
 		}
 
 		table {
-			flex: 1;
 			border-collapse: collapse;
+			width: 100%;
 
 			thead tr th {
 				font-weight: bold;
@@ -67,8 +68,12 @@ $sidebar-item-hover-color: red;
 					height: 50px;
 				}
 
-				td button {
-					padding: 6px 10px;
+				.listed {
+					width: 90px;
+
+					button {
+						padding: 6px 10px;
+					}
 				}
 			}
 		}

@@ -8,7 +8,7 @@ export { default as RegisterPage } from "./Auth/RegisterPage";
 
 // Vendor
 export { default as VendorPage } from "./Vendor/VendorProductList"
-export { default as VendorDashborad } from "./Vendor/VendorDashboard"
+export { default as VendorDashborad } from "./Vendor/Dashboard"
 
 
 // Store
