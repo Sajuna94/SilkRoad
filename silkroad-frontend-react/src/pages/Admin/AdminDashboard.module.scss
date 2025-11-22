@@ -60,7 +60,6 @@
 .sidebar {
   width: 17rem;
   background: rgba(15, 23, 42, 0.65);
-  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -68,6 +67,13 @@
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(14px);
   box-shadow: 6px 0 18px rgba(0, 0, 0, 0.32);
+}
+.sidebar h2 {
+  margin: 1.25rem 1.25rem 2rem; 
+}
+
+.sidebar nav {
+  padding: 0 1.25rem;
 }
 
 
@@ -87,34 +93,48 @@
 ====================================== */
 
 .tabButton {
-  display: flex;
-  align-items: center;
+  position: relative;
   width: 100%;
-  padding: 0.7rem 1rem;
-
-  border-radius: 0.7rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-
-  background: rgba(255, 255, 255, 0.02);
-  color: #cbd5e1;
+  padding: 14px 20px;
+  text-align: left;
+  border: none;
+  background: transparent;   /* 無底色 */
+  color: #d1d5db;            /* 預設灰白 */
+  font-size: 16px;
   cursor: pointer;
+  transition: color 0.2s ease, padding-left 0.2s ease;
 
-  transition: all 0.26s cubic-bezier(0.4, 0.0, 0.2, 1);
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: #f1f5f9;
-    transform: translateX(4px);
+  /* 左側亮線（預設透明） */
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: transparent; /* 預設透明 */
+    border-radius: 4px;
+    transition: background 0.25s ease;
   }
 
+  /* hover：只亮文字，不改背景 */
+  &:hover {
+    color: #f3f4f6;   /* 亮一級 */
+    background: transparent;  /* 確保不變色 */
+		padding-left: 24px;
+  }
+
+  /* active：左側亮白線、文字變亮 */
   &.active {
-    background: linear-gradient(135deg, #2563eb, #3b82f6 60%);
-    color: #fff;
-    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.36);
-    transform: translateY(-1px);
+    color: #ffffff;
+
+    &::before {
+      background: white;  /* 亮條 */
+    }
   }
 }
+
+
 
 
 /* ======================================
