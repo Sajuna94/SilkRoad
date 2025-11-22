@@ -1,4 +1,3 @@
-from flask.ctx import F
 from config.database import db
 
 class Cart_Item(db.Model):
@@ -22,4 +21,4 @@ class Cart_Item(db.Model):
 
 
     def __repr__(self):
-        return f"<Cart_Item {self.cart_item_id} - Cart {self.cart_id} - Item {self.item_id} - Quantity {self.quantity}>"
+        return f"<Cart_Item {self.id} - Cart {self.cart_id} - Item {self.product_id} - Quantity {self.quantity}>"
