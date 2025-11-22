@@ -33,3 +33,12 @@ export async function updateCartItem(input: UpdateCartItemInput): Promise<CartIt
 export async function deleteCartItem(cartId: number, productId: number): Promise<void> {
     await api.delete(`/cart/${cartId}/product/${productId}`);
 }
+
+
+/*
+{
+"data": {}
+"msg": {}
+"error": {}
+}
+*/

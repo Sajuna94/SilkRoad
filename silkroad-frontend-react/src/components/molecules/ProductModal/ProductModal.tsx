@@ -2,35 +2,36 @@ import type { Product } from "@/types/store";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import styles from "./ProductModal.module.scss"
 import { Dialog, type DialogRef } from "@/components/ui/Dialog";
-import { useInsertCartItem } from "@/hooks/order/cart";
 import { QuantityInput } from "@/components/atoms/QuantityInput/QuantityInput";
 
-export enum ModalMode {
-    PREVIEW,
-    ADD,
-    EDIT,
-}
-
-export interface ModalRef {
-    open: (mode: ModalMode, product: Product, quantity?: number) => void;
+export interface ProductModalRef {
+    open: (product: Product, quantity?: number) => void;
     close: () => void;
+    getForm: () => FormState;
 }
 
-export const ProductModal = forwardRef<ModalRef, {}>((_, ref) => {
-    // TODO: edit hook
-    const insert = useInsertCartItem();
+interface FormState {
+    size: string;
+    ice: string;
+    sugar: string;
+    quantity: number;
+}
 
+interface ProductModalProps {
+    onSubmit?: (product: Product, form: FormState) => Promise<void> | void;
+    submitText?: string;
+}
+
+export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ onSubmit, submitText }, ref) => {
     const dialogRef = useRef<DialogRef>(null);
-    const [mode, setMode] = useState<ModalMode>(ModalMode.PREVIEW);
     const [product, setProduct] = useState<Product>({} as Product);
-    const [form, setForm] = useState({
+    const [form, setForm] = useState<FormState>({
         size: "", ice: "", sugar: "", quantity: 1,
     });
+    const [pending, setPending] = useState(false);
 
     useImperativeHandle(ref, () => ({
-        open: (newMode: ModalMode, newProduct: Product, newQuantity = 1) => {
-            console.log(newProduct);
-            setMode(newMode);
+        open: (newProduct: Product, newQuantity = 1) => {
             setProduct(newProduct);
             setForm({
                 size: newProduct?.options?.size[0],
@@ -43,15 +44,19 @@ export const ProductModal = forwardRef<ModalRef, {}>((_, ref) => {
         close: () => {
             dialogRef.current?.close();
         },
+        getForm: () => form,
     }));
 
-    const handleAddToCart = () => {
-        console.log("Add: ", product, form);
-    }
-
-    const handleEditCartItem = () => {
-        console.log("Edit: ", product, form);
-    }
+    const handleSubmit = async () => {
+        if (!onSubmit) return;
+        try {
+            setPending(true);
+            await onSubmit(product, form);
+            dialogRef.current?.close();
+        } finally {
+            setPending(false);
+        }
+    };
 
     return (
         <Dialog ref={dialogRef}>
@@ -92,23 +97,9 @@ export const ProductModal = forwardRef<ModalRef, {}>((_, ref) => {
                     />
                 </div>
                 <footer>
-                    {{
-                        [ModalMode.PREVIEW]: (
-                            <button type="button" onClick={() => dialogRef.current?.close()}>
-                                關閉預覽
-                            </button>
-                        ),
-                        [ModalMode.ADD]: (
-                            <button type="button" onClick={handleAddToCart} disabled={insert.isPending}>
-                                加入購物車
-                            </button>
-                        ),
-                        [ModalMode.EDIT]: (
-                            <button type="button" onClick={handleEditCartItem}>
-                                儲存修改
-                            </button>
-                        ),
-                    }[mode]}
+                    <button type="button" onClick={handleSubmit} disabled={pending}>
+                        {pending ? "處理中..." : submitText}
+                    </button>
                 </footer>
             </form>
         </Dialog>

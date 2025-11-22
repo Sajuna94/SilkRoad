@@ -66,7 +66,7 @@ def login_user():
 
     # 3. 檢查使用者是否存在，並驗證密碼
     # user.check_password() 會自動調用 check_password_hash
-    if not user or not user.check_password(password):
+    if not user or not check_password_hash(password):
         return jsonify({"message": "Email 或密碼錯誤"}), 401  # 401 Unauthorized
 
     # 4. 登入成功

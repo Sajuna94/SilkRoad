@@ -14,7 +14,7 @@ class Cart(db.Model):
     created_at  = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
 
     #python
-    # items = db.relationship("Cart_Item", back_populates="cart", cascade="all, delete-orphan")
+    items = db.relationship("Cart_Item", back_populates="cart", cascade="all, delete-orphan")
     # customer = db.relationship("Customer", back_populates="cart")
 
     def clear(self):

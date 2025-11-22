@@ -44,20 +44,19 @@ $sidebar-item-hover-color: red;
 .product-info {
 	background-color: #c1c1c1;
 
-	.list {
-		.item {
-			border-bottom: 1px solid red;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 5px 10px;
+	table {
+		tbody tr {
+			text-align: center;
 
-			.buttons {
-				display: flex;
-				gap: 10px;
+			td button {
+				padding: 6px 10px;
 
-				button {
-					padding: 5px 10px;
+				.listed &:hover::after {
+					content: "Test";
+				}
+
+				.listed &:hover::after {
+					content: "Test";
 				}
 			}
 		}
