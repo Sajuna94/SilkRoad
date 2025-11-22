@@ -4,7 +4,7 @@
 from sqlite3.dbapi2 import IntegrityError
 from flask import jsonify, request
 from models import Vendor, Vendor_Manager
-from src.config.database import db
+from config.database import db
 
 def register_vendor():
     try:

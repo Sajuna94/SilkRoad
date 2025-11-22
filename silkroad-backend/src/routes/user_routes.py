@@ -5,31 +5,66 @@ user_routes = Blueprint('user', __name__)
 
 user_routes.route('/register', methods=['POST'])(register_user)
 """
-User註冊
-範例:
+User registration
+expect:
+if role == 'vendor' :
 {
-    "name" = XXX,
-    "email" = XXX,
-    "password" = XXX,
-    "phone_number" = XXX
+    "role" = string,
+    "name" = string,
+    "email" = string,
+    "password" = string,
+    "phone_number" = string
+    "vendor_manager_id"= int,
+    "is_active"=bool
 }
+elif role == 'customer' :
+{
+    "role" = string,
+    "name" = string,
+    "email" = string,
+    "password" = string,
+    "phone_number" = string
+    "address"=string
+}
+elif role == 'admin' :
+{
+    "role" = string,
+    "name" = string,
+    "email" = string,
+    "password" = string,
+    "phone_number" = string
+
 return 
 {
-    "message": "使用者註冊成功"
+    "message": "...",
+    "success": bool
 }
 """
 user_routes.route('/login', methods=['POST'])(login_user)
 """
-User登入
-範例:
+User login
+expect:
 {
-    "email" = XXX,
-    "password" = XXX
+    "email" = string,
+    "password" = string
 }
+
 return 
+if success:
 {
-    "id"=XXX,
-    "name"=XXX,
-    "email"=XXX
+    "data": {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role,
+        "phone_number": user.phone_number
+    },
+    "message": "Login successful",
+    "success": True
+}
+else:
+{
+    "message": "...",
+    "success": bool
 }
 """
