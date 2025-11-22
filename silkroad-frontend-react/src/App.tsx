@@ -1,9 +1,9 @@
-import { BrowserRouter } from "react-router-dom";
-import { ToastProvider } from "@/components/atoms/Toast";
+import { BrowserRouter, useRoutes } from "react-router-dom";
+// import { ToastProvider } from "@/components/atoms/Toast";
 import "@/App.css";
 import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";
-import Router from "@/router";
+import { routes } from "@/router";
 
 import { usePing } from "@/hooks/test/usePing";
 // import { CartProvider } from "@/components/molecules/CartConText";
@@ -16,13 +16,17 @@ function App() {
 		<BrowserRouter basename="/SilkRoad">
 			{/* <CartProvider> */}
 			<Header />
-			<ToastProvider>
-				<Router />
-			</ToastProvider>
+			{/* <ToastProvider> */}
+			<Router />
+			{/* </ToastProvider> */}
 			<Footer />
 			{/* </CartProvider> */}
 		</BrowserRouter>
 	);
+}
+
+function Router() {
+	return useRoutes(routes);
 }
 
 export default App;

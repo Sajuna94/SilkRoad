@@ -1,6 +1,6 @@
 import { products } from "@/types/data/product";
-import styles from "./Dashboard.module.scss"
-import { useRef, useState } from "react";
+import styles from "./index.module.scss"
+import { useEffect, useRef, useState } from "react";
 import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal/ProductModal";
 import type { Product } from "@/types/store";
 import { useCloudinaryUpload } from "@/hooks/utils/cloudinary";
@@ -27,7 +27,21 @@ function ControlPanel() {
 		{ key: "productInfo", label: "商品資訊", component: <ProductInfo /> },
 		{ key: "newProduct", label: "新增商品", component: <NewProduct /> },
 	];
-	const [activeTab, setActiveTab] = useState(tabs[0].key);
+
+	const getHash = () => window.location.hash.replace("#", "") || tabs[0].key;
+	const [activeTab, setActiveTab] = useState(getHash);
+
+	// 當 hash 改變 → sync
+	useEffect(() => {
+		const onHashChange = () => setActiveTab(getHash());
+		window.addEventListener("hashchange", onHashChange);
+		return () => window.removeEventListener("hashchange", onHashChange);
+	}, []);
+
+	// 點 sidebar → 改 hash
+	const go = (key: string) => {
+		window.location.hash = key;
+	};
 
 	return (
 		<section className={styles['container']}>
@@ -35,13 +49,14 @@ function ControlPanel() {
 				{tabs.map((tab) => (
 					<h3
 						key={tab.key}
-						onClick={() => setActiveTab(tab.key)}
+						onClick={() => go(tab.key)}
 						className={activeTab === tab.key ? styles['active'] : ""}
 					>
 						{tab.label}
 					</h3>
 				))}
 			</div>
+
 			<div className={styles['content']}>
 				{tabs.find((tab) => tab.key === activeTab)?.component}
 			</div>
@@ -80,51 +95,55 @@ function ProductInfo() {
 	};
 
 	return (<section className={styles['product-info']}>
-		<header></header>
-		<div className={styles['product-list']}>
-			<table>
-				<thead>
-					<tr>
-						<th>商品名稱</th>
-						<th colSpan={2}>上架狀態</th>
-						{/* <th colSpan={2}>aaa</th> */}
-					</tr>
-				</thead>
-				<tbody>
-					{productsList.filter(item => item.isListed).map((item, index) => (
-						<tr key={index}>
-							<td>{item.name}</td>
-							{/* <td>{item.isListed ? "上架" : "下架"}</td> */}
-							<td>
-								<button onClick={() => toggleListed(item.id)}>下架</button>
-							</td>
+		<header>Product Info</header>
+		<div className={styles['list']}>
+			<div>
+				<table>
+					<thead>
+						<tr>
+							<th>商品名稱</th>
+							<th colSpan={2}>上架狀態</th>
+							{/* <th colSpan={2}>aaa</th> */}
 						</tr>
-					))}
-				</tbody>
-			</table>
-			<table>
-				<thead>
-					<tr>
-						<th>商品名稱</th>
-						<th >上下架</th>
-						{/* <th colSpan={2}>aaa</th> */}
-					</tr>
-				</thead>
-				<tbody>
-					{productsList.filter(item => !item.isListed).map((item, index) => (
-						<tr key={index}>
-							<td>{item.name}</td>
-							{/* <td>{item.isListed ? "上架" : "下架"}</td> */}
-							<td>
-								<button onClick={() => toggleListed(item.id)}>上架</button>
-							</td>
+					</thead>
+					<tbody>
+						{productsList.filter(item => item.isListed).map((item, index) => (
+							<tr key={index}>
+								<td className={styles['name']}>
+									{item.name}
+								</td>
+								<td className={styles['listed']}>
+									<button onClick={() => toggleListed(item.id)}>下架</button>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+
+			<div>
+				<table>
+					<thead>
+						<tr>
+							<th>商品名稱</th>
+							<th >上下架</th>
+							{/* <th colSpan={2}>aaa</th> */}
 						</tr>
-					))}
-				</tbody>
-			</table>
-			<ul>
-				<li></li>
-			</ul>
+					</thead>
+					<tbody>
+						{productsList.filter(item => !item.isListed).map((item, index) => (
+							<tr key={index}>
+								<td className={styles['product-name']}>
+									{item.name}
+								</td>
+								<td className={styles['listed']}>
+									<button onClick={() => toggleListed(item.id)}>重新上架</button>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
 			<ProductModal ref={modalRef} />
 		</div>
 	</section>)

@@ -1,35 +1,40 @@
-import { Routes, Route } from "react-router-dom";
 import {
-    AboutPage,
-    CartPage,
-    HomePage,
-    LoginPage,
-    RegisterPage,
-    OrderHistoryPage,
+	AboutPage,
+	CartPage,
+	HomePage,
+	LoginPage,
+	RegisterPage,
+	OrderHistoryPage,
 } from "@/pages";
 import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import VendorProductList from "@/pages/Vendor/VendorProductList";
-import VendorDashboard from "@/pages/Vendor/VendorDashboard";
+import VendorDashboard from "@/pages/Vendor/Dashboard";
 
-export default function Router() {
-    return (
-        <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} />
+export const routes = [
+	{ path: "/cart", element: <CartPage /> },
+	{ path: "/orders", element: <OrderHistoryPage /> },
 
-            <Route>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-            </Route>
-
-            <Route path="/cart" element={<CartPage />} />
-            <Route path="/orders" element={<OrderHistoryPage></OrderHistoryPage>} />
-
-            <Route>
-                <Route path="/vendor" element={<VendorProductList />} />
-                <Route path="/vendor/dashboard" element={<VendorDashboard />} />
-            </Route>
-            <Route path="/admin" element={<AdminDashboard />} />
-        </Routes>
-    );
-}
+	{
+		path: "/",
+		children: [
+			{ index: true, element: <AboutPage /> },
+			{ path: "about", element: <AboutPage /> },
+			{ path: "home", element: <HomePage /> },
+		],
+	},
+	{
+		path: "/",
+		children: [
+			{ path: "login", element: <LoginPage /> },
+			{ path: "register", element: <RegisterPage /> },
+		],
+	},
+	{
+		path: "/vendor",
+		children: [
+			{ index: true, element: <VendorProductList /> },   // /vendor
+			{ path: "dashboard", element: <VendorDashboard /> } // /vendor/dashboard
+		],
+	},
+	{ path: "/admin", element: <AdminDashboard /> },
+];
