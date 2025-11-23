@@ -57,13 +57,15 @@ CREATE TABLE `order`.`orders` (
 );
 
 CREATE TABLE `order`.`order_items` (
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int PRIMARY KEY AUTO_INCREMENT,
   `order_id` int NOT NULL,
   `product_id` int NOT NULL,
   `quantity` int NOT NULL,
-  `selected_sugar` varchar(50) DEFAULT NULL COMMENT '使用者選的甜度, e.g., 50%',
-  `selected_ice` varchar(50) DEFAULT NULL COMMENT '使用者選的冰塊, e.g., 0%',
-  `selected_size` varchar(20) DEFAULT NULL COMMENT '使用者選的大小, e.g., L',
+  `selected_sugar` varchar(50) NOT NULL COMMENT '使用者選的甜度, e.g., 50%',
+  `selected_ice` varchar(50) NOT NULL COMMENT '使用者選的冰塊, e.g., 0%',
+  `selected_size` varchar(20) NOT NULL COMMENT '使用者選的大小, e.g., L',
+  
+  KEY `idx_order` (`order_id`)
 );
 
 CREATE TABLE `order`.`carts` (
@@ -77,12 +79,10 @@ CREATE TABLE `order`.`cart_items` (
   `cart_id` int NOT NULL,
   `product_id` int NOT NULL,
   `quantity` int NOT NULL DEFAULT 1,
-  `selected_sugar` varchar(50) DEFAULT NULL COMMENT '使用者選的甜度, e.g., 50%',
-  `selected_ice` varchar(50) DEFAULT NULL COMMENT '使用者選的冰塊, e.g., 0%',
-  `selected_size` varchar(20) DEFAULT NULL COMMENT '使用者選的大小, e.g., L',
-
-  PRIMARY KEY (`id`),
-
+  `selected_sugar` varchar(50) NOT NULL COMMENT '使用者選的甜度, e.g., 50%',
+  `selected_ice` varchar(50) NOT NULL COMMENT '使用者選的冰塊, e.g., 0%',
+  `selected_size` varchar(20) NOT NULL COMMENT '使用者選的大小, e.g., L',
+  
   KEY `idx_cart` (`cart_id`)
 );
 
@@ -120,8 +120,7 @@ CREATE TABLE `auth`.`vendors` (
   `vendor_manager_id` int NOT NULL,
   `is_active` boolean NOT NULL DEFAULT true,
   `revenue` int NOT NULL DEFAULT 0 COMMENT '營業額',
-  `address` varchar(255) UNIQUE NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT (now())
+  `address` varchar(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE `auth`.`vendor_managers` (
@@ -137,8 +136,7 @@ CREATE TABLE `auth`.`customers` (
   `membership_level` int NOT NULL DEFAULT 0,
   `is_active` boolean NOT NULL DEFAULT true,
   `stored_balance` int NOT NULL DEFAULT 0,
-  `address` varchar(255) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT (now())
+  `address` varchar(255) NOT NULL
 );
 
 CREATE TABLE `store`.`products` (
