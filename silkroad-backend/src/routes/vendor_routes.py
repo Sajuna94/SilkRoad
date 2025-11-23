@@ -1,6 +1,5 @@
 from flask import Blueprint
-# from controllers import shop_controller   #WIP
-from controllers import register_vendor, login_vendor
+from controllers import register_user, login_user, update_products
 
 vendor_routes = Blueprint('vendor', __name__)
 
@@ -25,10 +24,10 @@ expected get:
 return:
 {
     "message": "...",
-    "success": true/false
+    "success": bool
 }
 """
-vendor_routes.route("/register", methods=["POST"])(register_vendor)
+vendor_routes.route("/register", methods=["POST"])(register_user)
 
 """
 function:
@@ -46,7 +45,7 @@ return:
     "success": True/False
 }
 """
-vendor_routes.route("/login", methods=["POST"])(login_vendor)
+vendor_routes.route("/login", methods=["POST"])(login_user)
 """
 function:
     更新product(s)狀態
@@ -73,4 +72,5 @@ col_name欄位只接受
 name, price, description, image_url, is_listed
 這個function會根據指定的col做調整，因此value 應該為string
 """
-# vendor_routes.route("/update_product", methods=["POST"])()
+# WIP
+vendor_routes.route("/update_products", methods=["POST"])(update_products)

@@ -1,8 +1,7 @@
 from flask import request, jsonify
 from models import User
-from models import Admin,Vendor,Customer
+from models import Admin,Vendor,Customer,Vendor_Manager
 from config import db
-from werkzeug.security import generate_password_hash, check_password_hash
 
 def register_user():
     data = request.get_json()
@@ -15,7 +14,7 @@ def register_user():
     phone_number = data.get('phone_number')
     
     address = data.get('address')
-    vendor_manager_id = data.get('vendor_manager_id')
+    mgr = data.get("manager")
 
     # 2. 基礎欄位檢查
     if not all([role, name, email, password, phone_number]):
@@ -33,13 +32,31 @@ def register_user():
         # 程式會跳到下面的 except ValueError 區塊
         
         if target_role == 'vendor':
-            if not address or not vendor_manager_id:
+            if not address or not mgr:
                 return jsonify({"message": "Vendor address or manager_id are needed", "success": False}), 400
-            
+
+            # check manager fields
+            mgr_necessary = ["name", "email", "phone_number"]
+            mgr_missing = [field for field in mgr_necessary if not mgr.get(field)]
+            if mgr_missing:
+                return jsonify({
+                    "message": f"Missing manager fields: {', '.join(mgr_missing)}",
+                    "success": False
+                }), 400
+
+            #建立manager
+            vndr_mgr = Vendor_Manager(
+                name=mgr.get("name"),
+                email=mgr.get("email"),
+                phone_number=mgr.get("phone_number")
+            )
+            db.session.add(vndr_mgr)
+            db.session.flush()
+
             new_user = Vendor.register(
                 name=name, email=email, password=password, phone_number=phone_number,
                 address=address,
-                vendor_manager_id=vendor_manager_id,
+                vendor_manager_id=vndr_mgr.id,
                 is_active=True
             )
 
@@ -61,10 +78,11 @@ def register_user():
             return jsonify({"message": "Invalid role", "success": False}), 400
 
         # 4. 存入資料庫
+        new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
 
-    except ValueError as e:
+    except ValueError:
         # [新增] 這裡專門捕捉 "重複註冊" 的錯誤 (由 User.register 拋出)
         # e 的內容就是 "Email has been registered" 或 "Phone number..."
         return jsonify({
