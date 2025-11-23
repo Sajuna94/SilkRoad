@@ -61,6 +61,7 @@ CREATE TABLE `order`.`order_items` (
   `order_id` int NOT NULL,
   `product_id` int NOT NULL,
   `quantity` int NOT NULL,
+  `price` int NOT NULL,
   `selected_sugar` varchar(50) NOT NULL COMMENT '使用者選的甜度, e.g., 50%',
   `selected_ice` varchar(50) NOT NULL COMMENT '使用者選的冰塊, e.g., 0%',
   `selected_size` varchar(20) NOT NULL COMMENT '使用者選的大小, e.g., L',

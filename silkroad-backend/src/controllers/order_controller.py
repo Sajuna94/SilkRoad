@@ -1,43 +1,38 @@
 from flask import jsonify, request
 from config import db
-from models import Cart_Item
-from models import Cart
-from models import Order
-from models import Order_Item
-from models import Discount_Policy
+from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy
 from datetime import date
+
 def do_discount(total_price_accumulated, policy_id):
+
+    if not policy_id:
+        return total_price_accumulated
 
     discount = Discount_Policy.query.get(policy_id)
 
-    vendor_id = discount.vendor_id
-    type = discount.type
-    value = discount.value
-    membership_limit = discount.membership_limit
-    # created_at = discount.created_at
-    # updated_at = discount.updated_at
+    if not discount:
+        raise ValueError("無效的折價券 ID")
 
-    if (discount.min_purchase and (total_price_accumulated < discount.min_purchase)):   
-        return jsonify({"message": "折價券未達低消",
-                        "success": False
-                        }), 400
+    if discount.min_purchase and total_price_accumulated < discount.min_purchase:
+        raise ValueError(f"未達折價券低消限制 (${discount.min_purchase})")
     
     today = date.today()
-    if (discount.expiry_date and (discount.expiry_date < today)):
-        return jsonify({"message": "折價券過期",
-                        "success": False
-                        }), 400
+    if discount.expiry_date and discount.expiry_date < today:
+         raise ValueError("折價券已過期")
 
-    if (type == 'percent'):
-        after_discount_price = total_price_accumulated * value / 100             
-    elif (type == 'fixed'):
-        after_discount_price = total_price_accumulated - value
+    discount_amount = 0
+    
+    if str(discount.type) == 'percent':
+        discount_amount = total_price_accumulated * (discount.value / 100)
+    elif str(discount.type) == 'fixed':
+        discount_amount = discount.value
+    
+    if discount.max_discount is not None:
+        if discount_amount > discount.max_discount:
+            discount_amount = discount.max_discount
 
-    if (discount.max_discount != None):
-        if (total_price_accumulated - after_discount_price > discount.max_discount):
-                after_discount_price = total_price_accumulated - discount.max_discount
-     
-    return after_discount_price
+    final_price = total_price_accumulated - discount_amount
+    return max(final_price, 0)
 
 
 def generate_new_order(cart, policy_id, note, payment_methods):
@@ -66,7 +61,8 @@ def generate_new_order(cart, policy_id, note, payment_methods):
                 item_price = store_and_calculate_item(new_order, item)
                 total_price_accumulated += item_price
 
-        new_order.total_price = do_discount(total_price_accumulated, policy_id)
+        final_price = do_discount(total_price_accumulated, policy_id)
+        new_order.total_price = final_price
 
         db.session.delete(cart) 
         db.session.commit()
@@ -76,6 +72,7 @@ def generate_new_order(cart, policy_id, note, payment_methods):
                         "message": "訂單建立成功且已結帳",                  
                         "success": True
                         }), 201
+    
     except ValueError as ve:
         db.session.rollback()
         return jsonify({"message": str(ve), "success": False}), 400
@@ -91,13 +88,14 @@ def store_and_calculate_item(new_order, item):
     if not product:
         raise ValueError(f"project ID {item.product_id} do not exist。")
 
-    temp_price = product.price
-    items_price = temp_price * item.quantity 
+    unit_price = product.price
+    items_price = unit_price * item.quantity 
     
     new_order_item = Order_Item(
         order_id = new_order.id,
         product_id = item.product_id,
         quantity = item.quantity,
+        price = unit_price,
         selected_sugar = item.selected_sugar,
         selected_ice = item.selected_ice,
         selected_size = item.selected_size,
@@ -119,7 +117,8 @@ def trans_to_order():
     #     }
 
     if not data:
-        return jsonify({'message': '無效的請求數據'}), 400
+        return jsonify({'message': '無效的請求數據',
+                        "success": False}), 400
     
     customer_id = data.get("customer_id")
     vendor_id = data.get("vendor_id")
@@ -134,10 +133,9 @@ def trans_to_order():
         return jsonify({"message": "購物車中沒有商品",
                         "success": False}), 404
     
-    if (vendor_id != cart.vendor_id):
+    if vendor_id != cart.vendor_id:
         return jsonify({"message": "vendor_id 不符合",
-                        "success": False
-                        }), 400
+                        "success": False}), 400
     
     policy_id = data.get("policy_id")
     note = data.get("note")
@@ -145,6 +143,82 @@ def trans_to_order():
     
     return generate_new_order(cart, policy_id, note, payment_methods)
 
+def view_order():
+    data = request.get_json()
+    #     預計傳給我{
+    #     "order_id":XXX,
+    #     "user_id":XXX,
+    #     "vendor_id":XXX,
+    #     }
+
+    if not data:
+        return jsonify({'message': '無效的請求數據',
+                        "success": False}), 400
     
+    order_id = data.get("order_id")
+    request_user_id = data.get("user_id")
+    request_vendor_id = data.get("vendor_id")
+
+    if not order_id or not request_user_id or not request_vendor_id:
+        return jsonify({"message": "缺少 order_id 或 user_id 或 vendor_id"}), 400
+    
+    try:
+        order = Order.query.get(order_id)
+
+        if not order:
+            return jsonify({"message": "查無訂單",
+                            "success": False}), 400
+        if order.user_id != request_user_id or order.vendor_id != request_vendor_id:
+            return jsonify({"message": "user_id 或 vendor_id 不匹配",
+                            "success": False}), 400
+        
+        order_items = order.items
+
+        result_list = []
+        total_price = 0
+
+        for item in order_items:
+            product = item.product
+            
+            item_sub_price = item.price * item.quantity
+            if product:
+                
+                total_price += item_sub_price
+
+                result_list.append({
+                    "order_item_id": item.id,
+                    "order_id": item.order_id,
+                    "product_id": item.product_id,
+                    "product_name": product.name,
+                    "product_image": product.image_url,
+
+                    "price": item.price,
+                    "quantity": item.quantity,
+                    "subtotal": item_sub_price,
+
+                    "selected_sugar": item.selected_sugar,
+                    "selected_ice": item.selected_ice,
+                    "selected_size": item.selected_size
+                })
+
+        order_info = ({
+            "note": order.note,
+            "payment_methods": order.payment_methods,
+            "refund_status": order.refund_status,
+            "refund_at": order.refund_at,
+            "is_completed": order.is_completed,
+            "is_delivered": order.is_delivered,
+            "total_price": order.total_price
+        })
+        
+        return jsonify({
+            "data": result_list,
+            "order_info": order_info,            
+            "message": "order items view",
+            "success": True,         
+        })       
+    except Exception as e:
+        print(f"Error details: {e}")
+        return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
 
     
