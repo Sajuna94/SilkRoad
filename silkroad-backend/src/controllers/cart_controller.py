@@ -1,5 +1,3 @@
-#Gs0n控管了這裡
-
 from flask import jsonify, request
 from config import db
 from models import Cart_Item
