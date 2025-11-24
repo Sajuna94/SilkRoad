@@ -1,26 +1,90 @@
+import { useState } from "react";
+import styles from "./UserManagement.module.scss";
+
+interface Customer {
+  id: number;
+  username: string;
+  blocked: boolean;
+}
+
 export default function UserManagement() {
-  const blockedUsers = [
-    { id: 1, username: "tea_lover", reason: "Spam messages", date: "2025-11-10" },
-    { id: 2, username: "coollatte", reason: "Harassment", date: "2025-11-11" },
-  ];
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "blocked" | "active">("all");
+
+  const [customers, setCustomers] = useState<Customer[]>([
+    { id: 1, username: "tea_lover", blocked: true },
+    { id: 2, username: "coollatte", blocked: false },
+    { id: 3, username: "milkfan", blocked: false },
+  ]);
+
+  const toggleBlocked = (id: number) => {
+    setCustomers((prev) =>
+      prev.map((c) =>
+        c.id === id ? { ...c, blocked: !c.blocked } : c
+      )
+    );
+  };
+
+  const filteredCustomers = customers.filter((c) => {
+    const matchesSearch = c.username.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "blocked" && c.blocked) ||
+      (statusFilter === "active" && !c.blocked);
+    return matchesSearch && matchesStatus;
+  });
 
   return (
-    <div className="animate-fadeIn">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-900">封鎖紀錄 / Blocked Users</h2>
-      <table className="w-full border border-gray-200 bg-white rounded-lg shadow-sm overflow-hidden">
-        <thead className="bg-gray-100 text-gray-700">
+    <div className={styles.container}>
+      <h2 className={styles.title}>Customer Management / 客戶管理</h2>
+
+      <div className={styles.filters}>
+        <input
+          type="text"
+          placeholder="搜尋 Username..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className={styles.input}
+        />
+
+        <select
+          value={statusFilter}
+          onChange={(e) =>
+            setStatusFilter(e.target.value as "all" | "blocked" | "active")
+          }
+          className={styles.select}
+        >
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="blocked">Blocked</option>
+        </select>
+      </div>
+
+      <table className={styles.table}>
+        <thead className={styles.thead}>
           <tr>
-            <th className="py-3 px-4 text-left">Username</th>
-            <th className="py-3 px-4 text-left">Reason</th>
-            <th className="py-3 px-4 text-left">Date</th>
+            <th className={styles.th}>User ID</th>
+            <th className={styles.th}>Username</th>
+            <th className={styles.th}>Status</th>
+            <th className={styles.th}>Action</th>
           </tr>
         </thead>
         <tbody>
-          {blockedUsers.map((user) => (
-            <tr key={user.id} className="border-t hover:bg-gray-50">
-              <td className="py-3 px-4">{user.username}</td>
-              <td className="py-3 px-4">{user.reason}</td>
-              <td className="py-3 px-4">{user.date}</td>
+          {filteredCustomers.map((c) => (
+            <tr key={c.id} className={styles.tr}>
+              <td className={styles.td}>{c.id}</td>
+              <td className={styles.td}>{c.username}</td>
+              <td className={styles.td}>{c.blocked ? "Blocked" : "Active"}</td>
+              <td className={styles.td}>
+                <button
+                  className={`${styles.toggleButton} ${
+                    c.blocked ? styles.blocked : styles.active
+                  }`}
+                  onClick={() => toggleBlocked(c.id)}
+                >
+                  {c.blocked ? "Unblock" : "Block"}
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

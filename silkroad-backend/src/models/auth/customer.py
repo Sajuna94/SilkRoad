@@ -5,6 +5,9 @@ from models.auth.user import User
 class Customer(User):
     __tablename__ = "customers"
     __table_args__ = {"schema" : "auth"}
+    __mapper_args__ = {
+        'polymorphic_identity': 'customer',
+    }
 
     user_id           = db.Column(db.Integer, db.ForeignKey("auth.users.id"), primary_key=True)
     membership_level  = db.Column(db.Integer, nullable=False, server_default=db.text("0"))
@@ -12,7 +15,7 @@ class Customer(User):
     stored_balance    = db.Column(db.Integer, nullable=False, server_default=db.text("0"))
     address           = db.Column(db.String(255), nullable=False)
 
+    cart = db.relationship("Cart", back_populates="owner", uselist=False)
+
     def __repr__(self):
         return f"<Customer {self.name}>"
-    
-    

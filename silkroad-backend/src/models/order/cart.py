@@ -15,7 +15,8 @@ class Cart(db.Model):
 
     #python
     items = db.relationship("Cart_Item", back_populates="cart", cascade="all, delete-orphan")
-    # customer = db.relationship("Customer", back_populates="cart")
+    # ref to class customer
+    owner = db.relationship("Customer", back_populates="cart", uselist=False)
 
     def clear(self):
         self.items.clear()

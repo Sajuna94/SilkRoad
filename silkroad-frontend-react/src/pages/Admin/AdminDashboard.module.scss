@@ -1,22 +1,24 @@
-/* ================================
-   Animations
-================================ */
+/* ======================================
+   Animations (更柔順、更高級感)
+====================================== */
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(16px) scale(0.98);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    filter: blur(0);
   }
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(28px);
   }
   to {
     opacity: 1;
@@ -25,11 +27,11 @@
 }
 
 .animateFadeIn {
-  animation: fadeIn 0.6s ease-out forwards;
+  animation: fadeIn 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
 .animateSlideUp {
-  animation: slideUp 0.6s ease-out forwards;
+  animation: slideUp 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
 .delay75  { animation-delay: 0.075s; }
@@ -37,84 +39,122 @@
 .delay300 { animation-delay: 0.3s; }
 
 
-/* ================================
-   Layout
-================================ */
+/* ======================================
+   Layout - 更現代化深色玻璃 UI
+====================================== */
 
 .dashboard {
   min-height: 100vh;
-  background: #1f2937; /* darker gray for better contrast */
+  background: radial-gradient(circle at top, #0f172a, #0a0f1e 60%, #05070d);
   display: flex;
-  color: #f9fafb;
+  color: #f1f5f9;
   overflow: hidden;
+  backdrop-filter: blur(6px);
 }
+
+
+/* ======================================
+   Sidebar - 玻璃擬態 + 柔光邊框
+====================================== */
 
 .sidebar {
-  width: 16rem;
-  background: #111827; /* richer dark background */
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 1.25rem;
+  width: 17rem;
+  background: rgba(15, 23, 42, 0.65);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 
-  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.15);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(14px);
+  box-shadow: 6px 0 18px rgba(0, 0, 0, 0.32);
 }
+.sidebar h2 {
+  margin: 1.25rem 1.25rem 2rem; 
+}
+
+.sidebar nav {
+  padding: 0 1.25rem;
+}
+
+
+/* ======================================
+   Main content
+====================================== */
 
 .main {
   flex: 1;
-  padding: 2rem;
+  padding: 2.2rem 2.4rem;
   overflow-y: auto;
 }
 
 
-/* ================================
-   Sidebar Tabs
-================================ */
+/* ======================================
+   Sidebar Tab Buttons - 高亮 + 深色玻璃
+====================================== */
 
 .tabButton {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
+  position: relative;
   width: 100%;
-  padding: 0.65rem 1rem;
-  border-radius: 0.6rem;
-  font-weight: 500;
-  font-size: 0.95rem;
-
-  background: transparent;
-  color: #d1d5db;
+  padding: 14px 20px;
+  text-align: left;
+  border: none;
+  background: transparent;   /* 無底色 */
+  color: #d1d5db;            /* 預設灰白 */
+  font-size: 16px;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: color 0.2s ease, padding-left 0.2s ease;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #f3f4f6;
+  /* 左側亮線（預設透明） */
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: transparent; /* 預設透明 */
+    border-radius: 4px;
+    transition: background 0.25s ease;
   }
 
+  /* hover：只亮文字，不改背景 */
+  &:hover {
+    color: #f3f4f6;   /* 亮一級 */
+    background: transparent;  /* 確保不變色 */
+		padding-left: 24px;
+  }
+
+  /* active：左側亮白線、文字變亮 */
   &.active {
-    background: #2563eb;
-    color: white;
-    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
-    transform: translateY(-1px);
+    color: #ffffff;
+
+    &::before {
+      background: white;  /* 亮條 */
+    }
   }
 }
 
 
-/* ================================
-   Utility Classes
-================================ */
+
+
+/* ======================================
+   Cards - 高階深色 UI 樣式
+====================================== */
 
 .card {
-  background: #1f2937;
-  padding: 1.5rem;
+  background: rgba(30, 41, 59, 0.6);
+  padding: 1.6rem;
   border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
   animation: fadeIn 0.5s ease-out both;
 }
 
 .headerTitle {
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-weight: 600;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.4rem;
 }

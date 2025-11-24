@@ -1,35 +1,35 @@
-:root {
-	--color-header-title: #333;
-	--color-main-bg: #fdfdfd;
-	// cart item
-	--color-item-hover: #ddd;
-	--color-item-name: #282828;
-	--color-item-options: #000000;
-	--color-item-price: #1d1d1d;
-	--color-item-quantity: #9d2cb4;
-}
+$color-header-title: #333;
+$color-main-bg: #fdfdfd;
+// cart item
+$color-item-hover: #ddd;
+$color-item-name: #282828;
+$color-item-options: #414141;
+$color-item-price: #1d1d1d;
+$color-item-quantity: #7f20ac;
 
 // $color-item: #f77070;
 $color-item-chose: #70f7da;
 
-
+h3 {
+	margin: 0;
+}
 
 .container {
 	display: flex;
 	flex-direction: column;
 	max-width: 980px;
 	width: 100%;
-	height: 60vh;
+	height: 70vh;
 	margin: auto;
 	padding: 30px;
-	background-color: var(--color-main-bg);
+	gap: 10px;
+	background-color: $color-main-bg;
 	border-radius: 1rem;
 
 	header {
-		// color: var(--color-header-title);
-		font-size: 1.8rem;
+		color: $color-header-title;
+		font-size: 1.5rem;
 		font-weight: bold;
-		margin-bottom: 10px;
 	}
 
 	main {
@@ -40,7 +40,6 @@ $color-item-chose: #70f7da;
 
 	footer {
 		display: flex;
-		padding-top: 10px;
 		gap: 10px;
 		justify-content: space-between;
 
@@ -50,12 +49,11 @@ $color-item-chose: #70f7da;
 			gap: 10px;
 
 			// a {
-				// color: #333;
+			// 	color: #333;
 			// }
 
 			span {
 				color: #a98;
-				user-select: none;
 			}
 		}
 
@@ -64,8 +62,11 @@ $color-item-chose: #70f7da;
 			display: flex;
 			align-items: center;
 
+
 			.total {
+				font-size: 1.2rem;
 				font-weight: bold;
+				color: #c01818;
 
 				&::before {
 					content: "總共 ";
@@ -77,7 +78,7 @@ $color-item-chose: #70f7da;
 			}
 
 			button {
-				padding: 8px 20px;
+				padding: 10px 20px;
 			}
 		}
 	}
@@ -95,7 +96,7 @@ $color-item-chose: #70f7da;
 		display: flex;
 		padding: 6px;
 		gap: 15px;
-		border-bottom: 1px solid var(--color-item-hover);
+		border-bottom: 1px solid $color-item-hover;
 		border-radius: 0.5rem;
 		transition: 0.3s;
 		cursor: pointer;
@@ -110,27 +111,23 @@ $color-item-chose: #70f7da;
 			flex: 1;
 
 			h3 {
-				color: var(--color-item-name);
+				color: $color-item-name;
 			}
 
 			div {
-				color: var(--color-item-options);
+				color: $color-item-options;
 			}
 		}
 
 		.price {
 			text-align: right;
 
-			::before {
-				content: "NT$ ";
-			}
-
 			h3 {
-				color: var(--color-item-price);
+				color: $color-item-price;
 			}
 
 			.quantity {
-				color: var(--color-item-quantity);
+				color: $color-item-quantity;
 
 				&::before {
 					content: "x";
@@ -141,7 +138,7 @@ $color-item-chose: #70f7da;
 	}
 
 	.item:hover {
-		background-color: var(--color-item-hover);
+		background-color: $color-item-hover;
 	}
 }
 
@@ -176,6 +173,7 @@ $color-item-chose: #70f7da;
 		flex: 1;
 		display: flex;
 		flex-direction: column;
+		color: $color-header-title;
 		overflow: hidden;
 
 		hr {
@@ -188,14 +186,18 @@ $color-item-chose: #70f7da;
 			margin: 0;
 			padding: 0;
 			overflow-y: auto;
+			color: $color-header-title;
+
 
 			li {
 				cursor: pointer;
 				display: flex;
 				justify-content: space-between;
 				padding: 10px;
-				border-bottom: 1px solid var(--color-item-hover);
+				border-bottom: 1px solid $color-item-hover;
 				transition: 0.3s;
+
+
 
 				.discount {
 					&::before {
@@ -209,7 +211,7 @@ $color-item-chose: #70f7da;
 			}
 
 			li:not(.selected):hover {
-				background-color: var(--color-item-hover);
+				background-color: $color-item-hover;
 			}
 
 			.selected {
@@ -219,16 +221,18 @@ $color-item-chose: #70f7da;
 	}
 
 	.note {
+		color: $color-header-title;
+
 		textarea {
+			background-color: #f0f0f0;
+			color: $color-header-title;
 			width: 100%;
 			height: 80px;
 			padding: 8px;
 			box-sizing: border-box;
 			resize: none;
 			border-radius: 8px;
-			background-color: var(--color-main-bg);
 			border: 1px solid #333;
-			color: #213547;
 		}
 	}
 }
