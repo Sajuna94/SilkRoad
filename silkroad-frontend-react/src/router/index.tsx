@@ -1,8 +1,8 @@
+import { useRoutes } from "react-router-dom";
 import { AdminDashboard } from "@/pages/Admin";
 import { About, AuthLogin, AuthRegister, Cart, Home } from "@/pages/Main";
 import { UserOrders } from "@/pages/User";
 import { VendorDashboard, VendorProductList } from "@/pages/Vendor";
-
 
 export const routes = [{
     path: "/",
@@ -17,7 +17,6 @@ export const routes = [{
             path: "admin",
             children: [
                 { index: true, element: <AdminDashboard /> },
-                // { path: "dashboard", element: <AdminDashboard /> },
             ],
         },
         {
@@ -35,3 +34,7 @@ export const routes = [{
         },
     ]
 }];
+
+export default function Router() {
+    return useRoutes(routes);
+}

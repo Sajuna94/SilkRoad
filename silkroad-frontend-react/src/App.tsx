@@ -1,32 +1,30 @@
-import { BrowserRouter, useRoutes } from "react-router-dom";
-// import { ToastProvider } from "@/components/atoms/Toast";
 import "@/App.css";
+// import { ToastProvider } from "@/components/atoms/Toast";
+// import { CartProvider } from "@/components/molecules/CartConText";
+import { BrowserRouter } from "react-router-dom";
+import Router from "./router";
+
 import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";
-import { routes } from "@/router";
 
 import { usePing } from "@/hooks/test/usePing";
-// import { CartProvider } from "@/components/molecules/CartConText";
+
 
 function App() {
-	const ping = usePing();
-	if (ping.isSuccess) console.log("Backend response:", ping.data);
+    const ping = usePing();
+    if (ping.isSuccess) console.log("Backend response:", ping.data);
 
-	return (
-		<BrowserRouter basename="/SilkRoad">
-			{/* <CartProvider> */}
-			<Header />
-			{/* <ToastProvider> */}
-			<Router />
-			{/* </ToastProvider> */}
-			<Footer />
-			{/* </CartProvider> */}
-		</BrowserRouter>
-	);
-}
-
-function Router() {
-	return useRoutes(routes);
+    return (
+        <BrowserRouter basename="/SilkRoad">
+            {/* <CartProvider> */}
+            <Header />
+            {/* <ToastProvider> */}
+            <Router />
+            {/* </ToastProvider> */}
+            <Footer />
+            {/* </CartProvider> */}
+        </BrowserRouter>
+    );
 }
 
 export default App;
