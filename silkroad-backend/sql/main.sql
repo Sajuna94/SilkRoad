@@ -31,7 +31,7 @@ CREATE TABLE `order`.`discount_policies` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `vendor_id` int NOT NULL,
   `type` ENUM ('percent', 'fixed') NOT NULL,
-  `value` int NOT NULL,
+  `value` float NOT NULL,
   `min_purchase` int DEFAULT 0,
   `max_discount` int,
   `membership_limit` int NOT NULL DEFAULT 0,
@@ -53,9 +53,11 @@ CREATE TABLE `order`.`orders` (
   `is_completed` boolean NOT NULL DEFAULT false,
   `is_delivered` boolean NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now()),
-  `updated_at` timestamp NOT NULL DEFAULT (now()) COMMENT 'TODO: Add ON UPDATE ON UPDATE CURRENT_TIMESTAMP'
+  `updated_at` timestamp NOT NULL
+     DEFAULT CURRENT_TIMESTAMP
+     ON UPDATE CURRENT_TIMESTAMP 
+     COMMENT '資料最後更新時間'
 );
-
 CREATE TABLE `order`.`order_items` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `order_id` int NOT NULL,

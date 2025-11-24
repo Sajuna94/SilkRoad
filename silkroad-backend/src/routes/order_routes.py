@@ -1,4 +1,4 @@
-from controllers import trans_to_order, view_order
+from controllers import trans_to_order, view_order, update_orderinfo
 from flask import Blueprint
 
 order_routes = Blueprint("order", __name__)
@@ -70,3 +70,19 @@ order_routes.route('/view', methods=['POST'])(view_order)
     #        "selected_ice": item.selected_ice,
     #        "selected_size": item.selected_size
     #         }
+
+order_routes.route('/update', methods=['POST'])(update_orderinfo)
+
+    #     需要{
+    #     "order_id": XXX,
+    #     "refund_status":XXX,
+    #     "refund_at":XXX,
+    #     "is_completed":XXX,
+    #     "is_delivered":XXX
+    #     }
+
+    #     回傳:
+    #    {
+    #    "message": "...",
+    #    "success": True/False
+    #    }   

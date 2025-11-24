@@ -23,7 +23,7 @@ def do_discount(total_price_accumulated, policy_id):
     discount_amount = 0
     
     if str(discount.type) == 'percent':
-        discount_amount = total_price_accumulated * (discount.value / 100)
+        discount_amount = total_price_accumulated - (total_price_accumulated * discount.value)
     elif str(discount.type) == 'fixed':
         discount_amount = discount.value
     
@@ -221,4 +221,71 @@ def view_order():
         print(f"Error details: {e}")
         return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
 
+def update_orderinfo():
+    data = request.get_json()
+
+    #     預計傳給我{
+    #     "order_id": XXX,
+    #     "refund_status":XXX,
+    #     "refund_at":XXX,
+    #     "is_completed":XXX,
+    #     "is_delivered":XXX
+    #     }
+
+    order_id = data.get('order_id')
+    if not order_id:
+        return jsonify({"message": "order_id為空",
+                        "success": False}), 400
     
+    order = Order.query.filter_by(id=order_id).first()
+    if not order:
+        return jsonify({"message": f"找不到 ID 為 {order_id} 的訂單",
+                        "success": False}), 404
+    
+    refund_status = data.get("refund_status")
+    refund_at = data.get("refund_at")
+    is_completed = data.get("is_completed")
+    is_delivered = data.get("is_delivered")
+
+    able_refund_status = ['refunded', 'rejected', None]
+
+    try:
+        if refund_status is not None:
+            if refund_status not in able_refund_status:
+                return jsonify({"message": "refund_status 傳值錯誤",
+                                "success": False}), 400
+            order.refund_status = refund_status
+        
+        if refund_status == "refunded":
+            if refund_at is None:
+                return jsonify({"message": "refund_at 傳值錯誤",
+                                "success": False}), 400
+            order.refund_at = refund_at
+        elif refund_status != 'refunded' and refund_at is not None:
+             return jsonify({"message": "refund_status 不為 'refunded'",
+                             "success": False}), 400
+        elif refund_status in [None, 'rejected'] and refund_at is None:
+            order.refund_at = None
+
+        if is_completed is not None:
+            if not isinstance(is_completed, bool):
+                return jsonify({"message": "is_completed 必須是bool",
+                                "success": False}), 400
+            
+            order.is_completed = is_completed
+
+        if is_delivered is not None:
+            if not isinstance(is_delivered, bool):
+                return jsonify({"message": "is_delivered 傳值錯誤",
+                                "success": False}), 400
+            order.is_delivered = is_delivered
+
+        db.session.commit()
+        return jsonify({"message": "訂單資訊更新成功",
+                        "success": True}), 200
+
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"更新訂單時發生錯誤: {e}")
+        return jsonify({"message": "伺服器內部錯誤", "success": False}), 500
