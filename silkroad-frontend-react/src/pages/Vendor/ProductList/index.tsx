@@ -3,7 +3,7 @@ import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery
 import { products } from "@/types/data/product";
 import { Link } from "react-router-dom";
 
-export default function VendorProductList() {
+export default function ProductList() {
 
 
     return (

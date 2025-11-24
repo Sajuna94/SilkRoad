@@ -1,0 +1,51 @@
+.footer {
+	background-color: #19191e;
+	color: #777;
+	padding: 2rem 1.5rem;
+	font-size: 0.9rem;
+	margin-top: auto;
+}
+
+.container {
+	max-width: 1400px;
+	margin: 0 auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+.left {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.brand {
+	font-size: 1.2rem;
+	font-weight: bold;
+	color: #777;
+}
+
+.links {
+	display: flex;
+	gap: 1.5rem;
+	flex-wrap: wrap;
+}
+
+.links a {
+	color: #777;
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+
+.links a:hover {
+	color: var(--color-link-hover);
+}
+
+.right {
+	color: #777;
+	font-size: 0.8rem;
+	text-align: right;
+}

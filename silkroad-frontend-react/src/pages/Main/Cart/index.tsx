@@ -1,5 +1,5 @@
 // import { useNavigate } from "react-router-dom";
-import styles from "./CartPage.module.scss";
+import styles from "./Cart.module.scss";
 import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal/ProductModal";
 import { useRef, useState } from "react";
 import { products } from "@/types/data/product";
@@ -20,7 +20,7 @@ const items: CartItemWithRelations[] = cartItems.map((cartItem, index) => {
 	};
 });
 
-export default function CartPage() {
+export default function Cart() {
 	const baseTotal = items.reduce(
 		(acc, t) => acc + t.product.price * t.quantity,
 		0

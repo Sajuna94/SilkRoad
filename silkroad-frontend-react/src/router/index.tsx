@@ -1,40 +1,37 @@
-import {
-	AboutPage,
-	CartPage,
-	HomePage,
-	LoginPage,
-	RegisterPage,
-	OrderHistoryPage,
-} from "@/pages";
-import AdminDashboard from "@/pages/Admin/AdminDashboard";
-import VendorProductList from "@/pages/Vendor/VendorProductList";
-import VendorDashboard from "@/pages/Vendor/Dashboard";
+import { AdminDashboard } from "@/pages/Admin";
+import { About, AuthLogin, AuthRegister, Cart, Home } from "@/pages/Main";
+import { UserOrders } from "@/pages/User";
+import { VendorDashboard, VendorProductList } from "@/pages/Vendor";
 
-export const routes = [
-	{ path: "/cart", element: <CartPage /> },
-	{ path: "/orders", element: <OrderHistoryPage /> },
 
-	{
-		path: "/",
-		children: [
-			{ index: true, element: <AboutPage /> },
-			{ path: "about", element: <AboutPage /> },
-			{ path: "home", element: <HomePage /> },
-		],
-	},
-	{
-		path: "/",
-		children: [
-			{ path: "login", element: <LoginPage /> },
-			{ path: "register", element: <RegisterPage /> },
-		],
-	},
-	{
-		path: "/vendor",
-		children: [
-			{ index: true, element: <VendorProductList /> },   // /vendor
-			{ path: "dashboard", element: <VendorDashboard /> } // /vendor/dashboard
-		],
-	},
-	{ path: "/admin", element: <AdminDashboard /> },
-];
+export const routes = [{
+    path: "/",
+    children: [
+        { index: true, element: <About /> },
+        { path: "about", element: <About /> },
+        { path: "login", element: <AuthLogin /> },
+        { path: "register", element: <AuthRegister /> },
+        { path: "cart", element: <Cart /> },
+        { path: "home", element: <Home /> },
+        {
+            path: "admin",
+            children: [
+                { index: true, element: <AdminDashboard /> },
+                // { path: "dashboard", element: <AdminDashboard /> },
+            ],
+        },
+        {
+            path: "user",
+            children: [
+                { path: "orders", element: <UserOrders /> },
+            ],
+        },
+        {
+            path: "vendor",
+            children: [
+                { index: true, element: <VendorProductList /> },
+                { path: "dashboard", element: <VendorDashboard /> },
+            ],
+        },
+    ]
+}];

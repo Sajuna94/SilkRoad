@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useOrders } from "@/hooks/order/order";
-import styles from "./OrderHistoryPage.module.scss";
+import styles from "./Orders.module.scss";
 import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
 import { products } from "@/types/data/product";
 
-export default function OrderHistoryPage() {
+export default function History() {
     const customerId = 1;
     const { data: orders, isLoading, error } = useOrders(customerId);
     const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);

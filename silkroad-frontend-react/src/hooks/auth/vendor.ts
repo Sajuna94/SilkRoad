@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { getVendorById, getVendors } from '@/api/auth'
-import type { Vendor } from '@/types/auth'
+import { getVendorById, getVendors } from '@/api/user'
+import type { Vendor } from '@/types/user'
 
 export const useVendors = () => {
     return useQuery<Vendor[]>({
