@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+// import React, { useEffect, useState } from "react";
+// import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-const tabs = [
-	{ id: "1", label: "Tab 1", content: "這是第一個 Tab 的內容" },
-	{ id: "2", label: "Tab 2", content: "這是第二個 Tab 的內容" },
-	{ id: "3", label: "Tab 3", content: "這是第三個 Tab 的內容" },
-];
+// const tabs = [
+// 	{ id: "1", label: "Tab 1", content: "這是第一個 Tab 的內容" },
+// 	{ id: "2", label: "Tab 2", content: "這是第二個 Tab 的內容" },
+// 	{ id: "3", label: "Tab 3", content: "這是第三個 Tab 的內容" },
+// ];
 
 // function Sidebar() {
 // 	const navigate = useNavigate();
