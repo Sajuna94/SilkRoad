@@ -1,51 +1,30 @@
 from flask import Blueprint
-from controllers import register_user, login_user, update_products
+from controllers import register_user, login_user, update_products, add_product
 
 vendor_routes = Blueprint('vendor', __name__)
 
 """
 function:
-    register vendor
-
+    增加product
+    
 expected get:
 {
-    "name": "string",
-    "email": "string",
-    "password": "string",
-    "phone_number": "string"
-    "address": "string"
-    "manager": {
-        "name": "string",
-        "email": "string",
-        "phone_number": "string"
-    }
+    "vendor_id": int,
+    "name": string,
+    "price": int,
+    "description": string,
+    "image_url": string,
+    "is_listed": bool (default=True)
 }
-
 return:
 {
     "message": "...",
     "success": bool
+    "product_id": int (is successful)
 }
 """
-vendor_routes.route("/register", methods=["POST"])(register_user)
+vendor_routes.route("/Add_Product", methods=["POST"])(add_product)
 
-"""
-function:
-    login vendor
-
-expected get:
-{
-    email: "string",
-    password: "string"
-}
-
-return:
-{
-    "message": "...",
-    "success": True/False
-}
-"""
-vendor_routes.route("/login", methods=["POST"])(login_user)
 """
 function:
     更新product(s)狀態
@@ -53,10 +32,10 @@ function:
 expected get:
 [
     {
-        "product_id": "int",
+        "product_id": int,
         "behavior": {
-            "col_name": "string",
-            "value": "string"
+            "col_name": string,
+            "value": string
         }
     },
     ...
@@ -65,12 +44,19 @@ expected get:
 return:
 {
     "message": "...",
-    "success": True/False
+    "success": bool,
+    "product": { (if successful)
+        "vendor_id": int,
+        "name": string,
+        "price": int,
+        "description": string,
+        "image_url": string,
+        "is_listed": bool 
+    }
 }
 Note:
 col_name欄位只接受
 name, price(Integer), description, image_url, is_listed(true/false)
 這個function會根據指定的col做調整，因此value 應該為string
 """
-# WIP
-vendor_routes.route("/update_products", methods=["POST"])(update_products)
+vendor_routes.route("/update_products", methods=["POST"])(update_products) #WIP same vendor check

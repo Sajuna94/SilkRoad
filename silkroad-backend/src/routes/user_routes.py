@@ -37,7 +37,8 @@ elif role == 'admin' :
 return 
 {
     "message": "...",
-    "success": bool
+    "success": bool,
+    "user_id": int (if successful)
 }
 """
 user_routes.route('/login', methods=['POST'])(login_user)

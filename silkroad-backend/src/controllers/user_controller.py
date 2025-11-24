@@ -99,7 +99,8 @@ def register_user():
 
     return jsonify({
         "message": "Registration successful",              
-        "success": True
+        "success": True,
+        "user_id": new_user.id
     }), 201
 
 def login_user(): 

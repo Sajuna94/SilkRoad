@@ -57,7 +57,6 @@ cart_routes.route('/view', methods=['POST'])(view_cart)
     #
     # 或    ---成功回傳---
     #       {
-<<<<<<< HEAD
     #       "status": "success",
     #       "customer_id": customer_id,
     #       "vendor_id": current_cart.vendor_id,
@@ -67,10 +66,8 @@ cart_routes.route('/view', methods=['POST'])(view_cart)
 
     # 或 ---
     # { data {}, message: "" }
-=======
     #       "data": [],
     #       "message": "cart item view",
     #       "success": True",
     #       
     #       }
->>>>>>> d06504e5b6ed80662780189d0170fee2216ff171

@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from config import init_db
 from routes import user_routes, cart_routes, order_routes
-from routes import admin_routes
+from routes import admin_routes, vendor_routes
 from utils import test_routes
 
 app = Flask(__name__)
@@ -38,6 +38,7 @@ app.register_blueprint(user_routes, url_prefix='/api/user')
 app.register_blueprint(cart_routes, url_prefix='/api/cart')
 app.register_blueprint(admin_routes,url_prefix='/api/admin')
 app.register_blueprint(order_routes,url_prefix='/api/order')
+app.register_blueprint(vendor_routes, url_prefix='/api/vendor')
 
 @app.route("/")
 def index():
