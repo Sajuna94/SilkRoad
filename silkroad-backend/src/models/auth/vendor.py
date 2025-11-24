@@ -17,7 +17,7 @@ class Vendor(User):
     revenue             = db.Column(db.Integer, nullable = False, server_default = db.text('0'))
     address             = db.Column(db.String(255) , unique = True, nullable = False)
 
-
+    products = db.relationship("Product", back_populates="vendor", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Shop {self.name}>"

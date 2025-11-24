@@ -69,7 +69,7 @@ return:
 }
 Note:
 col_name欄位只接受
-name, price, description, image_url, is_listed
+name, price(Integer), description, image_url, is_listed(true/false)
 這個function會根據指定的col做調整，因此value 應該為string
 """
 # WIP

@@ -13,7 +13,7 @@ class Product(db.Model):
     is_listed    = db.Column(db.Boolean, nullable=False, server_default=db.text("true"))
     created_at   = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
 
-    # vendor = db.relationship("Vendor", back_populates="products")
+    vendor = db.relationship("Vendor", back_populates="products")
 
     def __repr__(self):
         return f"<Product {self.name} - Price {self.price}>"
