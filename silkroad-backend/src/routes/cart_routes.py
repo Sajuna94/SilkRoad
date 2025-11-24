@@ -51,3 +51,6 @@ cart_routes.route('/view', methods=['POST'])(view_cart)
     #       "items": result_list,     # result_list 格式請查看 silkroad-backend/src/controllers/cart_controller
     #       "total_amount": total_price
     #       }
+
+    # 或 ---
+    # { data {}, message: "" }
