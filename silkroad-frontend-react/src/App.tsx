@@ -7,12 +7,12 @@ import Router from "./router";
 import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";
 
-import { usePing } from "@/hooks/test/usePing";
+// import { usePing } from "@/hooks/test/usePing";
 
 
 function App() {
-    const ping = usePing();
-    if (ping.isSuccess) console.log("Backend response:", ping.data);
+    // const ping = usePing();
+    // if (ping.isSuccess) console.log("Backend response:", ping.data);
 
     return (
         <BrowserRouter basename="/SilkRoad">
