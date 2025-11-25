@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers import register_user, login_user, update_products, add_product
+from controllers import register_user, login_user, update_products, add_product, add_discount_policy
 
 vendor_routes = Blueprint('vendor', __name__)
 
@@ -60,3 +60,6 @@ name, price(Integer), description, image_url, is_listed(true/false)
 這個function會根據指定的col做調整，因此value 應該為string
 """
 vendor_routes.route("/update_products", methods=["POST"])(update_products) #WIP same vendor check
+
+
+vendor_routes.route("/add_discount", methods=["POST"])(add_discount_policy)

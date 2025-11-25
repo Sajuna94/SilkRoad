@@ -2,9 +2,25 @@
     By hansome young boy Etho
 """
 from flask import jsonify, request
-from models import Vendor, Product
+from models import Vendor, Product, Discount_Policy
 from config.database import db
+from datetime import datetime, date
 
+def validate_expiry_date(date_string):
+    if not date_string:
+        return None 
+
+    EXPECTED_FORMAT = '%Y-%m-%d'
+
+    try:
+        dt_object = datetime.strptime(date_string, EXPECTED_FORMAT)
+        return dt_object.date() 
+        
+    except ValueError:
+        raise ValueError(
+            f"日期格式錯誤。"
+        )
+    
 def add_product():
     data = request.get_json()
     
@@ -170,3 +186,90 @@ def update_products():
                 "message": f"Product update failed: {str(e)}",
                 "success": False
             }), 500
+
+
+def add_discount_policy():
+    data = request.get_json()
+
+    '''
+    預計傳給我{
+    "vendor_id":XXX,
+    "type":XXX,
+    "value":XXX,
+    "min_purchase":XXX,
+    "max_discount":XXX,
+    "membership_limit":XXX,
+    "expiry_date":XXX,
+    }
+    '''
+
+    if not data:
+        return jsonify({'message': '無效的請求數據', "success": False}), 400
+    
+    vendor_id = data.get("vendor_id")
+    
+    if not vendor_id:
+        return jsonify({"message": "缺少 vendor_id", "success": False}), 400
+    try:
+        vendor_exists = db.session.query(Vendor).get(vendor_id)
+        if vendor_exists is None:
+            return jsonify({"message": "無效的 vendor_id", 
+                            "success": False}), 400
+    except Exception:
+        return jsonify({"message": "系統錯誤，無法驗證 vender_id", 
+                        "success": False}), 500
+
+
+    type_val = data.get("type")
+    value = data.get("value")
+    membership_limit = data.get("membership_limit") 
+    min_purchase = data.get("min_purchase")         
+    max_discount = data.get("max_discount")       
+    
+    if type_val is None or value is None or membership_limit is None:
+        return jsonify({"message": "type, value, membership_limit 不可為空或 None", 
+                        "success": False}), 400
+
+
+    expiry_date_str = data.get("expiry_date") 
+    parsed_expiry_date = None
+    
+    if expiry_date_str:
+        try:
+            parsed_expiry_date = datetime.strptime(expiry_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({"message": "日期格式錯誤", 
+                            "success": False}), 400
+
+
+    try:
+        add_discount_policy = Discount_Policy(
+            vendor_id = vendor_id,
+            type = type_val,
+            value = value,
+            membership_limit = membership_limit, 
+            expiry_date = parsed_expiry_date    
+        )
+        
+        if min_purchase is not None and min_purchase != 0:
+            add_discount_policy.min_purchase = min_purchase
+
+        if max_discount is not None:
+            add_discount_policy.max_discount = max_discount
+        
+
+        db.session.add(add_discount_policy)
+        db.session.commit()
+        
+        return jsonify({"message": "新增折價券成功",
+                        # "policy_id": add_discount_policy.id,
+                         "success": True}), 201 
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"資料庫錯誤: {str(e)}",
+                        "success": False}), 500
+
+
+    
+

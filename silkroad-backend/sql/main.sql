@@ -37,7 +37,10 @@ CREATE TABLE `order`.`discount_policies` (
   `membership_limit` int NOT NULL DEFAULT 0,
   `expiry_date` date COMMENT '折價結束時間',
   `created_at` timestamp NOT NULL DEFAULT (now()),
-  `updated_at` timestamp NOT NULL DEFAULT (now()) COMMENT 'TODO: Add ON UPDATE ON UPDATE CURRENT_TIMESTAMP'
+  `updated_at` timestamp NOT NULL
+     DEFAULT CURRENT_TIMESTAMP
+     ON UPDATE CURRENT_TIMESTAMP 
+     COMMENT '資料最後更新時間'
 );
 
 CREATE TABLE `order`.`orders` (
