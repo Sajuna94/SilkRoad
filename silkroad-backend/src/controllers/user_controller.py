@@ -138,3 +138,124 @@ def login_user():
         "message": "Login successful",
         "success": True
     }), 200
+
+def logout_user():
+    """
+    會員登出
+    目前為無狀態 API，主要由前端清除資訊，後端回傳成功訊息即可。
+    若未來有使用 Session 或 Redis 黑名單，在此處處理。
+    """
+    return jsonify({
+        "message": "Logout successful",
+        "success": True
+    }), 200
+
+def update_user(user_id):
+    """
+    更新會員資料 (不包含密碼)
+    支援更新: name, phone_number, address (僅 Vendor/Customer), is_active (僅 Admin 操作)
+    """
+    data = request.get_json()
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"message": "User not found", "success": False}), 404
+
+    # 提取參數
+    name = data.get('name')
+    phone_number = data.get('phone_number')
+    address = data.get('address') # 只有 Vendor/Customer 有此欄位
+    
+    try:
+        # 更新通用欄位
+        if name:
+            user.name = name
+        if phone_number:
+            # 若要更新電話，需檢查是否重複
+            existing_phone = User.query.filter_by(phone_number=phone_number).first()
+            if existing_phone and existing_phone.id != user.id:
+                 return jsonify({"message": "Phone number already in use", "success": False}), 409
+            user.phone_number = phone_number
+
+        # 更新特定角色欄位 (Address)
+        # 由於 SQLAlchemy 多型繼承，取得的 user 物件會自動是 Customer 或 Vendor 的實例
+        if user.role in ['vendor', 'customer'] and address:
+            user.address = address
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "User profile updated successfully",
+            "success": True,
+            "data": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+                "phone_number": user.phone_number,
+                # 如果是 vendor/customer 嘗試回傳 address，否則回傳 None
+                "address": getattr(user, 'address', None) 
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
+    
+def update_password(user_id):
+    """
+    更新會員密碼
+    需要驗證舊密碼
+    """
+    data = request.get_json()
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+
+    if not all([old_password, new_password]):
+        return jsonify({"message": "Missing old_password or new_password", "success": False}), 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found", "success": False}), 404
+
+    # 驗證舊密碼
+    if not user.check_password(old_password):
+        return jsonify({"message": "Old password is incorrect", "success": False}), 401
+
+    try:
+        # 設定新密碼 (假設 User model 有 set_password 方法)
+        user.set_password(new_password)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Password updated successfully",
+            "success": True
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
+
+def delete_user(user_id):
+    """
+    刪除會員
+    """
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found", "success": False}), 404
+
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({
+            "message": "User deleted successfully",
+            "success": True
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        # 通常刪除失敗是因為有外鍵關聯 (例如有訂單紀錄)，這時候不能硬刪
+        return jsonify({
+            "message": f"Cannot delete user (Foreign Key Constraint): {str(e)}",
+            "success": False
+        }), 500
