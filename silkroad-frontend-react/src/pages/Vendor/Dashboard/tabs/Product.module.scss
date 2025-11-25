@@ -1,0 +1,136 @@
+// #root {
+// 	min-height: 100vh;
+// 	display: flex;
+// 	flex-direction: column;
+// }
+
+// #navbar {
+// 	height: 100px
+// }
+
+// #main {
+// 	flex: 1;
+// }
+
+// #footer {
+// 	height: 100px
+// }
+
+.container {
+	// in main (只能更動 container)
+	display: flex;
+
+	min-height: 0;
+	overflow: hidden;
+
+	/* 行動端更穩定 */
+	.info {
+		.content {
+			display: flex;
+
+			div {
+			}
+		}
+	}
+
+	.add {
+		.content {
+			display: flex;
+			flex-direction: column;
+		}
+	}
+
+	.info,
+	.add {
+		display: flex;
+		flex-direction: column;
+		max-height: 100%;
+
+		.content {
+			flex: 1 1 auto;
+			overflow-y: auto;
+			min-height: 0px;
+		}
+	}
+}
+
+// >div {
+// 	display: flex;
+// 	flex-direction: column;
+
+// 	.content {
+// 		flex: 1 1 auto;
+// 	}
+// }
+
+// button {
+// 	padding: 6px 10px;
+// }
+
+// header {
+// 	font-size: 1.5rem;
+// 	font-weight: bold;
+// 	padding: 0 10px 10px 0;
+// }
+
+// footer {
+// 	text-align: right;
+// }
+// }
+
+
+
+// .left {
+// 	flex: 1;
+
+// 	>div {
+// 		display: flex;
+
+// 		>div {
+// 			flex: 1;
+
+// 			table {
+// 				width: 100%;
+// 				text-align: center;
+
+// 				thead {
+// 					border-bottom: 1px solid #5e5e5e;
+// 				}
+
+// 				tr:nth-child(even) {
+// 					background-color: #f0f0f0;
+// 				}
+
+// 				th {
+// 					font-size: 1.2rem;
+// 					font-weight: bold;
+// 				}
+
+// 				td {
+// 					padding: 10px 0;
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+// .table-wrapper {
+// 	flex: 1;
+// 	overflow-y: auto;
+
+
+// }
+
+// .right {
+// 	width: 700px;
+
+// 	.content {
+// 		flex: 1 1 auto;
+// 		overflow-y: auto;
+// 		min-height: 0;
+
+// 		>div {
+// 			background-color: red;
+// 		}
+// 	}
+// }

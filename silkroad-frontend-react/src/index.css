@@ -125,3 +125,15 @@ ul {
 	margin: 0;
 	padding: 0;
 }
+
+table {
+  all: unset;       
+  display: table;  
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  all: unset;
+  display: table-cell;
+}

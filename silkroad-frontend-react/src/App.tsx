@@ -1,11 +1,11 @@
-import { BrowserRouter, useRoutes } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 // import { ToastProvider } from "@/components/atoms/Toast";
 import "@/App.css";
 import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";
-import { routes } from "@/router";
 
 import { usePing } from "@/hooks/test/usePing";
+import Router from "./router";
 // import { CartProvider } from "@/components/molecules/CartConText";
 
 function App() {
@@ -25,8 +25,6 @@ function App() {
 	);
 }
 
-function Router() {
-	return useRoutes(routes);
-}
+
 
 export default App;

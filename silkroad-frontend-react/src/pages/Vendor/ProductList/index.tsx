@@ -4,8 +4,6 @@ import { products } from "@/types/data/product";
 import { Link } from "react-router-dom";
 
 export default function VendorProductList() {
-
-
     return (
         <>
             <Link to={"/vendor/dashboard"} > dashboard </Link>
