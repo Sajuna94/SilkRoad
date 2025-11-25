@@ -1,8 +1,11 @@
+type Role = "admin" | "vendor" | "customer" | "guest";
+
 interface BaseUser {
-    user_id: number
+    id: number
     name: string
     email: string
     phone_number: string
+	role: Role
     created_at: string
 }
 

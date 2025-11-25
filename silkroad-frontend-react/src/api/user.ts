@@ -1,5 +1,5 @@
 import { api } from "@/api/instance"
-import type { Vendor } from "@/types/auth";
+import type { Vendor } from "@/types/user";
 
 export const getVendors = async (): Promise<Vendor[]> => {
     return (await api.get("/vendors")).data;

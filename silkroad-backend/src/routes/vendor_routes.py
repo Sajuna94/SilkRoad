@@ -1,39 +1,62 @@
 from flask import Blueprint
-# from controllers import shop_controller   #WIP
-from controllers import register_vendor
+from controllers import register_user, login_user, update_products, add_product
 
-vendor_routes = Blueprint('shop', __name__)
+vendor_routes = Blueprint('vendor', __name__)
 
 """
 function:
-    register vendor
-
+    增加product
+    
 expected get:
 {
-    "name": "string",
-    "email": "string",
-    "password": "string",
-    "phone_number": "string"
-    "address": "string"
-    "manager": {
-        "name": "string",
-        "email": "string",
-        "phone_number": "string"
-    }
+    "vendor_id": int,
+    "name": string,
+    "price": int,
+    "description": string,
+    "image_url": string,
+    "is_listed": bool (default=True)
 }
-
-return (if success)
+return:
 {
-    "message": "Vendor registered successfully",
-    "status": "success"
-}
-
-return (if failure)
-{
-    "message": "Vendor registration failed",
-    "status": "failure"
+    "message": "...",
+    "success": bool
+    "product_id": int (is successful)
 }
 """
-vendor_routes.route("/register", methods=["POST"])(register_vendor)
+vendor_routes.route("/Add_Product", methods=["POST"])(add_product)
 
-vendor_routes.route("/login", methods)
+"""
+function:
+    更新product(s)狀態
+
+expected get:
+[
+    {
+        "product_id": int,
+        "behavior": {
+            "col_name": string,
+            "value": string
+        }
+    },
+    ...
+]
+
+return:
+{
+    "message": "...",
+    "success": bool,
+    "product": { (if successful)
+        "vendor_id": int,
+        "name": string,
+        "price": int,
+        "description": string,
+        "image_url": string,
+        "is_listed": bool 
+    }
+}
+Note:
+col_name欄位只接受
+name, price(Integer), description, image_url, is_listed(true/false)
+這個function會根據指定的col做調整，因此value 應該為string
+"""
+vendor_routes.route("/update_products", methods=["POST"])(update_products) #WIP same vendor check

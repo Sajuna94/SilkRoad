@@ -103,7 +103,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ on
                 </footer>
             </form>
         </Dialog>
-    )
+    );
 });
 
 interface OptionDropdownProps {

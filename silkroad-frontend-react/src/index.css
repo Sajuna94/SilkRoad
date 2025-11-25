@@ -52,8 +52,12 @@ body {
 }
 
 h1 {
-	font-size: 3.2em;
-	line-height: 1.1;
+	margin: 0;
+	padding: 0;
+}
+
+select:focus {
+	outline: none;
 }
 
 button {
@@ -67,6 +71,7 @@ button {
 	background-color: var(--color-accent-primary);
 	cursor: pointer;
 	transition: 0.25s;
+	user-select: none;
 }
 
 button:hover {

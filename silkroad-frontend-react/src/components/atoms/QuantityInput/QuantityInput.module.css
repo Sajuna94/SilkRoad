@@ -13,7 +13,7 @@
 
 .quantityGroup button {
 	border-radius: 0;
-	flex: 0.05 0 auto;
+	flex: 0.1 0 auto;
 	padding: 5px;
 	font-size: 1.2rem;
 	user-select: none;

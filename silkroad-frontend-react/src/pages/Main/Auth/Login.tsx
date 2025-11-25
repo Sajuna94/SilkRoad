@@ -1,4 +1,4 @@
-import styles from "./AuthPage.module.scss"
+import styles from "./Auth.module.scss"
 import { useState } from "react";
 import LabeledInput from "@/components/molecules/LabeledInput/LabeledInput";
 import { Link } from "react-router-dom";

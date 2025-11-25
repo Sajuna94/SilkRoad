@@ -57,7 +57,17 @@ cart_routes.route('/view', methods=['POST'])(view_cart)
     #
     # 或    ---成功回傳---
     #       {
+    #       "status": "success",
+    #       "customer_id": customer_id,
+    #       "vendor_id": current_cart.vendor_id,
+    #       "items": result_list,     # result_list 格式請查看 silkroad-backend/src/controllers/cart_controller
+    #       "total_amount": total_price
+    #       }
+
+    # 或 ---
+    # { data {}, message: "" }
     #       "data": [],
     #       "message": "cart item view",
-    #       "success": True
+    #       "success": True",
+    #       
     #       }

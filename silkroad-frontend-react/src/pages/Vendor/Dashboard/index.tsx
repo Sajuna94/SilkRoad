@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./index.module.scss"
 import OrderTab from "./tabs/Order";
@@ -7,6 +8,16 @@ import ProductTab from "./tabs/Product";
 export default function VendorDashboardPage() {
 	const navigate = useNavigate();
 	const location = useLocation();
+=======
+// import React, { useEffect, useState } from "react";
+// import { BrowserRouter as Router, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+
+// const tabs = [
+// 	{ id: "1", label: "Tab 1", content: "這是第一個 Tab 的內容" },
+// 	{ id: "2", label: "Tab 2", content: "這是第二個 Tab 的內容" },
+// 	{ id: "3", label: "Tab 3", content: "這是第三個 Tab 的內容" },
+// ];
+>>>>>>> e69977633e30250de3d3b4dcdbcdea74ab6ad374
 
 	const tabs = [
 		{ id: "1", label: "資訊總覽", element: <OverviewTab /> },

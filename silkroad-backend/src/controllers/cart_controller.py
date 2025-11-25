@@ -1,5 +1,3 @@
-#Gs0n控管了這裡
-
 from flask import jsonify, request
 from config import db
 from models import Cart_Item
@@ -205,11 +203,11 @@ def view_cart():
 
         return jsonify({
             "data": result_list,
+            "total_amount": total_price,
             "message": "cart item view",
-            "success": True
+            "success": True,
             #"customer_id": customer_id,
             #"vendor_id": current_cart.vendor_id,        
-            #"total_amount": total_price
         }), 200
 
     except Exception as e:

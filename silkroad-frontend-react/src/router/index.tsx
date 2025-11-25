@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import AdminDashboard from "@/pages/Admin/AdminDashboard";
 import { useRoutes } from "react-router-dom";
 import CartPage from "@/pages/Store/CartPage";
@@ -6,11 +7,46 @@ import AboutPage from "@/pages/Main/AboutPage";
 import HomePage from "@/pages/Main/HomePage";
 import { UserLoginPage, UserRegisterPage } from "@/pages/User";
 import { VendorDashboradPage, VendorProductListPage } from "@/pages/Vendor";
+=======
+import { useRoutes } from "react-router-dom";
+import { AdminDashboard } from "@/pages/Admin";
+import { About, AuthLogin, AuthRegister, Cart, Home } from "@/pages/Main";
+import { UserOrders } from "@/pages/User";
+import { VendorDashboard, VendorProductList } from "@/pages/Vendor";
+>>>>>>> e69977633e30250de3d3b4dcdbcdea74ab6ad374
 
-export const routes = [
-	{ path: "/cart", element: <CartPage /> },
-	{ path: "/orders", element: <OrderHistoryPage /> },
+export const routes = [{
+    path: "/",
+    children: [
+        { index: true, element: <About /> },
+        { path: "about", element: <About /> },
+        { path: "login", element: <AuthLogin /> },
+        { path: "register", element: <AuthRegister /> },
+        { path: "cart", element: <Cart /> },
+        { path: "home", element: <Home /> },
+        {
+            path: "admin",
+            children: [
+                { index: true, element: <AdminDashboard /> },
+            ],
+        },
+        {
+            path: "user",
+            children: [
+                { path: "orders", element: <UserOrders /> },
+            ],
+        },
+        {
+            path: "vendor",
+            children: [
+                { index: true, element: <VendorProductList /> },
+                { path: "dashboard", element: <VendorDashboard /> },
+            ],
+        },
+    ]
+}];
 
+<<<<<<< HEAD
 	{
 		path: "/",
 		children: [
@@ -33,4 +69,8 @@ export const routes = [
 
 export default function Router() {
 	return useRoutes(routes);
+=======
+export default function Router() {
+    return useRoutes(routes);
+>>>>>>> e69977633e30250de3d3b4dcdbcdea74ab6ad374
 }

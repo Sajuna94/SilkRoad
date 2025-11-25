@@ -5,31 +5,56 @@ admin_routes = Blueprint('admin', __name__)
 
 admin_routes.route('/block', methods=['POST'])(block_user)
 """
-Admin 封鎖使用者 (Vendor 或 Customer)
-範例:
+Admin block user (Vendor or Customer)
+expect:
 {
-    "admin_id": XXX,
-    "target_user_id": XXX,
-    "reason": "XXX"
+    "admin_id" = int,
+    "target_user_id" = int,
+    "reason" = string
 }
-return
+
+return 
+if success:
 {
-    "message": "已成功封鎖 {XXX}",
-    "target_user_id": XXX,
-    "status": "XXX"
+    "data": [{
+        "target_user_id": int,
+        "target_type": string,
+        "status": "blocked",
+        "reason": string
+    }],
+    "message": "Successfully blocked Vendor",
+    "success": True
+}
+else:
+{
+    "message": "...",
+    "success": False
 }
 """
+
 admin_routes.route('/announce', methods=['POST'])(post_announcement)
 """
-Admin 發布系統公告
-範例:
+Admin post system announcement
+expect:
 {
-    "admin_id": XXX,
-    "message": "XXX"
+    "admin_id" = int,
+    "message" = string
 }
-return
+
+return 
+if success:
 {
-    "message": "公告發布成功", 
-    "announcement_id": XXX
+    "success": True,
+    "message": "Announcement posted successfully",
+    "data": [{
+        "announcement_id": int,
+        "message": string,
+        "created_at": datetime string
+    }]
+}
+else:
+{
+    "message": "...",
+    "success": False
 }
 """
