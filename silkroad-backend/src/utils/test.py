@@ -6,13 +6,15 @@
 """
 from werkzeug.security import generate_password_hash
 from flask import Blueprint, jsonify
-from models.auth.user import User
-from models.auth.admin import Admin
-from models.auth.vendor import Vendor
-from models.auth.customer import Customer
-from models.auth.vendor_manager import Vendor_Manager
-from models.auth.system_announcement import System_Announcement
-from models.auth.block_record import Block_Record
+# from models.auth.user import User
+# from models.auth.admin import Admin
+# from models.auth.vendor import Vendor
+# from models.auth.customer import Customer
+# from models.auth.vendor_manager import Vendor_Manager
+# from models.auth.system_announcement import System_Announcement
+# from models.auth.block_record import Block_Record
+# from models import Product
+from models import *
 from config import db
 
 test_routes = Blueprint("test", __name__)
@@ -84,9 +86,11 @@ def clear_all_users():
     這是一個高效率的刪除，它會直接執行 "DELETE FROM users" 並返回刪除的行數。
     """
     try:
-        db.session.query(Block_Record).delete()
         # 刪除系統公告 (依賴 Admin)
+        db.session.query(Block_Record).delete()
         db.session.query(System_Announcement).delete()
+        # 刪除product
+        db.session.query(Product).delete()
         # -----------------------------------------------------
         # 第二波：刪除繼承表 (Inheritance Child Tables)
         # -----------------------------------------------------

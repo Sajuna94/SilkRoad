@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, session
 from models import User
 from models import Admin,Vendor,Customer,Vendor_Manager
 from config import db
@@ -59,8 +59,13 @@ def register_user():
                 vendor_manager_id=vndr_mgr.id,
                 is_active=True
             )
+            
 
         elif target_role == 'customer':
+            """
+                TODO: guest cart should be created automatically
+                
+            """
             if not address:
                 return jsonify({"message": "Customer need address", "success": False}), 400
             
@@ -81,6 +86,8 @@ def register_user():
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
+        session['user_id'] = new_user.id
+        session['role'] = target_role
 
     except ValueError:
         # [新增] 這裡專門捕捉 "重複註冊" 的錯誤 (由 User.register 拋出)
@@ -127,6 +134,8 @@ def login_user():
         }), 401
 
     # 4. 登入成功
+    session["user_id"] = user.id
+    session["role"] = user.role
     return jsonify({
         "data": {
             "id": user.id,          # 用於後續 API 請求 (例如 /cart/<user_id>)

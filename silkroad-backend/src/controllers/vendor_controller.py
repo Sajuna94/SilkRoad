@@ -1,10 +1,9 @@
-"""
-    By hansome young boy Etho
-"""
 from flask import jsonify, request
 from models import Vendor, Product
 from config.database import db
+from utils import require_login
 
+@require_login
 def add_product():
     data = request.get_json()
     
@@ -88,6 +87,7 @@ def add_product():
         "product_id": new_prdct.id
     }), 201
 
+@require_login
 def update_products():
     data = request.get_json()
     
@@ -170,3 +170,37 @@ def update_products():
                 "message": f"Product update failed: {str(e)}",
                 "success": False
             }), 500
+
+def get_vendor_products(vendor_id):
+    try:
+        vendor = Vendor.query.get(vendor_id)
+        if not vendor:
+            return jsonify({
+                "message": "Vendor not found",
+                "success": False
+            }), 404
+        
+        products = Product.query.filter_by(vendor_id=vendor_id).all()
+        
+        # 準備回傳的產品資訊
+        products_data = []
+        for product in products:
+            products_data.append({
+                "id": product.id,
+                "name": product.name,
+                "price": product.price,
+                "description": product.description,
+                "image_url": product.image_url,
+                "is_listed": product.is_listed,
+            })
+        
+        return jsonify({
+            "message": "Vendor products retrieved successfully",
+            "success": True,
+            "products": products_data
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "message": f"Failed to retrieve vendor products: {str(e)}",
+            "success": False
+        }), 500

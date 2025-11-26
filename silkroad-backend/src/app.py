@@ -5,7 +5,12 @@ from routes import user_routes, cart_routes, order_routes
 from routes import admin_routes, vendor_routes
 from utils import test_routes
 
+from dotenv import load_dotenv
+import os
+
 app = Flask(__name__)
+load_dotenv()
+app.secret_key = os.getenv('SESSION_KEY')
 
 CORS(app, origins=[
     "https://sajuna94.github.io", 

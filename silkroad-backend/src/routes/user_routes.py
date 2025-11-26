@@ -9,13 +9,19 @@ User registration
 expect:
 if role == 'vendor' :
 {
-    "role" = string,
-    "name" = string,
-    "email" = string,
-    "password" = string,
-    "phone_number" = string
-    "vendor_manager_id"= int,
-    "is_active"=bool
+    "role": string,
+    "name": string,
+    "email": string,
+    "password": string,
+    "phone_number": string
+    "vendor_manager_id": int,
+    "address"" string
+    "is_active": bool, (default = true)
+    "manager": {
+        "name": string,
+        "email": string,
+        "phone_number": string
+    }
 }
 elif role == 'customer' :
 {
