@@ -1,86 +1,120 @@
-$sidebar-item-hover-color: red;
-
 .container {
+	$sidebar-bg-color: #8a3e3e;
+	$sidebar-li-hover: #f0f8ff;
+	$content-bg-color: #a4a4c9;
+
 	flex: 1;
 	display: flex;
 
-	.sidebar {
-		background-color: rgb(207, 168, 101);
+	aside {
+		width: 200px;
+		background-color: $sidebar-bg-color;
 
-		display: flex;
-		flex-direction: column;
-
-		h3 {
-			&:hover {
-				cursor: pointer;
-				background-color: red;
-			}
-
-			&.active {
-				background-color: red;
-			}
-		}
-	}
-
-	.content {
-		background-color: #777;
-
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-	}
-}
-
-.profile {
-	background-color: #c1c1c1;
-
-}
-
-.order-info {
-	background-color: #c1c1c1;
-
-}
-
-.product-info {
-	background-color: #c1c1c1;
-
-	.list {
-		width: 500px;
-		display: flex;
-
-		div {
-			flex: 1;
-		}
-
-		table {
-			border-collapse: collapse;
-			width: 100%;
-
-			thead tr th {
-				font-weight: bold;
-				font-size: 1.2rem;
-			}
-
-			tbody tr {
+		ul {
+			li {
+				padding: 6px 0;
 				text-align: center;
+				font-size: 1.2rem;
+				font-weight: bold;
+				transition: 0.25s;
 
-				td {
-					height: 50px;
-				}
-
-				.listed {
-					width: 90px;
-
-					button {
-						padding: 6px 10px;
-					}
+				&:hover {
+					background-color: $sidebar-li-hover;
 				}
 			}
 		}
 	}
+
+	main {
+		flex: 1;
+	}
 }
 
-.new-product {
-	background-color: #c1c1c1;
 
-}
+
+// $sidebar-item-hover-color: red;
+
+// .container {
+// 	flex: 1;
+// 	display: flex;
+
+// 	.sidebar {
+// 		background-color: rgb(207, 168, 101);
+
+// 		display: flex;
+// 		flex-direction: column;
+
+// 		h3 {
+// 			&:hover {
+// 				cursor: pointer;
+// 				background-color: red;
+// 			}
+
+// 			&.active {
+// 				background-color: red;
+// 			}
+// 		}
+// 	}
+
+// 	.content {
+// 		background-color: #777;
+
+// 		flex: 1;
+// 		display: flex;
+// 		flex-direction: column;
+// 	}
+// }
+
+// .profile {
+// 	background-color: #c1c1c1;
+
+// }
+
+// .order-info {
+// 	background-color: #c1c1c1;
+
+// }
+
+// .product-info {
+// 	background-color: #c1c1c1;
+
+// 	.list {
+// 		width: 500px;
+// 		display: flex;
+
+// 		div {
+// 			flex: 1;
+// 		}
+
+// 		table {
+// 			border-collapse: collapse;
+// 			width: 100%;
+
+// 			thead tr th {
+// 				font-weight: bold;
+// 				font-size: 1.2rem;
+// 			}
+
+// 			tbody tr {
+// 				text-align: center;
+
+// 				td {
+// 					height: 50px;
+// 				}
+
+// 				.listed {
+// 					width: 90px;
+
+// 					button {
+// 						padding: 6px 10px;
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+// .new-product {
+// 	background-color: #c1c1c1;
+
+// }
