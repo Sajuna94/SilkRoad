@@ -1,11 +1,6 @@
 from flask import jsonify, request
 from models import Vendor, Product, Discount_Policy
 from config.database import db
-<<<<<<< HEAD
-from utils import require_login
-
-@require_login
-=======
 from datetime import datetime, date
 
 def validate_expiry_date(date_string):
@@ -23,7 +18,6 @@ def validate_expiry_date(date_string):
             f"日期格式錯誤。"
         )
     
->>>>>>> 66d3f734fe568a8091cfa69f9cc7c1ce99eee5d0
 def add_product():
     data = request.get_json()
     
@@ -191,7 +185,6 @@ def update_products():
                 "success": False
             }), 500
 
-<<<<<<< HEAD
 def get_vendor_products(vendor_id):
     try:
         vendor = Vendor.query.get(vendor_id)
@@ -225,7 +218,6 @@ def get_vendor_products(vendor_id):
             "message": f"Failed to retrieve vendor products: {str(e)}",
             "success": False
         }), 500
-=======
 
 def add_discount_policy():
     data = request.get_json()
@@ -255,7 +247,7 @@ def add_discount_policy():
             return jsonify({"message": "無效的 vendor_id", 
                             "success": False}), 400
     except Exception:
-        return jsonify({"message": "系統錯誤，無法驗證 vender_id", 
+        return jsonify({"message": "系統錯誤，無法驗證 vendor_id", 
                         "success": False}), 500
 
 
@@ -300,9 +292,9 @@ def add_discount_policy():
         db.session.add(add_discount_policy)
         db.session.commit()
         
-        return jsonify({"message": "新增折價券成功",
-                        # "policy_id": add_discount_policy.id,
-                         "success": True}), 201 
+        return jsonify({"policy_id": add_discount_policy.id,
+                        "message": "新增折價券成功",
+                        "success": True}), 201 
 
     except Exception as e:
         db.session.rollback()
@@ -310,6 +302,59 @@ def add_discount_policy():
                         "success": False}), 500
 
 
+def view_discount_policy():
+    data = request.get_json()
+    '''
+    預計傳給我{
+    "vendor_id":XXX,
+    }
+    '''
+    if not data:
+        return jsonify({'message': '無效的請求數據', "success": False}), 400
     
+    target_vendor_id = data.get("vendor_id")
+    
+    if not target_vendor_id:
+        return jsonify({"message": "缺少 vendor_id", "success": False}), 400
+    try:
+        vendor_exists = Vendor.query.get(target_vendor_id)
+        if vendor_exists is None:
+            return jsonify({"message": "無效的 vendor_id", 
+                            "success": False}), 400
+    except Exception:
+        return jsonify({"message": "系統錯誤，無法驗證 vendor_id", 
+                        "success": False}), 500
 
->>>>>>> 66d3f734fe568a8091cfa69f9cc7c1ce99eee5d0
+    try:
+        policies = Discount_Policy.query.filter_by(vendor_id=target_vendor_id).all()
+
+        result_list = []
+        policy_amount = len(policies)
+        
+        for policy in policies:
+            formatted_date = policy.expiry_date.isoformat() if policy.expiry_date else None
+
+            result_list.append({
+                "policy_id": policy.id,
+                "vendor_id": target_vendor_id,
+                "type": str(policy.type),
+                "value": policy.value,
+                "min_purchase": policy.min_purchase,
+                "max_discount": policy.max_discount,
+                "membership_limit": policy.membership_limit,
+                "expiry_date": formatted_date
+            })
+
+        return jsonify({
+            "data": result_list,
+            "policy_amount": policy_amount,
+            "message": "discount_policies view",
+            "success": True
+        })
+    except Exception as e:
+        print(f"Error details: {e}")
+        return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
+
+
+
+
