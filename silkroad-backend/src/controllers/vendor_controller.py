@@ -1,12 +1,9 @@
 from flask import jsonify, request
 from models import Vendor, Product, Discount_Policy
 from config.database import db
-<<<<<<< HEAD
 from utils import require_login
 
 
-=======
->>>>>>> b3ccae4af784c0ad4e9f96bc8f106275e74a468b
 from datetime import datetime, date
 
 def validate_expiry_date(date_string):
@@ -23,12 +20,8 @@ def validate_expiry_date(date_string):
         raise ValueError(
             f"日期格式錯誤。"
         )
-<<<<<<< HEAD
 
 @require_login    
-=======
-    
->>>>>>> b3ccae4af784c0ad4e9f96bc8f106275e74a468b
 def add_product():
     data = request.get_json()
     
