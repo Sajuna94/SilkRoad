@@ -1,11 +1,9 @@
 from flask import jsonify, request
 from models import Vendor, Product, Discount_Policy
 from config.database import db
-<<<<<<< HEAD
 from utils import require_login
 
-@require_login
-=======
+
 from datetime import datetime, date
 
 def validate_expiry_date(date_string):
@@ -22,8 +20,8 @@ def validate_expiry_date(date_string):
         raise ValueError(
             f"日期格式錯誤。"
         )
-    
->>>>>>> 66d3f734fe568a8091cfa69f9cc7c1ce99eee5d0
+
+@require_login    
 def add_product():
     data = request.get_json()
     
@@ -191,7 +189,6 @@ def update_products():
                 "success": False
             }), 500
 
-<<<<<<< HEAD
 def get_vendor_products(vendor_id):
     try:
         vendor = Vendor.query.get(vendor_id)
@@ -225,7 +222,6 @@ def get_vendor_products(vendor_id):
             "message": f"Failed to retrieve vendor products: {str(e)}",
             "success": False
         }), 500
-=======
 
 def add_discount_policy():
     data = request.get_json()
@@ -312,4 +308,3 @@ def add_discount_policy():
 
     
 
->>>>>>> 66d3f734fe568a8091cfa69f9cc7c1ce99eee5d0

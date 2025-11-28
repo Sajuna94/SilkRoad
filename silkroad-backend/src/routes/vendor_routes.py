@@ -59,7 +59,6 @@ col_name欄位只接受
 name, price(Integer), description, image_url, is_listed(true/false)
 這個function會根據指定的col做調整，因此value 應該為string
 """
-<<<<<<< HEAD
 
 vendor_routes.route("/update_products", methods=["PATCH"])(update_products) #WIP same vendor check
 
@@ -117,9 +116,7 @@ return:
 
 """
 # vendor_routes.route("/remove_products", methods=["DELETE"])(remove_products)
-=======
 vendor_routes.route("/update_products", methods=["POST"])(update_products) #WIP same vendor check
 
 
 vendor_routes.route("/add_discount", methods=["POST"])(add_discount_policy)
->>>>>>> 66d3f734fe568a8091cfa69f9cc7c1ce99eee5d0
