@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers import update_products, add_product, add_discount_policy, get_vendor_products
+from controllers import update_products, add_product, add_discount_policy, get_vendor_products, view_discount_policy
 
 vendor_routes = Blueprint('vendor', __name__)
 
@@ -120,3 +120,70 @@ vendor_routes.route("/update_products", methods=["POST"])(update_products) #WIP 
 
 
 vendor_routes.route("/add_discount", methods=["POST"])(add_discount_policy)
+
+'''
+需要{
+    "vendor_id":XXX,
+    "type":XXX,
+    "value":XXX,
+    "min_purchase":XXX,
+    "max_discount":XXX,
+    "membership_limit":XXX,
+    "expiry_date":XXX,
+    }
+'''
+
+'''
+回傳
+
+失敗
+{"message": "錯誤回報", 
+"success": False}
+
+or
+
+成功
+{"policy_id": add_discount_policy.id,
+"message": "新增折價券成功",
+"success": True}
+
+'''
+
+vendor_routes.route("/view_discount", methods=["POST"])(view_discount_policy)
+
+'''
+需要{
+"vendor_id":XXX
+}
+'''
+
+'''
+回傳
+
+失敗
+{"message": "錯誤回報", 
+"success": False}
+
+or
+
+成功
+{
+    "data": result_list,
+    "policy_amount": policy_amount,
+    "message": "discount_policies view",
+    "success": True }
+
+data包含
+
+    {
+    "policy_id": policy.id,
+    "vendor_id": target_vendor_id,
+    "type": str(policy.type),
+    "value": policy.value,
+    "min_purchase": policy.min_purchase,
+    "max_discount": policy.max_discount,
+    "membership_limit": policy.membership_limit,
+    "expiry_date": formatted_date
+    }
+
+'''
