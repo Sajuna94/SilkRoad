@@ -6,14 +6,6 @@
 """
 from werkzeug.security import generate_password_hash
 from flask import Blueprint, jsonify
-# from models.auth.user import User
-# from models.auth.admin import Admin
-# from models.auth.vendor import Vendor
-# from models.auth.customer import Customer
-# from models.auth.vendor_manager import Vendor_Manager
-# from models.auth.system_announcement import System_Announcement
-# from models.auth.block_record import Block_Record
-# from models import Product
 from models import *
 from config import db
 
@@ -193,6 +185,7 @@ def init_data():
         print(f"[Error] {str(e)}") # 建議印出錯誤以便除錯
         return jsonify({"error": str(e)}), 500
 
+
 # for cloudinary upload signature generation
 import cloudinary
 import cloudinary.utils
@@ -232,10 +225,81 @@ def generate_signature():
 # for testing database connection and ORM
 from models.auth.vendor import Vendor
 
-# Maybe need @login_required decorator or other auth methods
-@test_routes.route("/vendors/<int:vendor_id>", methods=["GET"])
-def get_vendor_by_id(vendor_id):
-    vendor = Vendor.query.get(vendor_id)
-    if vendor:
-        return jsonify({"id": vendor.id, "name": vendor.name, "email": vendor.email})
-    return jsonify({"error": "Vendor not found"}), 404
+@test_routes.route("/users", methods=["GET"])
+def get_all_users():
+    """
+    查詢並列出所有使用者 (包含 Admin, Vendor, Customer)
+    並顯示 is_active 狀態
+    """
+    try:
+        # 1. 查詢所有使用者
+        users = User.query.all()
+        
+        result = []
+        for user in users:
+            # 2. 安全獲取 is_active
+            # 如果 user 是 Vendor 或 Customer，會拿到 True/False
+            # 如果 user 是 Admin (沒有這個欄位)，會拿到 None
+            is_active_status = getattr(user, 'is_active', None)
+
+            # 3. 組合資料
+            user_data = {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "phone_number": user.phone_number,
+                "role": user.role,
+                "created_at": user.created_at,
+                "is_active": is_active_status  # Admin 這裡會顯示 null
+            }
+            result.append(user_data)
+
+        # 4. 回傳 JSON
+        return jsonify({
+            "success": True,
+            "count": len(result),
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
+
+@test_routes.route("/announcements", methods=["GET"])
+def test_get_announcements():
+    """
+    查詢所有系統公告
+    """
+    announcements = System_Announcement.query.all()
+    data = []
+    for a in announcements:
+        data.append({
+            "id": a.id,
+            "admin_id": a.admin_id,
+            "message": a.message,
+            "created_at": a.created_at
+        })
+    
+    return jsonify({
+        "count": len(data),
+        "data": data
+    }), 200
+
+@test_routes.route("/block_records", methods=["GET"])
+def test_get_block_records():
+    """
+    查詢所有封鎖紀錄
+    """
+    records = Block_Record.query.all()
+    data = []
+    for r in records:
+        data.append({
+            "id": r.id,
+            "admin_id": r.admin_id,
+            "target_user_id": r.user_id,
+            "reason": r.reason,
+            "created_at": r.created_at
+        })
+    return jsonify({
+        "count": len(data),
+        "data": data
+    }), 200
