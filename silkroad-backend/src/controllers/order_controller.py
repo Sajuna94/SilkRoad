@@ -19,6 +19,9 @@ def do_discount(total_price_accumulated, policy_id):
     today = date.today()
     if discount.expiry_date and discount.expiry_date < today:
          raise ValueError("折價券已過期")
+    
+    if discount.is_available == False:
+        raise ValueError("折價券已停用")
 
     discount_amount = 0
     
@@ -107,14 +110,15 @@ def store_and_calculate_item(new_order, item):
 
 def trans_to_order():
     data = request.get_json()
-
-    #     預計傳給我{
-    #     "customer_id":XXX,
-    #     "vendor_id":XXX,
-    #     "policy_id":XXX,
-    #     "note":XXX,
-    #     "payment_methods":XXX,
-    #     }
+    """
+    預計傳給我{
+    "customer_id":XXX,
+    "vendor_id":XXX,
+    "policy_id":XXX,
+    "note":XXX,
+    "payment_methods":XXX,
+    }
+    """
 
     if not data:
         return jsonify({'message': '無效的請求數據',
@@ -145,11 +149,13 @@ def trans_to_order():
 
 def view_order():
     data = request.get_json()
-    #     預計傳給我{
-    #     "order_id":XXX,
-    #     "user_id":XXX,
-    #     "vendor_id":XXX,
-    #     }
+    """
+    預計傳給我{
+    "order_id":XXX,
+    "user_id":XXX,
+    "vendor_id":XXX,
+    }
+    """
 
     if not data:
         return jsonify({'message': '無效的請求數據',
@@ -224,13 +230,15 @@ def view_order():
 def update_orderinfo():
     data = request.get_json()
 
-    #     預計傳給我{
-    #     "order_id": XXX,
-    #     "refund_status":XXX,
-    #     "refund_at":XXX,
-    #     "is_completed":XXX,
-    #     "is_delivered":XXX
-    #     }
+    """
+    預計傳給我{
+    "order_id": XXX,
+    "refund_status":XXX,
+    "refund_at":XXX,
+    "is_completed":XXX,
+    "is_delivered":XXX
+    }
+    """
 
     order_id = data.get('order_id')
     if not order_id:

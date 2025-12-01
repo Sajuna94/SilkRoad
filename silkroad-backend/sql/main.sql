@@ -30,6 +30,7 @@ DROP TABLE IF EXISTS `auth`.`users`;
 CREATE TABLE `order`.`discount_policies` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `vendor_id` int NOT NULL,
+  `is_available` boolean NOT NULL,
   `type` ENUM ('percent', 'fixed') NOT NULL,
   `value` float NOT NULL,
   `min_purchase` int DEFAULT 0,

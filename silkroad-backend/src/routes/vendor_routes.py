@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers import update_products, add_product, add_discount_policy, get_vendor_products, view_discount_policy
+from controllers import update_products, add_product, add_discount_policy, get_vendor_products, view_discount_policy, invalid_discount_policy
 
 vendor_routes = Blueprint('vendor', __name__)
 
@@ -178,6 +178,7 @@ data包含
     {
     "policy_id": policy.id,
     "vendor_id": target_vendor_id,
+    "is_available": policy.is_available,
     "type": str(policy.type),
     "value": policy.value,
     "min_purchase": policy.min_purchase,
@@ -185,5 +186,32 @@ data包含
     "membership_limit": policy.membership_limit,
     "expiry_date": formatted_date
     }
+
+'''
+
+vendor_routes.route("/invalid_discount", methods=["POST"])(invalid_discount_policy)
+'''
+直接更改折價券不是一件很好的方法
+所以折價券有誤時，請先無效(停用)折價券，再做新的
+
+需要{
+"policy_id":XXX,
+"vendor_id": XXX,
+}
+'''
+
+'''
+回傳
+
+失敗
+{"message": "錯誤回報", 
+"success": False}
+
+or
+
+成功
+{
+    "message": "成功停用折價券",
+    "success": True}
 
 '''

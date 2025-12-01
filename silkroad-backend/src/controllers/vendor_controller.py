@@ -350,6 +350,7 @@ def view_discount_policy():
             result_list.append({
                 "policy_id": policy.id,
                 "vendor_id": target_vendor_id,
+                "is_available": policy.is_available,
                 "type": str(policy.type),
                 "value": policy.value,
                 "min_purchase": policy.min_purchase,
@@ -367,6 +368,56 @@ def view_discount_policy():
     except Exception as e:
         print(f"Error details: {e}")
         return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
+
+
+def invalid_discount_policy():
+    data = request.get_json()
+    '''
+    預計傳給我{
+    "policy_id":XXX,
+    "vendor_id": XXX,
+    }
+    '''
+    
+    if not data:
+        return jsonify({'message': '無效的請求數據', "success": False}), 400
+    
+    target_policy_id = data.get("policy_id")
+    target_vendor_id = data.get("vendor_id")
+    
+    if not target_policy_id or not target_vendor_id:
+        return jsonify({"message": "缺少 policy_id 或 vendor_id", 
+                        "success": False}), 400
+    
+    try:
+        vendor_exists = Vendor.query.get(target_vendor_id)
+        if vendor_exists is None:
+            return jsonify({"message": "無效的 vendor_id", 
+                            "success": False}), 400
+        
+        policy = Discount_Policy.query.get(target_policy_id)
+        
+        if policy is None:
+            return jsonify({"message": "無效的 policy_id", 
+                            "success": False}), 404
+        
+        if target_vendor_id != policy.vendor_id:
+            return jsonify({
+                "message": "vendor_id不相符",
+                "success": False
+            }), 403 
+
+        policy.is_available = False
+        db.session.commit()
+
+        return jsonify({"message": "成功停用折價券",
+                        "success": True}), 200
+    
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error details: {e}")
+        return jsonify({'message': '系統錯誤，停用失敗', 'error': str(e), "success": False}), 500
+
 
 
 
