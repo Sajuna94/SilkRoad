@@ -77,17 +77,17 @@ def _toggle_user_status(target_active_status):
         db.session.rollback()
         return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
 
-@require_login
+@require_login(role=["admin"])
 def block_user():
     # 直接呼叫共用邏輯，傳入 False (封鎖)
     return _toggle_user_status(False)
 
-@require_login
+@require_login(role=["admin"])
 def unblock_user():
     # 直接呼叫共用邏輯，傳入 True (解鎖)
     return _toggle_user_status(True)
 
-@require_login
+@require_login(role=["admin"])
 def post_announcement():
     data = request.get_json()
     admin_id = data.get('admin_id')
@@ -137,7 +137,7 @@ def post_announcement():
         }), 500
     
 
-@require_login
+@require_login(role=["admin"])
 def update_announcement(announcement_id):
     """
     更新公告內容
@@ -190,7 +190,7 @@ def update_announcement(announcement_id):
         }), 500
 
 
-@require_login
+@require_login(role=["admin"])
 def delete_announcement(announcement_id):
     """
     刪除公告

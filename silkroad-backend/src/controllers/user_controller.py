@@ -149,7 +149,7 @@ def login_user():
         "success": True
     }), 200
 
-@require_login
+@require_login(role=["admin", "vendor", "customer"])
 def logout_user():
     """
     會員登出
@@ -162,7 +162,7 @@ def logout_user():
         "success": True
     }), 200
 
-@require_login
+@require_login(role=["admin", "vendor", "customer"])
 def update_user(user_id):
     """
     更新會員資料 (不包含密碼)
@@ -215,7 +215,7 @@ def update_user(user_id):
         db.session.rollback()
         return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
 
-@require_login 
+@require_login(role=["admin", "vendor", "customer"])
 def update_password(user_id):
     """
     更新會員密碼
@@ -250,7 +250,7 @@ def update_password(user_id):
         db.session.rollback()
         return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
 
-@require_login
+@require_login(role=["admin", "vendor", "customer"])
 def delete_user(user_id):
     """
     刪除會員
