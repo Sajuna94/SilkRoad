@@ -2,6 +2,7 @@ from flask import request, jsonify, session
 from models import User
 from models import Admin,Vendor,Customer,Vendor_Manager
 from config import db
+from utils import require_login
 
 def register_user():
     data = request.get_json()
@@ -148,17 +149,20 @@ def login_user():
         "success": True
     }), 200
 
+@require_login
 def logout_user():
     """
     會員登出
     目前為無狀態 API，主要由前端清除資訊，後端回傳成功訊息即可。
     若未來有使用 Session 或 Redis 黑名單，在此處處理。
     """
+    session.pop('user_id', None)
     return jsonify({
         "message": "Logout successful",
         "success": True
     }), 200
 
+@require_login
 def update_user(user_id):
     """
     更新會員資料 (不包含密碼)
@@ -210,7 +214,8 @@ def update_user(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
-    
+
+@require_login 
 def update_password(user_id):
     """
     更新會員密碼
@@ -245,10 +250,12 @@ def update_password(user_id):
         db.session.rollback()
         return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
 
+@require_login
 def delete_user(user_id):
     """
     刪除會員
     """
+    current_user_id = session.get('user_id')
     user = User.query.get(user_id)
     if not user:
         return jsonify({"message": "User not found", "success": False}), 404
@@ -256,6 +263,10 @@ def delete_user(user_id):
     try:
         db.session.delete(user)
         db.session.commit()
+        # 如果刪除的是自己，則清除 session
+        if current_user_id == user_id:
+            session.pop('user_id', None)
+
         return jsonify({
             "message": "User deleted successfully",
             "success": True

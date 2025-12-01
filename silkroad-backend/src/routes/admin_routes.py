@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers import block_user, post_announcement
+from controllers import block_user, post_announcement, update_announcement, delete_announcement, unblock_user
 
 admin_routes = Blueprint('admin', __name__)
 
@@ -22,7 +22,7 @@ if success:
         "status": "blocked",
         "reason": string
     }],
-    "message": "Successfully blocked Vendor",
+    "message": "...",
     "success": True
 }
 else:
@@ -32,29 +32,86 @@ else:
 }
 """
 
+admin_routes.route('/unblock', methods=['POST'])(unblock_user)
+"""
+Admin unblock user (Restore status)
+expect:
+{
+    "admin_id" = int,
+    "target_user_id" = int
+}
+
+return 
+if success:
+{
+    "data": [{
+        "target_user_id": int,
+        "target_type": string,
+        "status": "active"
+    }],
+    "message": "...",
+    "success": True
+}
+"""
+
 admin_routes.route('/announce', methods=['POST'])(post_announcement)
 """
 Admin post system announcement
 expect:
 {
     "admin_id" = int,
-    "message" = string
+    "message" = "..."
 }
 
 return 
 if success:
 {
-    "success": True,
-    "message": "Announcement posted successfully",
     "data": [{
         "announcement_id": int,
         "message": string,
         "created_at": datetime string
-    }]
+    }],
+    "message": "...",
+    "success": True
 }
 else:
 {
     "message": "...",
     "success": False
+}
+"""
+
+admin_routes.route('/announce/<int:announcement_id>', methods=['PUT'])(update_announcement)
+"""
+Update Announcement
+expect:
+{
+    "admin_id": int,
+    "message": string
+}
+
+return:
+{
+    "data": [{
+        "announcement_id": int,
+        "message": string
+    }],
+    "message": "Announcement updated successfully",
+    "success": True
+}
+"""
+
+admin_routes.route('/announce/<int:announcement_id>', methods=['DELETE'])(delete_announcement)
+"""
+Delete Announcement
+expect:
+{
+    "admin_id": int
+}
+
+return:
+{
+    "message": "...",
+    "success": True
 }
 """
