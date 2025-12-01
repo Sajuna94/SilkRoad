@@ -21,7 +21,6 @@ if role == 'vendor' :
     "email": string,
     "password": string,
     "phone_number": string
-    "vendor_manager_id": int,
     "address"" string
     "is_active": bool, (default = true)
     "manager": {

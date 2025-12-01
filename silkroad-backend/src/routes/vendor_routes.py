@@ -3,6 +3,7 @@ from controllers import update_products, add_product, add_discount_policy, get_v
 
 vendor_routes = Blueprint('vendor', __name__)
 
+vendor_routes.route("/Add_Product", methods=["POST"])(add_product)
 """
 function:
     增加product
@@ -16,6 +17,7 @@ expected get:
     "image_url": string,
     "is_listed": bool (default=True)
 }
+
 return:
 {
     "message": "...",
@@ -23,8 +25,8 @@ return:
     "product_id": int (is successful)
 }
 """
-vendor_routes.route("/Add_Product", methods=["POST"])(add_product)
 
+vendor_routes.route("/update_products", methods=["PATCH"])(update_products) #WIP same vendor check
 """
 function:
     更新product(s)狀態
@@ -60,11 +62,13 @@ name, price(Integer), description, image_url, is_listed(true/false)
 這個function會根據指定的col做調整，因此value 應該為string
 """
 
-vendor_routes.route("/update_products", methods=["PATCH"])(update_products) #WIP same vendor check
-
+vendor_routes.route("/<int:vendor_id>/get_products", methods=["GET"])(get_vendor_products)
 """
 function:
     獲得vendor中所有products狀態
+    
+expected get:
+    No expected get
 
 return:
 {
@@ -84,10 +88,11 @@ return:
 }
 
 """
-vendor_routes.route("/<int:vendor_id>/get_products", methods=["GET"])(get_vendor_products)
+
+# vendor_routes.route("/update_products", methods=["POST"])(update_products) #WIP same vendor check
 """
 function:
-    移除products
+    更新products
 
 expected get:
 [
@@ -115,12 +120,8 @@ return:
 }
 
 """
-# vendor_routes.route("/remove_products", methods=["DELETE"])(remove_products)
-vendor_routes.route("/update_products", methods=["POST"])(update_products) #WIP same vendor check
-
 
 vendor_routes.route("/add_discount", methods=["POST"])(add_discount_policy)
-
 '''
 需要{
     "vendor_id":XXX,
@@ -150,7 +151,6 @@ or
 '''
 
 vendor_routes.route("/view_discount", methods=["POST"])(view_discount_policy)
-
 '''
 需要{
 "vendor_id":XXX

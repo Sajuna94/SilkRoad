@@ -1,3 +1,4 @@
+from typing_extensions import Required
 from flask import jsonify, request
 from models import Vendor, Product, Discount_Policy
 from config.database import db
@@ -21,7 +22,7 @@ def validate_expiry_date(date_string):
             f"日期格式錯誤。"
         )
 
-@require_login    
+@require_login(role = ["vendor"]) 
 def add_product():
     data = request.get_json()
     
@@ -105,7 +106,7 @@ def add_product():
         "product_id": new_prdct.id
     }), 201
 
-@require_login
+@require_login(role = ["vendor"])
 def update_products():
     data = request.get_json()
     
@@ -189,6 +190,7 @@ def update_products():
                 "success": False
             }), 500
 
+@require_login(role = ["vendor", "customer"])
 def get_vendor_products(vendor_id):
     try:
         vendor = Vendor.query.get(vendor_id)
@@ -199,6 +201,12 @@ def get_vendor_products(vendor_id):
             }), 404
         
         products = Product.query.filter_by(vendor_id=vendor_id).all()
+        if not products:
+            return jsonify({
+                "message": "No products found for this vendor",
+                "success": True,
+                "products": []
+            }), 200
         
         # 準備回傳的產品資訊
         products_data = []
@@ -223,6 +231,7 @@ def get_vendor_products(vendor_id):
             "success": False
         }), 500
 
+@require_login(role = ["vendor"])
 def add_discount_policy():
     data = request.get_json()
 
@@ -305,7 +314,7 @@ def add_discount_policy():
         return jsonify({"message": f"資料庫錯誤: {str(e)}",
                         "success": False}), 500
 
-
+@require_login(role = ["vendor", "customer"])
 def view_discount_policy():
     data = request.get_json()
     '''

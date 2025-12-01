@@ -1,0 +1,1 @@
+python cleanup_test_data.py --direct
