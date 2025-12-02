@@ -74,37 +74,29 @@ def test_select():
 @test_routes.route("/Clear")
 def clear_all_users():
     """
-    刪除 "users" 表中的所有資料。
-    這是一個高效率的刪除，它會直接執行 "DELETE FROM users" 並返回刪除的行數。
+    刪除所有資料 (包含 Reviews)
     """
     try:
-        # 刪除系統公告 (依賴 Admin)
+        # 刪除評論
+        db.session.query(Review).delete()
+        # 刪除系統公告 & 封鎖紀錄
         db.session.query(Block_Record).delete()
         db.session.query(System_Announcement).delete()
-        # 刪除product
-        db.session.query(Product).delete()
-        # -----------------------------------------------------
-        # 第二波：刪除繼承表 (Inheritance Child Tables)
-        # -----------------------------------------------------
-        # 這些表依賴於 User (且 Vendor 依賴 VendorManager)
+        # 刪除 product (如果有)
+        # db.session.query(Product).delete()
+        
+        # 刪除繼承表
         db.session.query(Vendor).delete()
         db.session.query(Customer).delete()
         db.session.query(Admin).delete()
-        # -----------------------------------------------------
-        # 第三波：刪除核心表 (Parent Tables)
-        # -----------------------------------------------------
-        # 刪除 User (所有人的基本資料)
+        
+        # 刪除核心表
         db.session.query(User).delete()
-        
-        # 刪除 Vendor Manager (因為 Vendor 已經刪除，現在可以刪除 Manager 了)
         db.session.query(Vendor_Manager).delete()
-        db.session.commit()
         
-        return jsonify({
-            "message": "已清除所有", 
-        }), 200
+        db.session.commit()
+        return jsonify({"message": "已清除所有資料"}), 200
     except Exception as e:
-        # 發生錯誤時回滾
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
     
@@ -132,18 +124,17 @@ def init_manager():
 @test_routes.route("/init_users")
 def init_data():
     """
-    初始化 Admin 和 Vendor 測試資料
+    初始化 Admin, Vendor 和 Customer 測試資料
     """
     try:
-        # 1. 先確認是否有 Manager
+        # 1. 確認 Manager
         manager = Vendor_Manager.query.first()
         if not manager:
             return jsonify({"error": "請先執行 /api/test/init_manager 建立經理資料"}), 400
 
-        # 2. 建立或獲取 Admin
+        # 2. 建立 Admin
         admin_email = "admin@test.com"
-        admin = User.query.filter_by(email=admin_email).first() # 先嘗試獲取
-        
+        admin = User.query.filter_by(email=admin_email).first()
         if not admin:
             admin = Admin(
                 name="Super Admin", 
@@ -152,12 +143,11 @@ def init_data():
                 phone_number="0900000000"
             )
             db.session.add(admin)
-            print("[test] Admin created") # 移到這裡 print
+            print("[test] Admin created")
 
-        # 3. 建立或獲取 Vendor
+        # 3. 建立 Vendor
         vendor_email = "vendor@test.com"
-        vendor = User.query.filter_by(email=vendor_email).first() # 先嘗試獲取
-
+        vendor = User.query.filter_by(email=vendor_email).first()
         if not vendor:
             vendor = Vendor(
                 name="Bad Vendor",
@@ -169,20 +159,36 @@ def init_data():
                 is_active=True
             )
             db.session.add(vendor)
-            print("[test] Vendor created") # 移到這裡 print
+            print("[test] Vendor created")
+
+        # 4. [新增] 建立 Customer
+        customer_email = "customer@test.com"
+        customer = User.query.filter_by(email=customer_email).first()
+        if not customer:
+            customer = Customer(
+                name="Happy Customer",
+                email=customer_email,
+                password=generate_password_hash("password123"),
+                phone_number="0922222222",
+                address="Kaohsiung City",
+                membership_level=0,
+                is_active=True
+            )
+            db.session.add(customer)
+            print("[test] Customer created")
 
         db.session.commit()
         
-        # 這裡可以安全地回傳，因為如果已經存在，我們就不需要 print ID 了，或者重新 query 也可以
         return jsonify({
-            "status": "Admin and Vendor init success",
+            "status": "Admin, Vendor and Customer init success",
             "admin_id": admin.id, 
-            "vendor_id": vendor.id
+            "vendor_id": vendor.id,
+            "customer_id": customer.id  # 回傳 Customer ID
         }), 201
 
     except Exception as e:
         db.session.rollback()
-        print(f"[Error] {str(e)}") # 建議印出錯誤以便除錯
+        print(f"[Error] {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -303,3 +309,29 @@ def test_get_block_records():
         "count": len(data),
         "data": data
     }), 200
+
+@test_routes.route("/reviews", methods=["GET"])
+def test_get_reviews():
+    """
+    查詢所有顧客評論
+    """
+    try:
+        reviews = Review.query.all()
+        data = []
+        for r in reviews:
+            data.append({
+                "id": r.id,
+                "customer_id": r.customer_id,
+                "vendor_id": r.vendor_id,
+                "rating": r.rating,
+                "content": r.review_content,
+                "created_at": r.created_at
+            })
+        
+        return jsonify({
+            "success": True,
+            "count": len(data),
+            "data": data
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
