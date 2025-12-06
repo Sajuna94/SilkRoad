@@ -1,34 +1,22 @@
-// #root {
-// 	min-height: 100vh;
-// 	display: flex;
-// 	flex-direction: column;
-// }
-
-// #navbar {
-// 	height: 100px
-// }
-
-// #main {
-// 	flex: 1;
-// }
-
-// #footer {
-// 	height: 100px
-// }
-
 .container {
-	// in main (只能更動 container)
 	display: flex;
 
-	min-height: 0;
-	overflow: hidden;
 
 	/* 行動端更穩定 */
 	.info {
+		flex: 1;
+
 		.content {
 			display: flex;
 
-			div {
+			tr:nth-child(even) {
+				background-color: #f0f0f0;
+			}
+
+			tr {
+				.tb-btn {
+					width: 100px;
+				}
 			}
 		}
 	}
