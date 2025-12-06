@@ -4,19 +4,6 @@
   min-height: 100vh;
 }
 
-.app-layout {
-  display: flex;
-  flex-direction: column; /* 垂直排列 Header, Router, Footer */
-}
-
-/* 讓主要內容區域 (Router) 佔據剩餘空間 */
-/* 這裡的 Router 渲染出來是你的 About.jsx 中的 .page */
-/* 所以我們需要確保 Router 的根元素可以 flex-grow: 1 */
-.app-layout > .page {
-  /* 假設 Router 渲染出來的根元素是 .page */
-  flex-grow: 1; /* 讓 .page 撐滿 Header 和 Footer 之間的所有垂直空間 */
-}
-
 /* #root {
 	max-width: 50vh;
 	margin: 0 2rem;

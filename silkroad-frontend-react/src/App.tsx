@@ -15,15 +15,13 @@ function App() {
 
   return (
     <BrowserRouter basename="/SilkRoad">
-      <div className="app-layout">
-        {/* <CartProvider> */}
-        <Header />
-        {/* <ToastProvider> */}
-        <Router />
-        {/* </ToastProvider> */}
-        <Footer />
-        {/* </CartProvider> */}
-      </div>
+      {/* <CartProvider> */}
+      <Header />
+      {/* <ToastProvider> */}
+      <Router />
+      {/* </ToastProvider> */}
+      <Footer />
+      {/* </CartProvider> */}
     </BrowserRouter>
   );
 }
