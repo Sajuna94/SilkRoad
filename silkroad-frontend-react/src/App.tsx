@@ -8,25 +8,6 @@ import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";
 
 // import { usePing } from "@/hooks/test/usePing";
-<<<<<<< HEAD
-
-
-function App() {
-    // const ping = usePing();
-    // if (ping.isSuccess) console.log("Backend response:", ping.data);
-
-    return (
-        <BrowserRouter basename="/SilkRoad">
-            {/* <CartProvider> */}
-            <Header />
-            {/* <ToastProvider> */}
-            <Router />
-            {/* </ToastProvider> */}
-            <Footer />
-            {/* </CartProvider> */}
-        </BrowserRouter>
-    );
-=======
 
 function App() {
   // const ping = usePing();
@@ -43,7 +24,6 @@ function App() {
       {/* </CartProvider> */}
     </BrowserRouter>
   );
->>>>>>> cc870e0d6ba37e9c1663d88f766e07dd6595bc5a
 }
 
 export default App;

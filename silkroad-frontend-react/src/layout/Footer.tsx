@@ -1,4 +1,4 @@
-import styles from "@/layout/Footer.module.scss";
+// import styles from "@/layout/Footer.module.scss";
 
 export default function Footer() {
 	// <footer className={styles.footer}>
