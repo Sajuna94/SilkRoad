@@ -1,7 +1,3 @@
-/* ======================================
-   Animations (更柔順、更高級感)
-====================================== */
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -34,28 +30,23 @@
   animation: slideUp 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
-.delay75  { animation-delay: 0.075s; }
-.delay150 { animation-delay: 0.15s; }
-.delay300 { animation-delay: 0.3s; }
-
-
-/* ======================================
-   Layout - 更現代化深色玻璃 UI
-====================================== */
-
-.dashboard {
-  min-height: 100vh;
-  background: radial-gradient(circle at top, #0f172a, #0a0f1e 60%, #05070d);
-  display: flex;
-  color: #f1f5f9;
-  overflow: hidden;
-  backdrop-filter: blur(6px);
+.delay75 {
+  animation-delay: 0.075s;
+}
+.delay150 {
+  animation-delay: 0.15s;
+}
+.delay300 {
+  animation-delay: 0.3s;
 }
 
-
-/* ======================================
-   Sidebar - 玻璃擬態 + 柔光邊框
-====================================== */
+.dashboard {
+  background: radial-gradient(circle at top, #0f172a, #0a0f1e 60%, #05070d);
+  display: flex;
+  flex-grow: 1;
+  color: #f1f5f9;
+  backdrop-filter: blur(6px);
+}
 
 .sidebar {
   width: 17rem;
@@ -69,17 +60,12 @@
   box-shadow: 6px 0 18px rgba(0, 0, 0, 0.32);
 }
 .sidebar h2 {
-  margin: 1.25rem 1.25rem 2rem; 
+  margin: 1.25rem 1.25rem 2rem;
 }
 
 .sidebar nav {
   padding: 0 1.25rem;
 }
-
-
-/* ======================================
-   Main content
-====================================== */
 
 .main {
   flex: 1;
@@ -87,19 +73,14 @@
   overflow-y: auto;
 }
 
-
-/* ======================================
-   Sidebar Tab Buttons - 高亮 + 深色玻璃
-====================================== */
-
 .tabButton {
   position: relative;
   width: 100%;
   padding: 14px 20px;
   text-align: left;
   border: none;
-  background: transparent;   /* 無底色 */
-  color: #d1d5db;            /* 預設灰白 */
+  background: transparent;
+  color: #d1d5db;
   font-size: 16px;
   cursor: pointer;
   transition: color 0.2s ease, padding-left 0.2s ease;
@@ -112,34 +93,25 @@
     top: 0;
     width: 4px;
     height: 100%;
-    background: transparent; /* 預設透明 */
+    background: transparent;
     border-radius: 4px;
-    transition: background 0.25s ease;
+    transition: background-color 0.25s ease;
   }
 
-  /* hover：只亮文字，不改背景 */
   &:hover {
-    color: #f3f4f6;   /* 亮一級 */
-    background: transparent;  /* 確保不變色 */
-		padding-left: 24px;
+    color: #f3f4f6;
+    background: transparent;
+    padding-left: 24px;
   }
 
-  /* active：左側亮白線、文字變亮 */
   &.active {
     color: #ffffff;
 
     &::before {
-      background: white;  /* 亮條 */
+      background: white;
     }
   }
 }
-
-
-
-
-/* ======================================
-   Cards - 高階深色 UI 樣式
-====================================== */
 
 .card {
   background: rgba(30, 41, 59, 0.6);

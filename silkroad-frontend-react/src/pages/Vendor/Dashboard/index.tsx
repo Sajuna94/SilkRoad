@@ -17,18 +17,40 @@ export default function VendorDashboardPage() {
   const currentId = location.hash.replace("#", "") || tabs[0].id;
 
   return (
-    <div className={styles["container"]}>
-      <aside>
+    <div className={styles.dashboard}>
+      <aside className={styles.sidebar}>
         <ul>
           {tabs.map((t) => (
-            <li key={t.id} onClick={() => navigate(`#${t.id}`)}>
+            <li
+              key={t.id}
+              onClick={() => navigate(`#${t.id}`)}
+              className={`${styles.tabButton} ${
+                currentId === t.id ? "active" : ""
+              }`}
+            >
               {t.label}
             </li>
           ))}
         </ul>
       </aside>
 
-      <main>{tabs.find((t) => t.id === currentId)?.element ?? null}</main>
+      <main className={styles.main}>
+        {tabs.find((t) => t.id === currentId)?.element ?? null}
+      </main>
     </div>
+
+    // <div className={styles["container"]}>
+    //   <aside>
+    //     <ul>
+    //       {tabs.map((t) => (
+    //         <li key={t.id} onClick={() => navigate(`#${t.id}`)}>
+    //           {t.label}
+    //         </li>
+    //       ))}
+    //     </ul>
+    //   </aside>
+
+    //   <main>{tabs.find((t) => t.id === currentId)?.element ?? null}</main>
+    // </div>
   );
 }

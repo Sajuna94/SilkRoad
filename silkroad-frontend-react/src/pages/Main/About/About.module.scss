@@ -39,8 +39,14 @@
 }
 
 .page {
-  min-height: 100vh;
-  background: linear-gradient(to bottom, white, #f9fafb);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
+  overflow-y: auto;
+  min-height: 0;
+
+  // background: linear-gradient(to bottom, white, #f9fafb);
   color: #333;
 }
 

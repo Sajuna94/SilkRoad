@@ -1,120 +1,177 @@
-.container {
-	$sidebar-bg-color: #8a3e3e;
-	$sidebar-li-hover: #f0f8ff;
-	$content-bg-color: #a4a4c9;
+@use "sass:color";
 
-	flex: 1;
-	display: flex;
+/* 基礎色 */
+$sidebar-bg-color: #8a3e3e;
+$sidebar-li-hover: #f0f8ff;
+$content-bg-color: #a4a4c9;
 
-	aside {
-		width: 200px;
-		background-color: $sidebar-bg-color;
+/* Extended UI Colors */
+$text-light: #f9f9f9;
+$text-light-muted: #f0f0f0;
+$text-muted: #ddd;
 
-		ul {
-			li {
-				padding: 6px 0;
-				text-align: center;
-				font-size: 1.2rem;
-				font-weight: bold;
-				transition: 0.25s;
+$glass-bg: rgba(255, 255, 255, 0.12);
+$glass-bg-sidebar: rgba(0, 0, 0, 0.15);
 
-				&:hover {
-					background-color: $sidebar-li-hover;
-				}
-			}
-		}
-	}
+$border-light: rgba(255, 255, 255, 0.18);
+$border-lighter: rgba(255, 255, 255, 0.06);
 
-	main {
-		flex: 1;
-	}
+$hover-fade: rgba(255, 255, 255, 0.08);
+
+$shadow-strong: rgba(0, 0, 0, 0.35);
+$shadow-soft: rgba(0, 0, 0, 0.2);
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
 }
 
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
+.animateFadeIn {
+  animation: fadeIn 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+.animateSlideUp {
+  animation: slideUp 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+.delay75 {
+  animation-delay: 0.075s;
+}
+.delay150 {
+  animation-delay: 0.15s;
+}
+.delay300 {
+  animation-delay: 0.3s;
+}
 
-// $sidebar-item-hover-color: red;
+.dashboard {
+  display: flex;
+  flex-grow: 1;
 
-// .container {
-// 	flex: 1;
-// 	display: flex;
+  background: radial-gradient(
+    circle at top,
+    color.scale($sidebar-bg-color, $lightness: -18%),
+    color.scale($sidebar-bg-color, $lightness: -28%)
+  );
 
-// 	.sidebar {
-// 		background-color: rgb(207, 168, 101);
+  color: $text-light;
+  backdrop-filter: blur(6px);
+}
 
-// 		display: flex;
-// 		flex-direction: column;
+.sidebar {
+  width: 16rem;
 
-// 		h3 {
-// 			&:hover {
-// 				cursor: pointer;
-// 				background-color: red;
-// 			}
+  background: linear-gradient(
+    to bottom,
+    rgba($sidebar-bg-color, 0.78),
+    rgba($sidebar-bg-color, 0.6)
+  );
 
-// 			&.active {
-// 				background-color: red;
-// 			}
-// 		}
-// 	}
+  padding-top: 1.5rem;
+  backdrop-filter: blur(14px);
 
-// 	.content {
-// 		background-color: #777;
+  border-right: 1px solid $border-light;
+  box-shadow: 6px 0 18px $shadow-strong;
 
-// 		flex: 1;
-// 		display: flex;
-// 		flex-direction: column;
-// 	}
-// }
+  ul {
+    list-style: none;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
 
-// .profile {
-// 	background-color: #c1c1c1;
+.tabButton {
+  position: relative;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 6px;
 
-// }
+  background: transparent;
+  color: $text-light-muted;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
 
-// .order-info {
-// 	background-color: #c1c1c1;
+  text-align: left;
+  transition: color 0.22s ease, padding-left 0.22s ease, background-color 0.18s;
 
-// }
+  /* 左側亮條 */
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: transparent;
+    border-radius: 4px;
+    transition: background-color 0.25s ease;
+  }
 
-// .product-info {
-// 	background-color: #c1c1c1;
+  &:hover {
+    color: $text-light;
+    padding-left: 22px;
+    // background: rgba($sidebar-li-hover, 0.35);
+  }
 
-// 	.list {
-// 		width: 500px;
-// 		display: flex;
+  &.active {
+    color: $text-light;
 
-// 		div {
-// 			flex: 1;
-// 		}
+    &::before {
+      background-color: $sidebar-li-hover;
+    }
+  }
+}
 
-// 		table {
-// 			border-collapse: collapse;
-// 			width: 100%;
+.main {
+  flex: 1;
+  padding: 2rem 2.2rem;
+  overflow-y: auto;
 
-// 			thead tr th {
-// 				font-weight: bold;
-// 				font-size: 1.2rem;
-// 			}
+  background: linear-gradient(
+    to bottom right,
+    rgba($content-bg-color, 0.35),
+    rgba($content-bg-color, 0.15)
+  );
 
-// 			tbody tr {
-// 				text-align: center;
+  backdrop-filter: blur(6px);
+}
 
-// 				td {
-// 					height: 50px;
-// 				}
+.card {
+  background-color: rgba($sidebar-bg-color, 0.35);
+  padding: 1.6rem;
+  border-radius: 1rem;
 
-// 				.listed {
-// 					width: 90px;
+  border: 1px solid $border-lighter;
+  backdrop-filter: blur(10px);
 
-// 					button {
-// 						padding: 6px 10px;
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-// }
+  box-shadow: 0 6px 18px $shadow-soft;
+  animation: fadeIn 0.5s ease-out both;
+}
 
-// .new-product {
-// 	background-color: #c1c1c1;
-
-// }
+.headerTitle {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1.4rem;
+  color: $text-light;
+}
