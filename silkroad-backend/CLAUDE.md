@@ -2,174 +2,241 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
-
-SilkRoad Backend is a Flask-based e-commerce backend using SQLAlchemy ORM with MySQL database. The project uses a schema-based database architecture with separate schemas for authentication (`auth`) and application data.
-
 ## Development Commands
 
 ### Environment Setup
-
-**Using uv (recommended):**
 ```bash
+# Install dependencies with uv (recommended)
 uv sync
-uv run src/app.py
-```
 
-**Using pip:**
-```bash
-# Linux/Mac
+# Or with pip
 python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
-
-# Windows
-python -m venv .venv
-.venv\Scripts\activate
+source .venv/bin/activate  # Unix
+.\.venv\Scripts\Activate.ps1  # Windows PowerShell
 pip install -e .
 ```
 
 ### Running the Server
-
 ```bash
 # With uv
 uv run src/app.py
 
 # With python
 python3 src/app.py
-
-# With Flask CLI (Windows PowerShell)
-flask run
 ```
 
-The server runs on `http://localhost:5000` in debug mode by default.
-
 ### Testing
-
 ```bash
 # Run all tests
 pytest
 
-# Run specific test file
-pytest tests/unit/test_models.py
-
-# Run with verbose output
+# Run all tests with verbose output
 pytest -v
+
+# Run specific test file
+pytest tests/api/test_user_api.py
+
+# Run specific test class
+pytest tests/api/test_user_api.py::TestUserRegistration
+
+# Run specific test
+pytest tests/api/test_user_api.py::TestUserRegistration::test_register_customer_success
+
+# Run tests with coverage report
+pytest --cov=src --cov-report=html
+
+# Run tests matching a pattern
+pytest -k "test_login"
+
+# Run tests in parallel (requires pytest-xdist)
+pytest -n auto
 ```
 
-The test suite includes model schema validation that checks ORM models against actual database schema.
+### Database Setup
+1. Create a MySQL database first
+2. Create `.env` file with: `DATABASE_URL=mysql://<username>:<password>@<host>:<port>/<db_name>`
+3. Tables are auto-created via SQLAlchemy on app startup (`db.create_all()`)
+4. Reference SQL schema available in `sql/main.sql`
 
-## Architecture
+## Architecture Overview
 
-### Directory Structure
+### Three-Layer MVC Structure
 
-- `src/app.py` - Flask application entry point with CORS configuration
-- `src/config/` - Database configuration and initialization
-- `src/models/` - SQLAlchemy ORM models (18 models total)
-- `src/routes/` - Flask Blueprint route definitions
-- `src/controllers/` - Business logic for handling API requests
-- `src/middlewares/` - Middleware functions (currently unused)
-- `src/utils/` - Utility functions
-- `src/test/` - Legacy API testing (see `tests/` for actual test suite)
-- `tests/unit/` - Unit tests for models and functionality
+**Routes Layer** (`src/routes/`)
+- Defines API endpoints using Flask Blueprints
+- Each route file documents expected request/response formats in docstrings
+- Routes delegate to controllers for business logic
+- Blueprint prefixes: `/api/user`, `/api/cart`, `/api/order`, `/api/admin`, `/api/vendor`, `/api/test`
 
-### Database Architecture
+**Controllers Layer** (`src/controllers/`)
+- Handles business logic and request/response processing
+- Interacts with models to perform database operations
+- Returns JSON responses with `{"message": str, "success": bool, "data": dict}` format
 
-**Multi-Schema Design:**
-- `auth` schema: Authentication-related tables (users, vendors, customers, admins, vendor_managers)
-- Application schema: Business logic tables (products, orders, carts, reviews, etc.)
+**Models Layer** (`src/models/`)
+- SQLAlchemy ORM models organized by domain:
+  - `models/auth/`: User hierarchy (User, Admin, Customer, Vendor, Vendor_Manager), Block_Record, System_Announcement
+  - `models/order/`: Cart, Cart_Item, Order, Order_Item, Discount_Policy
+  - `models/store/`: Product, Review, option models (ice, sugar, sizes)
+- Models exported via `models/__init__.py` for clean imports
 
-**Key Model Relationships:**
-- `User` is the base class with specialized subclasses:
-  - `Customer(User)` - Regular customers
-  - `Vendor(User)` - Shop owners
-  - `Admin(User)` - System administrators
-  - `Vender_Mananger` - Vendor account managers
-- All models use `__table_args__ = {"schema": "auth"}` or similar to specify schema
+### User Model Polymorphism
+The `User` model uses SQLAlchemy's polymorphic inheritance:
+- Base class: `User` (in `auth` schema, `users` table)
+- Polymorphic on `role` column
+- Subclasses: `Admin`, `Customer`, `Vendor`
+- Each has a shared `register()` classmethod with duplicate checks
+- Password hashing via werkzeug: `set_password()` and `check_password()`
 
-**Database Configuration:**
-- Connection URL is stored in `.env` as `DATABASE_URL`
-- Format: `mysql://<username>:<password>@<host>:<port>/<db_name>`
-- Uses PyMySQL as MySQL driver (installed as MySQLdb)
-- Database must be created manually before running the application
+### Session-Based Authentication
+- Session management in `src/utils/login_verify.py`
+- `@require_login(role)` decorator validates session and role
+- Session keys: `user_id`, `role`
+- Returns 401 if not logged in, 403 if insufficient permissions
 
-### Application Flow
+### Database Configuration
+- Single `db` instance in `config/database.py`
+- PyMySQL adapter for MySQL (`pymysql.install_as_MySQLdb()`)
+- Database URL from environment variable
+- Auto-initialization with `init_db(app)` in `src/app.py`
 
-1. **Routes** (Blueprint definitions) → 2. **Controllers** (business logic) → 3. **Models** (database operations)
-
-Routes are defined using Flask Blueprints and registered with the main app. Each route delegates to a controller function that handles the business logic and database interactions.
-
-### Model Definitions
-
-All models are exported from `src/models/__init__.py` and include:
-- Admin, Block_Record, Cart_Item, Cart, Customer, Discount_Policy
-- Order_Item, Order, Product, Review, System_Announcement
-- User, Vender_Mananger, Vendor
-
-Each model:
-- Inherits from `db.Model`
-- Specifies `__tablename__` and `__table_args__` (for schema)
-- Defines columns with appropriate constraints
-- May include helper methods (e.g., `User.check_password()`)
-
-### CORS Configuration
-
-The app allows CORS requests from:
-- `https://sajuna94.github.io`
-- `http://localhost:5173`
-
-## Important Implementation Notes
-
-### Database Initialization
-
-The database initialization is currently commented out in `src/app.py`:
+### API Route Registration
+All routes registered in `src/app.py`:
 ```python
-# init_db(app)  # Uncommented when ready to use
-```
-
-To enable database operations:
-1. Create the database in MySQL
-2. Add `DATABASE_URL` to `.env` file
-3. Uncomment `init_db(app)` in `src/app.py`
-4. Uncomment route registrations as needed
-
-### Route Registration
-
-Routes are currently commented out in `src/app.py`. To activate:
-```python
-from routes import user_routes, cart_routes, shop_routes
-
 app.register_blueprint(user_routes, url_prefix='/api/user')
 app.register_blueprint(cart_routes, url_prefix='/api/cart')
-app.register_blueprint(shop_routes, url_prefix='/api/shop')
+app.register_blueprint(admin_routes, url_prefix='/api/admin')
+app.register_blueprint(order_routes, url_prefix='/api/order')
+app.register_blueprint(vendor_routes, url_prefix='/api/vendor')
+app.register_blueprint(test_routes, url_prefix='/api/test')
 ```
 
-### Password Security
+### CORS Configuration
+CORS enabled for:
+- `https://sajuna94.github.io`
+- `http://localhost:5173` (dev frontend)
+- `http://localhost:5000` (API)
 
-User passwords are hashed using Werkzeug's `generate_password_hash()` and verified with `check_password_hash()`. Never store plain text passwords.
+## Key Patterns
 
-### Model Schema Testing
+### Model Registration Pattern
+Models use classmethod `register()` for creating new instances:
+- Validates email/phone uniqueness at User level
+- Hashes passwords automatically
+- Returns uncommitted instance (caller must `db.session.add()` and `commit()`)
+- Subclasses pass additional fields via `**kwargs`
 
-The `tests/unit/test_models.py` file validates that ORM models match the actual database schema:
-- Checks table existence
-- Validates column types (with flexible type matching)
-- Verifies nullable constraints
-- Compares ORM definitions with database inspector results
+### Response Format
+All API responses follow:
+```python
+{
+    "message": str,
+    "success": bool,
+    "data": dict  # optional, contains returned data
+}
+```
 
-## File Organization Conventions
+### Schema Organization
+Database uses schemas to organize tables:
+- `auth` schema: all user-related tables
+- Other models use default schema
 
-- Each package directory contains `__init__.py` with exports and documentation
-- Models use relative imports: `from ..config.database import db`
-- Controllers are imported into routes: `from controllers import register_user, login_user`
-- All exports are explicitly listed in `__all__` to avoid wildcard import issues
+## Important Files
 
-## Environment Variables
+- `src/app.py`: Flask app initialization, route registration, startup logic
+- `src/config/database.py`: Database connection and initialization
+- `src/utils/login_verify.py`: Session authentication decorator
+- `src/models/auth/user.py`: Base User model with polymorphic inheritance
+- `sql/main.sql`: Database schema reference
+- `.env`: Database URL and session key (not in git)
 
-Required in `.env` file:
-- `DATABASE_URL` - MySQL connection string
+## Testing Strategy
 
-**Never commit `.env` to version control.**
+### Test Organization
+Tests are organized into two categories:
 
-## Python Version
+**Unit Tests** (`tests/unit/`)
+- `test_models.py`: Database schema validation tests
+- Validates ORM models match actual database schema
+- Checks column types, constraints, and relationships
 
-This project requires Python 3.13 or higher (specified in `.python-version` and `pyproject.toml`).
+**API Integration Tests** (`tests/api/`)
+- `test_user_api.py`: User registration, login, profile management
+- `test_cart_api.py`: Shopping cart operations (add, view, remove)
+- `test_vendor_api.py`: Product and discount policy management
+
+### Test Fixtures
+Common fixtures are defined in `tests/conftest.py`:
+
+**Database Fixtures:**
+- `app`: Configured Flask app for testing
+- `_db`: Test database with auto-created tables
+- `session`: Database session with automatic rollback after each test
+
+**User Fixtures:**
+- `test_admin`: Pre-created admin user
+- `test_vendor`: Pre-created vendor with manager
+- `test_customer`: Pre-created customer
+- `vendor_manager`: Pre-created vendor manager
+
+**Authenticated Client Fixtures:**
+- `authenticated_client`: Client with customer session
+- `admin_client`: Client with admin session
+- `vendor_client`: Client with vendor session
+
+**Product Fixtures:**
+- `test_product`: Sample product from test vendor
+- `test_product_2`: Second sample product
+
+### Test Database Setup
+- Tests use `TEST_DATABASE_URL` from environment, falls back to `DATABASE_URL`
+- Each test gets a fresh database session with automatic rollback
+- No need to manually clean up data between tests
+- Can optionally create a separate test database to avoid affecting dev data
+
+### Writing New Tests
+When adding new API endpoints:
+
+1. **Create test file** in `tests/api/` following naming convention `test_{endpoint}_api.py`
+2. **Organize by endpoint** using test classes (e.g., `TestUserLogin`, `TestAddToCart`)
+3. **Test success cases** first, then edge cases and failures
+4. **Use fixtures** from `conftest.py` for test data
+5. **Verify response structure** including status codes and JSON format
+6. **Test authentication** using authenticated client fixtures when needed
+
+Example test structure:
+```python
+class TestNewEndpoint:
+    def test_success_case(self, client, test_user):
+        """Test the happy path."""
+        payload = {"field": "value"}
+        response = client.post('/api/endpoint', json=payload)
+
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['success'] is True
+
+    def test_missing_field(self, client):
+        """Test validation fails with missing required field."""
+        payload = {}
+        response = client.post('/api/endpoint', json=payload)
+
+        assert response.status_code == 400
+        assert response.get_json()['success'] is False
+```
+
+### Manual Testing
+For quick manual testing during development:
+- Use `/api/test/*` endpoints (defined in `src/utils/test.py`)
+- `/api/test/init_manager`: Create test vendor manager
+- `/api/test/init_users`: Create test admin, vendor, customer
+- `/api/test/Clear`: Clear all test data
+
+## Development Notes
+
+- Route files contain detailed API documentation in docstrings
+- Use `route_info_printer(True)` to debug registered routes at startup
+- Models must be imported in `models/__init__.py` to be created by `db.create_all()`
+- SQLAlchemy column types and options documented in `src/models/Note.md`
+- Project uses Python 3.13
+- **Always run tests before committing** to ensure changes don't break existing functionality

@@ -2,9 +2,6 @@ from config.database import db
 
 class Review(db.Model):
     __tablename__ = "reviews"
-    __tables_args__ = (
-        {"schema": "store"}
-    )
 
     id              = db.Column(db.Integer, primary_key=True, autoincrement=True)
     customer_id     = db.Column(db.Integer, db.ForeignKey("auth.customers.user_id"), nullable=False)
@@ -19,4 +16,4 @@ class Review(db.Model):
     )
 
     def __repr__(self):
-        return f"<Review {self.rating} by User {self.user_id} for Product {self.product_id}>"
+        return f"<Review Rating:{self.rating} Customer:{self.customer_id} -> Vendor:{self.vendor_id}>"

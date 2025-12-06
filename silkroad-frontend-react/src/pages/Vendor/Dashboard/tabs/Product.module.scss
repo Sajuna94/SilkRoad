@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .container {
 	display: flex;
 
@@ -40,85 +41,218 @@
 			min-height: 0px;
 		}
 	}
+=======
+@use "sass:color";
+
+$vendor-red: #8a3e3e;
+$vendor-red-dark: #6f2c2c;
+$vendor-red-light: #a05757;
+$vendor-border: rgba(255, 255, 255, 0.2);
+$vendor-text: #ffffff; // 白色文字
+$vendor-dark-text: #333333; // 深灰色文字 (用於淺色背景)
+$container-bg: #f8f0f0; // 外部容器使用非常淺的酒紅色
+$content-bg: #fff8f8; // info/add 區塊使用淺米白色
+
+.container {
+  display: flex;
+  gap: 20px;
+
+  padding: 20px;
+  box-sizing: border-box;
+
+  min-height: 0;
+  overflow: hidden;
+
+  background-color: $container-bg;
+  border-radius: 8px;
+
+  color: $vendor-dark-text;
+
+  /* 兩側欄位共用樣式 */
+  .info,
+  .add {
+    display: flex;
+    flex-direction: column;
+
+    flex: 1 1 0;
+    padding: 20px;
+
+    background-color: $content-bg;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    max-height: 100%;
+    min-height: 0;
+
+    header {
+      font-size: 1.4rem;
+      font-weight: 700;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #ddd;
+      margin-bottom: 12px;
+    }
+
+    footer {
+      text-align: right;
+      padding-top: 12px;
+      border-top: 2px solid #ddd;
+      margin-top: 12px;
+      z-index: 10;
+
+      button {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        background-color: $vendor-red;
+        color: $vendor-text;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: $vendor-red-dark;
+        }
+      }
+    }
+
+    .content {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      min-height: 0;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 10px;
+      }
+    }
+  }
+
+  /* 左側 info 區塊 */
+  .info {
+    .content {
+      display: flex;
+      gap: 20px;
+
+      > div {
+        flex: 1;
+        //display: flex; // 使用 flex 讓標題和表格垂直排列
+        //flex-direction: column;
+
+        .table-title {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-bottom: 8px;
+          margin-top: 0;
+          color: $vendor-red-dark;
+        }
+
+        .table-wrapper {
+          flex: 1 1 auto;
+          max-height: 400px;
+          overflow-y: auto;
+          border: 1px solid #eee;
+          border-radius: 6px;
+
+          &::-webkit-scrollbar {
+            width: 6px;
+          }
+          &::-webkit-scrollbar-thumb {
+            background-color: #888;
+          }
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+
+            thead {
+              background-color: $vendor-red;
+              border-bottom: 2px solid $vendor-border;
+              position: sticky;
+              top: 0;
+              z-index: 5;
+
+              th {
+                padding: 10px;
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: $vendor-text;
+              }
+            }
+
+            tbody {
+              tr {
+                transition: background-color 0.15s;
+
+                &:nth-child(even) {
+                  background-color: $vendor-red-light;
+                  color: $vendor-text;
+                }
+
+                &:nth-child(odd) {
+                  background-color: $vendor-red;
+                  color: $vendor-text;
+                }
+
+                &:hover {
+                  background-color: $vendor-red-dark;
+                }
+              }
+
+              td {
+                padding: 12px 8px;
+                border-bottom: 1px solid $vendor-border;
+
+                button {
+                  padding: 6px 10px;
+                  border-radius: 6px;
+                  border: none;
+                  font-size: 0.9rem;
+                  cursor: pointer;
+                  background-color: $vendor-text;
+                  color: $vendor-red-dark;
+                  transition: background-color 0.2s;
+
+                  &:hover {
+                    background-color: color.adjust($vendor-text, $alpha: -0.2);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* 右側新增商品欄 */
+  .add {
+    flex: 0 0 360px;
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      // 調整內部區塊背景，讓它與 info/add 背景做出區隔
+      > div > div {
+        background-color: #f1e6e6;
+        border-radius: 8px;
+        height: 120px;
+      }
+    }
+  }
+
+  @media (max-width: 860px) {
+    flex-direction: column;
+
+    .add {
+      flex: none;
+      width: 100%;
+    }
+  }
+>>>>>>> cc870e0d6ba37e9c1663d88f766e07dd6595bc5a
 }
-
-// >div {
-// 	display: flex;
-// 	flex-direction: column;
-
-// 	.content {
-// 		flex: 1 1 auto;
-// 	}
-// }
-
-// button {
-// 	padding: 6px 10px;
-// }
-
-// header {
-// 	font-size: 1.5rem;
-// 	font-weight: bold;
-// 	padding: 0 10px 10px 0;
-// }
-
-// footer {
-// 	text-align: right;
-// }
-// }
-
-
-
-// .left {
-// 	flex: 1;
-
-// 	>div {
-// 		display: flex;
-
-// 		>div {
-// 			flex: 1;
-
-// 			table {
-// 				width: 100%;
-// 				text-align: center;
-
-// 				thead {
-// 					border-bottom: 1px solid #5e5e5e;
-// 				}
-
-// 				tr:nth-child(even) {
-// 					background-color: #f0f0f0;
-// 				}
-
-// 				th {
-// 					font-size: 1.2rem;
-// 					font-weight: bold;
-// 				}
-
-// 				td {
-// 					padding: 10px 0;
-// 				}
-// 			}
-// 		}
-// 	}
-// }
-
-// .table-wrapper {
-// 	flex: 1;
-// 	overflow-y: auto;
-
-
-// }
-
-// .right {
-// 	width: 700px;
-
-// 	.content {
-// 		flex: 1 1 auto;
-// 		overflow-y: auto;
-// 		min-height: 0;
-
-// 		>div {
-// 			background-color: red;
-// 		}
-// 	}
-// }

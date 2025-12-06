@@ -30,6 +30,7 @@ DROP TABLE IF EXISTS `auth`.`users`;
 CREATE TABLE `order`.`discount_policies` (
   `id` int PRIMARY KEY AUTO_INCREMENT,
   `vendor_id` int NOT NULL,
+  `is_available` boolean NOT NULL,
   `type` ENUM ('percent', 'fixed') NOT NULL,
   `value` float NOT NULL,
   `min_purchase` int DEFAULT 0,
@@ -37,7 +38,10 @@ CREATE TABLE `order`.`discount_policies` (
   `membership_limit` int NOT NULL DEFAULT 0,
   `expiry_date` date COMMENT '折價結束時間',
   `created_at` timestamp NOT NULL DEFAULT (now()),
-  `updated_at` timestamp NOT NULL DEFAULT (now()) COMMENT 'TODO: Add ON UPDATE ON UPDATE CURRENT_TIMESTAMP'
+  `updated_at` timestamp NOT NULL
+     DEFAULT CURRENT_TIMESTAMP
+     ON UPDATE CURRENT_TIMESTAMP 
+     COMMENT '資料最後更新時間'
 );
 
 CREATE TABLE `order`.`orders` (
