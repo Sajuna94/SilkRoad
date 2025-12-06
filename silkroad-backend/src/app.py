@@ -16,7 +16,7 @@ CORS(app, origins=[
     "https://sajuna94.github.io", 
     "http://localhost:5173",
     "http://localhost:5000"
-])
+], supports_credentials=True)
 
 def route_info_printer(bool_debug: bool = True):
     if not bool_debug:
@@ -46,9 +46,24 @@ app.register_blueprint(order_routes,url_prefix='/api/order')
 app.register_blueprint(vendor_routes, url_prefix='/api/vendor')
 app.register_blueprint(customer_routes, url_prefix='/api/customer')
 
+from models import User  # 確認你的 User model 在 models.py
+
 @app.route("/")
 def index():
-    return "test"
+    users = User.query.all()  # 查詢所有 users
+    # 將 users 轉換為 dict 以 jsonify
+    users_list = []
+    for u in users:
+        users_list.append({
+            "id": u.id,
+            "name": u.name,
+            "email": u.email,
+            "password": u.password,
+            "phone_number": u.phone_number,
+            "role": u.role,
+            "created_at": u.created_at.isoformat() if u.created_at else None
+        })
+    return jsonify(users_list)
 
 if __name__ == '__main__':
     route_info_printer(True)

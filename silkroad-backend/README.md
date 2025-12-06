@@ -25,6 +25,8 @@ py -m venv .venv
 
 # 2. 啟動
 .\.venv\Scripts\Activate.ps1
+# or
+.\.venv\Scripts\activate
 
 # 3. 安裝套件
 pip install -e .
