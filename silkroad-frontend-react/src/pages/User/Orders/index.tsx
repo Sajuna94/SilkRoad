@@ -6,6 +6,7 @@ import { products } from "@/types/data/product";
 
 // 定義環繞半徑
 const CAROUSEL_RADIUS = 800;
+// const STAGE_ZOOM = 1000;
 
 export default function History() {
   const customerId = 1;
@@ -15,9 +16,10 @@ export default function History() {
 
   const angle = 18;
 
-  const carouselOrders = orders!;
+  const carouselOrders = useMemo(() => orders || [], [orders]);
 
   const currentRotationIndex = useMemo(() => {
+    if (carouselOrders.length === 0) return 0;
     return Math.round(-rotateY / angle) % carouselOrders.length;
   }, [rotateY, angle, carouselOrders.length]);
 
@@ -26,7 +28,7 @@ export default function History() {
       let index = currentRotationIndex;
       if (index < 0) index = carouselOrders.length + index;
 
-      const newSelectedOrder = carouselOrders[currentRotationIndex];
+      const newSelectedOrder = carouselOrders[index];
       setSelectedOrderId(newSelectedOrder?.id || null);
     }
   }, [carouselOrders, currentRotationIndex]);
@@ -42,6 +44,8 @@ export default function History() {
   const handleNavClick = useCallback(
     (direction: 1 | -1) => {
       const total = carouselOrders.length;
+      if (total === 0) return;
+
       const currentIndex = Math.round(-rotateY / angle);
       let newIndex = currentIndex + direction;
 
@@ -77,6 +81,7 @@ export default function History() {
           className={styles.carousel}
           style={{
             transform: `rotateY(${rotateY}deg)`,
+            // transform: `translateZ(${STAGE_ZOOM}px) rotateY(${rotateY}deg)`,
           }}
         >
           {carouselOrders.map((order, index) => {
