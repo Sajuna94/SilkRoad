@@ -1,9 +1,10 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from config import init_db
 from routes import user_routes, cart_routes, order_routes
 from routes import admin_routes, vendor_routes
 from utils import test_routes
+from datetime import timedelta
 
 from dotenv import load_dotenv
 import os
@@ -12,11 +13,20 @@ app = Flask(__name__)
 load_dotenv()
 app.secret_key = os.getenv('SESSION_KEY')
 
-CORS(app, origins=[
+app.config['SESSION_COOKIE_NAME'] = 'flask_session'
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # 防止 JavaScript 存取 cookie
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # 跨域必須設為 None
+app.config['SESSION_COOKIE_SECURE'] = False  # 開發環境用 False,生產環境用 True(需要 HTTPS)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)  # Session 有效期
+
+CORS(app, 
+    origins=[
     "https://sajuna94.github.io", 
     "http://localhost:5173",
-    "http://localhost:5000"
-])
+    "http://localhost:5000"],
+    supports_credentials=True,  # 允許傳送 cookie(最重要!)
+    allow_headers=['Content-Type', 'Authorization'],
+    methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
 def route_info_printer(bool_debug: bool = True):
     if not bool_debug:
@@ -48,6 +58,12 @@ app.register_blueprint(vendor_routes, url_prefix='/api/vendor')
 @app.route("/")
 def index():
     return "test"
+
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    """提供上傳的檔案（如產品圖片）"""
+    uploads_dir = os.path.join(os.path.dirname(__file__), '..', 'uploads')
+    return send_from_directory(uploads_dir, filename)
 
 if __name__ == '__main__':
     route_info_printer(True)

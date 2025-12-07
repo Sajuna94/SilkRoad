@@ -4,8 +4,21 @@ from models import Vendor, Product, Discount_Policy
 from config.database import db
 from utils import require_login
 
-
 from datetime import datetime, date
+from werkzeug.utils import secure_filename
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+UPLOAD_FOLDER = os.path.join(BASE_DIR, '..', 'uploads', 'products')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def validate_expiry_date(date_string):
     if not date_string:
@@ -24,64 +37,98 @@ def validate_expiry_date(date_string):
 
 @require_login(role = ["vendor"]) 
 def add_product():
-    data = request.get_json()
-    
-    if not data:
+    vendor_id = request.form.get('vendor_id')
+    name = request.form.get('name')
+    price = request.form.get('price')
+    description = request.form.get('description')
+    is_listed = request.form.get('is_listed')
+        
+    if not vendor_id or not name or not price or description is None or is_listed is None: 
         return jsonify({
-            "message": "data connot be empty",
+            "message": "Missing required fields",
             "success": False
         }), 400
         
-    if not isinstance(data, dict):
+    # ===== 檢查是否有圖片 =====
+    if 'image' not in request.files:
         return jsonify({
-            "message": "Expected a dictionary",
+            "message": "No image file provided",
             "success": False
         }), 400
-        
-    require_col = ["vendor_id", "name", "price", "description", "image_url"]
-    for col in require_col:
-        if col not in data:
-            return jsonify({
-                "message": f"Missing required column: {col}",
-                "success": False
-            }), 400
-            
-    vendor_id = data.get("vendor_id")
-    name = data.get("name")
-    price = data.get("price")
-    description = data.get("description")
-    is_listed = data.get("is_listed")
-    image_url = data.get("image_url")
     
-    if is_listed is None:
-        is_listed = True    #set default
-        
-    vndr = Vendor.query.get(vendor_id)
-    if not vndr:
+    image_file = request.files['image']
+    
+    if image_file.filename == '' or image_file.filename is None:
+        return jsonify({
+            "message": "No image selected",
+            "success": False
+        }), 400
+    
+    if not allowed_file(image_file.filename):
+        return jsonify({
+            "message": "Invalid image type. Allowed types: png, jpg, jpeg, gif, webp",
+            "success": False
+        }), 400
+    
+    try:
+        vendor_id = int(vendor_id)
+    except (ValueError, TypeError):
+        return jsonify({
+            "message": "Invalid vendor_id",
+            "success": False
+        }), 400
+    
+    vendor = Vendor.query.get(vendor_id)
+    if not vendor:
         return jsonify({
             "message": f"Vendor with id {vendor_id} not found",
             "success": False
         }), 404
-        
+    
+    # ===== 處理資料類型轉換 =====
     try:
+        # 轉換 price
         if isinstance(price, str):
             price = int(price)
         elif isinstance(price, int):
             pass
         else:
             raise ValueError("Invalid price type")
-            
-        if isinstance(is_listed, str):
+        
+        # 轉換 is_listed
+        if is_listed is None:
+            is_listed = True  # 預設值
+        elif isinstance(is_listed, str):
             is_listed = is_listed.lower() == "true"
         else:
             is_listed = bool(is_listed)
+            
     except (ValueError, TypeError) as e:
         return jsonify({
             "message": f"Invalid data type: {str(e)}",
             "success": False
         }), 400
     
-    new_prdct = Product(
+    # ===== 儲存圖片 =====
+    try:
+        filename = secure_filename(image_file.filename)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+        name_part, ext = os.path.splitext(filename)
+        unique_filename = f"product_{vendor_id}_{timestamp}{ext}"
+        
+        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+        image_file.save(filepath)
+        
+        image_url = f"/uploads/products/{unique_filename}"
+        
+    except Exception as e:
+        return jsonify({
+            "message": f"Failed to save image: {str(e)}",
+            "success": False
+        }), 500
+    
+    # ===== 創建產品 =====
+    new_product = Product(
         vendor_id=vendor_id,
         name=name,
         price=price,
@@ -91,20 +138,34 @@ def add_product():
     )
     
     try:
-        db.session.add(new_prdct)
+        db.session.add(new_product)
         db.session.commit()
+        
+        return jsonify({
+            "message": "Product added successfully",
+            "success": True,
+            "product": {
+                "id": new_product.id,
+                "name": new_product.name,
+                "price": new_product.price,
+                "image_url": image_url
+            }
+        }), 201
+        
     except Exception as e:
         db.session.rollback()
+        
+        # 如果資料庫失敗,刪除已上傳的圖片
+        try:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+        except:
+            pass
+        
         return jsonify({
             "message": f"Failed to add product: {str(e)}",
             "success": False
         }), 500
-    
-    return jsonify({
-        "message": "Product added successfully",
-        "success": True,
-        "product_id": new_prdct.id
-    }), 201
 
 @require_login(role = ["vendor"])
 def update_products():
