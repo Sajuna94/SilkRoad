@@ -43,7 +43,7 @@ def add_product():
     description = request.form.get('description')
     is_listed = request.form.get('is_listed')
         
-    if not vendor_id or not name or not price or description is None or is_listed is None: 
+    if not vendor_id or not name or not price or description is None: 
         return jsonify({
             "message": "Missing required fields",
             "success": False

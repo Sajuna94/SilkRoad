@@ -2,7 +2,7 @@ from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from config import init_db
 from routes import user_routes, cart_routes, order_routes
-from routes import admin_routes, vendor_routes, customer_routes
+from routes import admin_routes, vendor_routes
 from utils import test_routes
 from datetime import timedelta
 
@@ -23,15 +23,10 @@ CORS(app,
     origins=[
     "https://sajuna94.github.io", 
     "http://localhost:5173",
-<<<<<<< HEAD
     "http://localhost:5000"],
     supports_credentials=True,  # 允許傳送 cookie(最重要!)
     allow_headers=['Content-Type', 'Authorization'],
     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
-=======
-    "http://localhost:5000"
-], supports_credentials=True)
->>>>>>> 8bebc5849fb7c91cf999b699a2eb213c9cd84d74
 
 def route_info_printer(bool_debug: bool = True):
     if not bool_debug:
@@ -59,26 +54,10 @@ app.register_blueprint(cart_routes, url_prefix='/api/cart')
 app.register_blueprint(admin_routes,url_prefix='/api/admin')
 app.register_blueprint(order_routes,url_prefix='/api/order')
 app.register_blueprint(vendor_routes, url_prefix='/api/vendor')
-app.register_blueprint(customer_routes, url_prefix='/api/customer')
-
-from models import User  # 確認你的 User model 在 models.py
 
 @app.route("/")
 def index():
-    users = User.query.all()  # 查詢所有 users
-    # 將 users 轉換為 dict 以 jsonify
-    users_list = []
-    for u in users:
-        users_list.append({
-            "id": u.id,
-            "name": u.name,
-            "email": u.email,
-            "password": u.password,
-            "phone_number": u.phone_number,
-            "role": u.role,
-            "created_at": u.created_at.isoformat() if u.created_at else None
-        })
-    return jsonify(users_list)
+    return "test"
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
