@@ -178,6 +178,36 @@ export async function getOrders(customerId: number): Promise<Order[]> {
         },
       ],
     },
+    {
+      id: 110,
+      customerId,
+      vendorId: 2,
+      createdAt: "2025-01-02T10:20:00",
+      total: 87,
+      items: [
+        {
+          orderId: 110,
+          productId: 2,
+          quantity: 2,
+          options: { size: "M", sugar: "無糖", ice: "少冰" },
+        },
+      ],
+    },
+    {
+      id: 111,
+      customerId,
+      vendorId: 2,
+      createdAt: "2025-01-02T10:20:00",
+      total: 666,
+      items: [
+        {
+          orderId: 111,
+          productId: 4,
+          quantity: 2,
+          options: { size: "M", sugar: "無糖", ice: "少冰" },
+        },
+      ],
+    },
   ]);
 }
 

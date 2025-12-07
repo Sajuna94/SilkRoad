@@ -26,9 +26,7 @@
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 
-	/* display: flex; */
-	justify-content: center;
-	align-items: center;
+	height: 100%;
 }
 
 a {
@@ -45,10 +43,10 @@ a:hover {
 
 body {
 	margin: 0;
-	/* display: flex; */
-	/* place-items: center; */
+	display: flex;
 	min-width: 320px;
 	min-height: 100vh;
+	height: 100%;
 }
 
 h1 {
@@ -94,8 +92,6 @@ button:hover {
 	}
 }
 
-
-/*  */
 ::-webkit-scrollbar {
 	width: 6px;
 }
@@ -108,10 +104,6 @@ button:hover {
 ::-webkit-scrollbar-track {
 	background: transparent;
 }
-
-
-
-
 
 :root {
 	color: #213547;
@@ -132,13 +124,14 @@ ul {
 }
 
 table {
-  all: unset;       
-  display: table;  
-  border-collapse: collapse;
-  width: 100%;
+	all: unset;
+	display: table;
+	border-collapse: collapse;
+	width: 100%;
 }
 
-th, td {
-  all: unset;
-  display: table-cell;
+th,
+td {
+	all: unset;
+	display: table-cell;
 }

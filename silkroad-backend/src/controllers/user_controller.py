@@ -157,6 +157,7 @@ def logout_user():
     若未來有使用 Session 或 Redis 黑名單，在此處處理。
     """
     session.pop('user_id', None)
+    session.pop('role', None)
     return jsonify({
         "message": "Logout successful",
         "success": True
@@ -206,8 +207,7 @@ def update_user(user_id):
                 "email": user.email,
                 "role": user.role,
                 "phone_number": user.phone_number,
-                # 如果是 vendor/customer 嘗試回傳 address，否則回傳 None
-                "address": getattr(user, 'address', None) 
+                "address": getattr(user, 'address', None) # 如果是 vendor/customer 嘗試回傳 address，否則回傳 None
             }
         }), 200
 
@@ -266,6 +266,7 @@ def delete_user(user_id):
         # 如果刪除的是自己，則清除 session
         if current_user_id == user_id:
             session.pop('user_id', None)
+            session.pop('role', None)
 
         return jsonify({
             "message": "User deleted successfully",
