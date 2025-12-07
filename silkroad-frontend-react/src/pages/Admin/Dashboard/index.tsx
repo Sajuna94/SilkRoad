@@ -24,7 +24,7 @@ export default function Dashboard() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`${styles.tabButton} ${
-                activeTab === tab.id ? "active" : ""
+                activeTab === tab.id ? styles.active : ""
               }`}
             >
               {tab.name}

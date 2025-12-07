@@ -26,7 +26,7 @@ export default function VendorDashboardPage() {
               key={t.id}
               onClick={() => navigate(`#${t.id}`)}
               className={`${styles.tabButton} ${
-                currentId === t.id ? "active" : ""
+                currentId === t.id ? styles.active : ""
               }`}
             >
               {t.label}
