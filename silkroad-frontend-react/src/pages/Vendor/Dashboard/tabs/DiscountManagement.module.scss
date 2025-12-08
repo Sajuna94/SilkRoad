@@ -32,6 +32,7 @@ $color-expired: #9ca3af;
     font-size: 2rem;
     color: $text-light;
   }
+
   p {
     margin: 0.5rem 0 0;
     color: $text-muted;
@@ -52,6 +53,7 @@ $color-expired: #9ca3af;
     background: #f0f0f0;
     color: #333;
   }
+
   &:active {
     transform: scale(0.96);
   }
@@ -82,6 +84,7 @@ $color-expired: #9ca3af;
     font-size: 1rem;
     font-weight: 600;
   }
+
   .tabCount {
     font-size: 1.2rem;
     font-weight: bold;
@@ -100,14 +103,17 @@ $color-expired: #9ca3af;
   &.tabAll.active {
     color: #555;
   }
+
   &.tabActive.active {
     color: color.scale($color-active, $lightness: -20%);
     border-bottom: 4px solid $color-active;
   }
+
   &.tabScheduled.active {
     color: color.scale($color-scheduled, $lightness: -20%);
     border-bottom: 4px solid $color-scheduled;
   }
+
   &.tabExpired.active {
     color: #555;
     border-bottom: 4px solid $color-expired;
@@ -128,6 +134,7 @@ $color-expired: #9ca3af;
 .searchGroup {
   flex: 1;
   min-width: 250px;
+
   input {
     width: 100%;
     padding: 0.8rem;
@@ -135,6 +142,7 @@ $color-expired: #9ca3af;
     border: 1px solid $border-light;
     background: rgba(255, 255, 255, 0.9);
     color: #333;
+
     &:focus {
       outline: none;
       box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
@@ -154,6 +162,7 @@ $color-expired: #9ca3af;
     background: rgba(255, 255, 255, 0.9);
     color: #333;
     cursor: pointer;
+
     &:focus {
       outline: none;
       box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
@@ -197,12 +206,15 @@ $color-expired: #9ca3af;
     background: $color-active;
     box-shadow: 0 0 8px $color-active;
   }
+
   &.SCHEDULED::before {
     background: $color-scheduled;
     box-shadow: 0 0 8px $color-scheduled;
   }
+
   &.EXPIRED {
     opacity: 0.6;
+
     &::before {
       background: $color-expired;
     }
@@ -224,7 +236,7 @@ $color-expired: #9ca3af;
   background: rgba(0, 0, 0, 0.3);
   padding: 4px 8px;
   border-radius: 6px;
-  color: #fbbf24; // 金黃色文字
+  color: #fbbf24;
 }
 
 .badge {
@@ -240,6 +252,7 @@ $color-expired: #9ca3af;
 
   p {
     margin: 0.4rem 0;
+
     strong {
       color: white;
     }

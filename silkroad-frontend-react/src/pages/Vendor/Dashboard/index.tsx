@@ -1,7 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./Dashboard.module.scss";
 import OrderTab from "./tabs/Order";
-// import OverviewTab from "./tabs/Overview";
 import ProductTab from "./tabs/Product";
 import DiscountManagement from "./tabs/DiscountManagement";
 

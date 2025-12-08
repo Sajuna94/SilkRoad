@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import styles from "./PostDiscount.module.scss";
+import styles from "./DiscountFormModal.module.scss";
 
-// 定義資料介面 (需 export 給父層使用)
 export type DiscountType = "PERCENTAGE" | "FIXED";
 export type MembershipLevel = "ALL" | "BRONZE" | "SILVER" | "GOLD" | "DIAMOND";
 

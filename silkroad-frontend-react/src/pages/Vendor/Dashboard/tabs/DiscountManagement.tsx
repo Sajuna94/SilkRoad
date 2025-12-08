@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import styles from "./DiscountManagement.module.scss";
-import PostDiscount, { type DiscountForm } from "./PostDiscount";
+import PostDiscount, { type DiscountForm } from "./DiscountFormModal";
 
 const MOCK_DISCOUNTS: DiscountForm[] = [
   {
@@ -56,7 +56,6 @@ export default function DiscountManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<DiscountForm | null>(null);
 
-  // 狀態管理：Tab 與 篩選器
   const [currentTab, setCurrentTab] = useState<TabStatus>("ALL");
   const [searchText, setSearchText] = useState("");
   const [filterType, setFilterType] = useState<"ALL" | "PERCENTAGE" | "FIXED">(
@@ -66,7 +65,6 @@ export default function DiscountManagement() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  // --- 核心邏輯：資料處理 (篩選 + 分類) ---
   const processedData = useMemo(() => {
     // 1. 先進行「屬性篩選」
     let filtered = discounts.filter((item) => {
@@ -97,7 +95,6 @@ export default function DiscountManagement() {
     return dataWithStatus.filter((d) => d.status === currentTab);
   }, [discounts, searchText, filterType, filterMembership, currentTab, today]);
 
-  // 計算各個 Tab 的數量 (用於顯示在按鈕上的數字)
   const counts = useMemo(() => {
     const all = discounts.length;
     let active = 0,
@@ -111,7 +108,6 @@ export default function DiscountManagement() {
     return { ALL: all, ACTIVE: active, SCHEDULED: scheduled, EXPIRED: expired };
   }, [discounts, today]);
 
-  // CRUD 操作
   const handleCreate = () => {
     setEditingItem(null);
     setIsModalOpen(true);
@@ -151,7 +147,6 @@ export default function DiscountManagement() {
         </button>
       </header>
 
-      {/* 狀態 Tab 切換區 */}
       <nav className={styles.tabs}>
         {[
           { id: "ALL", label: "所有活動", colorClass: styles.tabAll },
@@ -178,7 +173,6 @@ export default function DiscountManagement() {
         ))}
       </nav>
 
-      {/* 篩選工具列 */}
       <section className={styles.filterBar}>
         <div className={styles.searchGroup}>
           <input
@@ -209,7 +203,6 @@ export default function DiscountManagement() {
         </div>
       </section>
 
-      {/* 列表顯示區 */}
       <div className={styles.grid}>
         {processedData.length === 0 ? (
           <div className={styles.emptyState}>沒有符合條件的資料</div>
@@ -238,7 +231,6 @@ export default function DiscountManagement() {
                     {item.min_purchase ? `$${item.min_purchase}` : "無"}
                   </p>
 
-                  {/* 加一個分隔線或間距 */}
                   <span className={styles.separator}>|</span>
 
                   <p>
@@ -251,7 +243,7 @@ export default function DiscountManagement() {
                 </p>
               </div>
 
-              {/* 只有未開始的活動可以修改，或者你可以開放全部都能修 */}
+              {/* 只有未開始的活動可以修改*/}
               {item.status === "SCHEDULED" && (
                 <div className={styles.cardFooter}>
                   <button
@@ -268,7 +260,7 @@ export default function DiscountManagement() {
                   </button>
                 </div>
               )}
-              {/* 讓進行中的活動也能查看詳情或強制結束 (可選) */}
+              {/* 進行中的活動也能查看詳情或強制結束*/}
               {item.status === "ACTIVE" && (
                 <div className={styles.cardFooter}>
                   <button
