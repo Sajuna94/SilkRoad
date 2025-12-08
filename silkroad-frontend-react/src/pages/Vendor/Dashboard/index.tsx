@@ -1,15 +1,16 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import styles from "./Dashboard.module.scss";
 import OrderTab from "./tabs/Order";
-import OverviewTab from "./tabs/Overview";
+// import OverviewTab from "./tabs/Overview";
 import ProductTab from "./tabs/Product";
+import DiscountManagement from "./tabs/DiscountManagement";
 
 export default function VendorDashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const tabs = [
-    { id: "1", label: "資訊總覽", element: <OverviewTab /> },
+    { id: "1", label: "折扣管理", element: <DiscountManagement /> },
     { id: "2", label: "商品管理", element: <ProductTab /> },
     { id: "3", label: "訂單管理", element: <OrderTab /> },
   ];

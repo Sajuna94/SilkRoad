@@ -1,0 +1,313 @@
+@use "sass:color";
+
+// --- 配色變數 ---
+$bg-color: #a05757;
+$text-light: #ffffff;
+$text-muted: rgba(255, 255, 255, 0.7);
+$card-glass: rgba(255, 255, 255, 0.15);
+$border-light: rgba(255, 255, 255, 0.25);
+
+// 狀態顏色
+$color-active: #34d399;
+$color-scheduled: #60a5fa;
+$color-expired: #9ca3af;
+
+.container {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  background-color: $bg-color;
+  min-height: 100vh;
+  color: $text-light;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: $text-light;
+  }
+  p {
+    margin: 0.5rem 0 0;
+    color: $text-muted;
+  }
+}
+
+.createBtn {
+  background: white;
+  color: $bg-color;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    background: #f0f0f0;
+    color: #333;
+  }
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.tabBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: rgba(0, 0, 0, 0.2);
+  color: $text-muted;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  .tabLabel {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .tabCount {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  &.active {
+    background: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  &.tabAll.active {
+    color: #555;
+  }
+  &.tabActive.active {
+    color: color.scale($color-active, $lightness: -20%);
+    border-bottom: 4px solid $color-active;
+  }
+  &.tabScheduled.active {
+    color: color.scale($color-scheduled, $lightness: -20%);
+    border-bottom: 4px solid $color-scheduled;
+  }
+  &.tabExpired.active {
+    color: #555;
+    border-bottom: 4px solid $color-expired;
+  }
+}
+
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2.5rem;
+  margin-bottom: 2rem;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.searchGroup {
+  flex: 1;
+  min-width: 250px;
+  input {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid $border-light;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+.selectGroup {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+
+  select {
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    border: 1px solid $border-light;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    cursor: pointer;
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: $card-glass;
+  border-radius: 12px;
+  padding: 1.2rem;
+  border: 1px solid $border-light;
+  backdrop-filter: blur(10px);
+  color: $text-light;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  // 狀態指示燈
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  &.ACTIVE::before {
+    background: $color-active;
+    box-shadow: 0 0 8px $color-active;
+  }
+  &.SCHEDULED::before {
+    background: $color-scheduled;
+    box-shadow: 0 0 8px $color-scheduled;
+  }
+  &.EXPIRED {
+    opacity: 0.6;
+    &::before {
+      background: $color-expired;
+    }
+  }
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-right: 1.5rem;
+}
+
+.code {
+  font-family: monospace;
+  font-size: 1.2rem;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 8px;
+  border-radius: 6px;
+  color: #fbbf24; // 金黃色文字
+}
+
+.badge {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.cardBody {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: $text-muted;
+
+  p {
+    margin: 0.4rem 0;
+    strong {
+      color: white;
+    }
+  }
+}
+
+.rowInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.4rem 0;
+
+  p {
+    margin: 0;
+  }
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.8rem;
+  margin-top: 1px;
+}
+
+.cardFooter {
+  margin-top: 1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  gap: 0.5rem;
+
+  button {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+  }
+
+  .btnEdit {
+    background: white;
+    color: $bg-color;
+    transition: 0.5s;
+
+    &:hover {
+      color: #333;
+    }
+  }
+
+  .btnDelete {
+    background: rgba(0, 0, 0, 0.3);
+    color: #fca5a5;
+    transition: 0.5s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.5);
+      color: #f87171;
+    }
+  }
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem;
+  color: $text-muted;
+  font-size: 1.2rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
