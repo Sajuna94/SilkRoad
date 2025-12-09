@@ -3,3 +3,9 @@
 __pycache__/
 .pytest_cache/
 silkroad_backend.egg-info/
+
+uploads/products/*.png
+uploads/products/*.jpg
+uploads/products/*.jpeg
+uploads/products/*.gif
+uploads/products/*.webp
