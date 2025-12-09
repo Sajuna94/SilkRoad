@@ -1,17 +1,24 @@
 import styles from "./Auth.module.scss"
 import { useState } from "react";
 import LabeledInput from "@/components/molecules/LabeledInput/LabeledInput";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useLogin } from "@/hooks/auth/login";
 
 export default function LoginPage() {
+    const location = useLocation();
+    const prefill = location.state as { email?: string; password?: string } | undefined;
+
     const [form, setForm] = useState({
-        email: "", password: ""
+        email: prefill?.email || "customer@example.com",
+        password: prefill?.password || "123"
     })
 
     const loginMutation = useLogin();
+    const navigate = useNavigate();
 
-    const handleSubmit = () => {
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
         console.log("Login:", form);
 
         loginMutation.mutate(
@@ -19,7 +26,7 @@ export default function LoginPage() {
             {
                 onSuccess: (user) => {
                     console.log("登入成功:", user);
-                    // localStorage.setItem("user", JSON.stringify(user));
+                    navigate("/home");
                 },
                 onError: (error) => {
                     console.error("登入失敗:", error.response?.data);
@@ -52,6 +59,7 @@ export default function LoginPage() {
                     />
 
                     <button
+                        type="submit"
                         className={styles['button']}
                         disabled={loginMutation.isPending}
                         onClick={handleSubmit}

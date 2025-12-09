@@ -65,9 +65,9 @@ def uploaded_file(filename):
     uploads_dir = os.path.join(os.path.dirname(__file__), '..', 'uploads')
     return send_from_directory(uploads_dir, filename)
 
-# if __name__ == '__main__':
-#     route_info_printer(True)
-#     print("[app] 啟動 Flask 伺服器...")
-#     app.run(debug=True)
+if __name__ == '__main__':
+    route_info_printer(True)
+    print("[app] 啟動 Flask 伺服器...")
+    app.run(debug=True)
 
 

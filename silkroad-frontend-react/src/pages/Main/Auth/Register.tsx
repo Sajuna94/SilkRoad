@@ -1,7 +1,7 @@
 import LabeledInput from "@/components/molecules/LabeledInput/LabeledInput";
 import styles from "./Auth.module.scss";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useRegister } from "@/hooks/auth/login";
 
 export default function RegisterPage() {
@@ -15,8 +15,10 @@ export default function RegisterPage() {
     })
 
     const registerMutation = useRegister();
+    const navigate = useNavigate();
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
         console.log(form);
 
         registerMutation.mutate({
@@ -30,7 +32,7 @@ export default function RegisterPage() {
             {
                 onSuccess: (user) => {
                     console.log("註冊成功:", user);
-                    // localStorage.setItem("user", JSON.stringify(user));
+                    navigate("/login", { state: { email: form.email, password: form.password } });
                 },
                 onError: (error) => {
                     console.error("註冊失敗:", error.response?.data);
@@ -94,6 +96,7 @@ export default function RegisterPage() {
                     />
 
                     <button
+                        type="submit"
                         className={styles['button']}
                         onClick={handleSubmit}
                         disabled={registerMutation.isPending}
