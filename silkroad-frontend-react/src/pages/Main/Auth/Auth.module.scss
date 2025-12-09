@@ -54,3 +54,23 @@
 		}
 	}
 }
+
+.dropdown {
+	display: flex;
+	align-items: center;
+
+	label {
+		color: #213547;
+		font-size: 1rem;
+		margin-right: 8px;
+	}
+
+	select {
+		flex: 1;
+		padding: 6px 10px;
+		color: #213547;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		background-color: #fff;
+	}
+}

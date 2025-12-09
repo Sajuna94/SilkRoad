@@ -6,20 +6,26 @@ import { useRegister } from "@/hooks/auth/login";
 
 export default function RegisterPage() {
     const [form, setForm] = useState({
-        name: "", email: "", password: ""
+        name: "Customer",
+        email: "customer@example.com",
+        password: "123",
+        phone: "12345",
+        address: "tp",
+        role: "customer",
     })
 
     const registerMutation = useRegister();
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-
+    const handleSubmit = () => {
         console.log(form);
 
         registerMutation.mutate({
             name: form.name,
             email: form.email,
             password: form.password,
+            phone_number: form.phone,
+            address: form.address,
+            role: form.role,
         },
             {
                 onSuccess: (user) => {
@@ -63,8 +69,36 @@ export default function RegisterPage() {
                         required
                     />
 
-                    <button type="submit" className={styles['button']}>
-                        註冊
+                    <LabeledInput
+                        label="Phone"
+                        type="text"
+                        value={form.phone}
+                        onChange={(value) => setForm({ ...form, phone: value })}
+                        required
+                    />
+
+                    <LabeledInput
+                        label="Addr"
+                        type="text"
+                        value={form.address}
+                        onChange={(value) => setForm({ ...form, address: value })}
+                        required
+                    />
+
+                    <OptionDropdown
+                        id="role"
+                        label="身分"
+                        value={form.role}
+                        options={["vendor", "customer"]}
+                        onChange={(val) => setForm({ ...form, role: val })}
+                    />
+
+                    <button
+                        className={styles['button']}
+                        onClick={handleSubmit}
+                        disabled={registerMutation.isPending}
+                    >
+                        {registerMutation.isPending ? "處理中" : "註冊"}
                     </button>
 
                     <div className={styles['footer']}>
@@ -74,5 +108,34 @@ export default function RegisterPage() {
                 </form>
             </div>
         </>
+    );
+}
+
+interface OptionDropdownProps {
+    id: string;
+    label: string;
+    value: string;
+    options: string[];
+    onChange: (val: string) => void;
+}
+
+const OptionDropdown = ({ id, label, value, options, onChange }: OptionDropdownProps) => {
+    return (
+        <div className={styles['dropdown']}>
+            <label htmlFor={id}>
+                {label}
+            </label>
+            <select
+                id={id}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+            >
+                {options.map((option) => (
+                    <option key={option} value={option}>
+                        {option}
+                    </option>
+                ))}
+            </select>
+        </div>
     );
 }

@@ -65,9 +65,9 @@ def index():
         })
     return jsonify(users_list)
 
-if __name__ == '__main__':
-    route_info_printer(True)
-    print("[app] 啟動 Flask 伺服器...")
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     route_info_printer(True)
+#     print("[app] 啟動 Flask 伺服器...")
+#     app.run(debug=True)
 
 

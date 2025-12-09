@@ -1,5 +1,5 @@
 import { loginUser, registerUser } from "@/api/user";
-import type { User } from "@/types/user";
+import type { RegisterPayload, User } from "@/types/user";
 import { useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
@@ -10,8 +10,7 @@ export const useLogin = () => {
 };
 
 export const useRegister = () => {
-	return useMutation<User, AxiosError, { name: string, email: string; password: string }>({
-		mutationFn: async ({ name, email, password }) => registerUser(name, email, password)
+	return useMutation<any, AxiosError, RegisterPayload>({
+		mutationFn: registerUser,
 	});
 };
-

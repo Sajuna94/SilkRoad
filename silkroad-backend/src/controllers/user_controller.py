@@ -90,6 +90,7 @@ def register_user():
         session['user_id'] = new_user.id
         session['role'] = target_role
 
+
     except ValueError:
         # [新增] 這裡專門捕捉 "重複註冊" 的錯誤 (由 User.register 拋出)
         # e 的內容就是 "Email has been registered" 或 "Phone number..."
@@ -100,8 +101,10 @@ def register_user():
 
     except Exception as e:
         db.session.rollback()
+        print('session', session)
+
         return jsonify({
-            "message": f"Database error: {str(e)}", 
+            "message": f"Database error: {str(e)} {str(session)}", 
             "success": False
         }), 500
 
