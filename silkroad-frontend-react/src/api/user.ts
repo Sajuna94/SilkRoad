@@ -1,30 +1,14 @@
-<<<<<<< HEAD
 import { api } from "@/api/instance"
 import type { RegisterPayload, Vendor } from "@/types/user";
-=======
-import { api } from "@/api/instance";
-// import type { User, Vendor } from "@/types/user";
-import type { Vendor } from "@/types/user";
->>>>>>> add6895d8cd10ef97c770fdb8a264eb4e9692d5e
 
 export const loginUser = async (email: string, password: string) => {
   const res = await api.post("/user/login", { email, password });
   return res.data;
 };
 
-<<<<<<< HEAD
 export const registerUser = async (payload: RegisterPayload) => {
 	const res = await api.post("/user/register", payload);
 	return res.data;
-=======
-export const registerUser = async (
-  name: string,
-  email: string,
-  password: string
-) => {
-  const res = await api.post("/user/register", { name, email, password });
-  return res.data;
->>>>>>> add6895d8cd10ef97c770fdb8a264eb4e9692d5e
 };
 
 export const getVendors = async (): Promise<Vendor[]> => {
