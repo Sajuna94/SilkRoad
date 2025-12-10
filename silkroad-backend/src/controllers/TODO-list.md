@@ -1,7 +1,7 @@
 # TODO list
 ## 商業交易邏輯(CORE)
-- [ ] 傳遞vendor資源給前端
-- [ ] 傳遞product資源給前端  
+- [x] 傳遞vendor資源給前端
+- [x] 傳遞product資源給前端  
   點進店家要傳遞圖片資源點入商品要傳遞product的其他資源(option etc.)
 - [x] 加入購物車邏輯
 - [ ] 購物車生成order邏輯

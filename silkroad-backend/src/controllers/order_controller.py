@@ -1,28 +1,40 @@
 from flask import jsonify, request
 from config import db
-from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy
+from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy, Customer
 from datetime import date
 
-def do_discount(total_price_accumulated, policy_id):
+def do_discount(total_price_accumulated, policy_id, user_id):
 
     if not policy_id:
         return total_price_accumulated
 
     discount = Discount_Policy.query.get(policy_id)
-
     if not discount:
         raise ValueError("無效的折價券 ID")
+    
+    customer = Customer.query.get(user_id)
+    if not customer:
+        raise ValueError("找不到該顧客資訊，無法驗證會員等級")
+    
+    membership_level = customer.membership_level
+
+    today = date.today()
+
+    if discount.is_available == False:
+        raise ValueError("折價券已停用")
+    
+    if discount.start_date and discount.start_date > today:
+        raise ValueError(f"折價券尚未生效，請於 {discount.start_date.isoformat()} 後使用")
+    
+    if discount.expiry_date and discount.expiry_date < today:
+         raise ValueError("折價券已過期")
+
+    if membership_level < discount.membership_limit:
+            raise ValueError("會員資格不符")
 
     if discount.min_purchase and total_price_accumulated < discount.min_purchase:
         raise ValueError(f"未達折價券低消限制 (${discount.min_purchase})")
     
-    today = date.today()
-    if discount.expiry_date and discount.expiry_date < today:
-         raise ValueError("折價券已過期")
-    
-    if discount.is_available == False:
-        raise ValueError("折價券已停用")
-
     discount_amount = 0
     
     if str(discount.type) == 'percent':
@@ -49,6 +61,7 @@ def generate_new_order(cart, policy_id, note, payment_methods):
             vendor_id = vendor_id,
             policy_id = policy_id,
             total_price =0,
+            discount_amount = 0,
             note = note,
             payment_methods = payment_methods,
             refund_status = None,
@@ -64,8 +77,11 @@ def generate_new_order(cart, policy_id, note, payment_methods):
                 item_price = store_and_calculate_item(new_order, item)
                 total_price_accumulated += item_price
 
-        final_price = do_discount(total_price_accumulated, policy_id)
+        final_price = do_discount(total_price_accumulated, policy_id, user_id)
         new_order.total_price = final_price
+
+        discount_applied = total_price_accumulated - final_price
+        new_order.discount_amount = discount_applied
 
         db.session.delete(cart) 
         db.session.commit()
