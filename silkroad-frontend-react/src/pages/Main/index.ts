@@ -1,5 +1,4 @@
 export { default as About } from "./About"
-export { default as AuthLogin } from "./Auth/Login"
-export { default as AuthRegister } from "./Auth/Register"
+export { default as Auth } from "./Auth"
 export { default as Cart } from "./Cart"
 export { default as Home } from "./Home"

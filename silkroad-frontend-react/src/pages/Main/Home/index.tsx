@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import VendorList, {
   type Vendor,
-} from "@/components/molecules/VendorList/VendorList";
+} from "@/components/molecules/VendorList";
 import SystemBulletin from "@/components/molecules/SystemBulletin/SystemBulletin";
 import type { Announcement } from "@/components/molecules/SystemBulletin/AnnouncementModal";
 

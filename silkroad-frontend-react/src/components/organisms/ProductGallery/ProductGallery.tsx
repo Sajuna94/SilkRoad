@@ -1,10 +1,10 @@
 import { useRef } from "react";
 import styles from "./ProductGallery.module.scss";
-import ProductCard from "@/components/molecules/ProductCard/ProductCard";
+import ProductCard from "@/components/molecules/ProductCard";
 import {
   ProductModal,
   type ProductModalRef,
-} from "@/components/molecules/ProductModal/ProductModal";
+} from "@/components/molecules/ProductModal";
 import { type Product } from "@/types/store";
 import { InfiniteList } from "@/components/atoms/InfiniteList";
 

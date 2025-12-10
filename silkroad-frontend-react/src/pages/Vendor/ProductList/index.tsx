@@ -1,4 +1,4 @@
-import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
+import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery";
 import { products } from "@/types/data/product";
 import { Link } from "react-router-dom";

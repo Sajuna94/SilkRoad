@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./ProductCard.module.scss";
-import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
+import { FadeInImage } from "@/components/atoms/FadeInImage";
 
 interface ProductCardProps {
   name: string;
