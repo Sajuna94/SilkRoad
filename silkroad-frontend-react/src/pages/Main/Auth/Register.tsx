@@ -98,7 +98,6 @@ export default function RegisterPage() {
                     <button
                         type="submit"
                         className={styles['button']}
-                        onClick={handleSubmit}
                         disabled={registerMutation.isPending}
                     >
                         {registerMutation.isPending ? "處理中" : "註冊"}

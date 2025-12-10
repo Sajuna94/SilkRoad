@@ -62,7 +62,6 @@ export default function LoginPage() {
                         type="submit"
                         className={styles['button']}
                         disabled={loginMutation.isPending}
-                        onClick={handleSubmit}
                     >
                         {loginMutation.isPending ? "處理中" : "登入"}
                     </button>
