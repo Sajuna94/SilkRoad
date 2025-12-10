@@ -37,7 +37,7 @@ class TestAddProduct:
         assert response.status_code == 201
         data = response.get_json()
         assert data['success'] is True
-        assert 'product_id' in data
+        assert 'id' in data["product"]
 
     def test_add_product_minimal_bad(self, vendor_client, test_vendor):
         """Test adding product with minimal required fields."""
@@ -386,7 +386,7 @@ class TestVendorIntegration:
         )
 
         assert add_response.status_code == 201
-        product_id = add_response.get_json()['product_id']
+        product_id = add_response.get_json()['product']['id']
 
         # Step 2: Update product
         update_payload = [

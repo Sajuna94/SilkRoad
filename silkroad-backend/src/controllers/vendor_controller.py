@@ -1,10 +1,9 @@
-from typing_extensions import Required
 from flask import jsonify, request
 from models import Vendor, Product, Discount_Policy
 from config.database import db
 from utils import require_login
 
-from datetime import datetime, date
+from datetime import datetime
 from werkzeug.utils import secure_filename
 import os
 
@@ -37,36 +36,18 @@ def validate_expiry_date(date_string):
 
 @require_login(role = ["vendor"]) 
 def add_product():
-    vendor_id = request.form.get('vendor_id')
-    name = request.form.get('name')
-    price = request.form.get('price')
-    description = request.form.get('description')
-    is_listed = request.form.get('is_listed')
+    data = request.get_json()
+    
+    vendor_id = data.get('vendor_id')
+    name = data.get('name')
+    price = data.get('price')
+    description = data.get('description')
+    is_listed = data.get('is_listed')
+    img_url = data.get('img_url')
         
     if not vendor_id or not name or not price or description is None: 
         return jsonify({
             "message": "Missing required fields",
-            "success": False
-        }), 400
-        
-    # ===== 檢查是否有圖片 =====
-    if 'image' not in request.files:
-        return jsonify({
-            "message": "No image file provided",
-            "success": False
-        }), 400
-    
-    image_file = request.files['image']
-    
-    if image_file.filename == '' or image_file.filename is None:
-        return jsonify({
-            "message": "No image selected",
-            "success": False
-        }), 400
-    
-    if not allowed_file(image_file.filename):
-        return jsonify({
-            "message": "Invalid image type. Allowed types: png, jpg, jpeg, gif, webp",
             "success": False
         }), 400
     
@@ -109,24 +90,6 @@ def add_product():
             "success": False
         }), 400
     
-    # ===== 儲存圖片 =====
-    try:
-        filename = secure_filename(image_file.filename)
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
-        name_part, ext = os.path.splitext(filename)
-        unique_filename = f"product_{vendor_id}_{timestamp}{ext}"
-        
-        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
-        image_file.save(filepath)
-        
-        image_url = f"/uploads/products/{unique_filename}"
-        
-    except Exception as e:
-        return jsonify({
-            "message": f"Failed to save image: {str(e)}",
-            "success": False
-        }), 500
-    
     # ===== 創建產品 =====
     new_product = Product(
         vendor_id=vendor_id,
@@ -134,7 +97,7 @@ def add_product():
         price=price,
         description=description,
         is_listed=is_listed,
-        image_url=image_url
+        image_url=img_url
     )
     
     try:
@@ -147,21 +110,12 @@ def add_product():
             "product": {
                 "id": new_product.id,
                 "name": new_product.name,
-                "price": new_product.price,
-                "image_url": image_url
+                "price": new_product.price
             }
         }), 201
         
     except Exception as e:
         db.session.rollback()
-        
-        # 如果資料庫失敗,刪除已上傳的圖片
-        try:
-            if os.path.exists(filepath):
-                os.remove(filepath)
-        except:
-            pass
-        
         return jsonify({
             "message": f"Failed to add product: {str(e)}",
             "success": False
@@ -478,8 +432,4 @@ def invalid_discount_policy():
         db.session.rollback()
         print(f"Error details: {e}")
         return jsonify({'message': '系統錯誤，停用失敗', 'error': str(e), "success": False}), 500
-
-
-
-
 
