@@ -1,19 +1,10 @@
+from multiprocessing import Value
 from flask import jsonify, request
 from models import Vendor, Product, Discount_Policy
 from config.database import db
 from utils import require_login
 
 from datetime import datetime
-from werkzeug.utils import secure_filename
-import os
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, '..', 'uploads', 'products')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
-
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -281,15 +272,57 @@ def add_discount_policy():
 
     type_val = data.get("type")
     value = data.get("value")
-    membership_limit = data.get("membership_limit") 
-    min_purchase = data.get("min_purchase")         
-    max_discount = data.get("max_discount")       
+    membership_limit = data.get("membership_limit")
+    min_purchase = data.get("min_purchase")     
+    max_discount = data.get("max_discount")
     
     if type_val is None or value is None or membership_limit is None:
         return jsonify({"message": "type, value, membership_limit 不可為空或 None", 
                         "success": False}), 400
-
-
+        
+    try:
+        value = int(value)
+        membership_limit = int(membership_limit)
+    except (ValueError, TypeError):
+        return jsonify({"message": "invalid value type for: 'value', 'membership_limit'", 
+                        "success": False}), 400
+        
+    #check enum 
+    if type_val != "percent" and type_val != "fixed":
+        return jsonify({"message": "invalid value type for: 'type'",
+                        "success": False}), 400
+        
+    #check value
+    if type_val == "percent":
+        if value < 0:
+            return jsonify({"message": "percent value must be greater than or equal to 0", 
+                            "success": False}), 400
+        if value >= 100:
+            return jsonify({"message": "percent value must be less than 100", 
+                            "success": False}), 400
+        
+    if type_val == "fixed":
+        
+        if min_purchase is None:
+            return jsonify({"message": "min_purchase is required for fixed type", 
+                            "success": False}), 400
+        try:
+            min_purchase = int(min_purchase)
+        except (ValueError, TypeError):
+            return jsonify({"message": "invalid value type for: 'min_purchase'", 
+                            "success": False}), 400
+            
+        if value < 0:
+            return jsonify({"message": "fixed value must be greater than or equal to 0", 
+                            "success": False}), 400
+        if min_purchase < 0:
+            return jsonify({"message": "min_purchase must be greater than or equal to 0", 
+                            "success": False}), 400 
+        if min_purchase <= value:
+            return jsonify({"message": "min_purchase must be greater than fixed value", 
+                            "success": False}), 400
+            
+        
     expiry_date_str = data.get("expiry_date") 
     parsed_expiry_date = None
     
@@ -305,6 +338,7 @@ def add_discount_policy():
         add_discount_policy = Discount_Policy(
             vendor_id = vendor_id,
             type = type_val,
+            is_available = True,
             value = value,
             membership_limit = membership_limit, 
             expiry_date = parsed_expiry_date    
@@ -383,7 +417,6 @@ def view_discount_policy():
     except Exception as e:
         print(f"Error details: {e}")
         return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
-
 
 def invalid_discount_policy():
     data = request.get_json()

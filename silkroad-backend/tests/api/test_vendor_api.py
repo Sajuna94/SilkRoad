@@ -9,6 +9,7 @@ Tests cover:
 - View discount policies
 """
 
+from typing_extensions import Required
 import pytest
 import json
 from datetime import datetime, timedelta
@@ -273,9 +274,11 @@ class TestDiscountPolicy:
             data=json.dumps(payload),
             content_type='application/json'
         )
-
-        assert response.status_code == 201
+        
         data = response.get_json()
+        print("================DEBUG================")
+        print(data["message"])
+        assert response.status_code == 201
         assert data['success'] is True
         assert 'policy_id' in data
 
