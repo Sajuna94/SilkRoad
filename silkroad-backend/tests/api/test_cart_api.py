@@ -12,7 +12,7 @@ import pytest
 import json
 
 
-class TestAddToCart:
+class TestAddToCartWithoutLogin:
     """Test suite for add to cart endpoint."""
 
     def test_add_to_cart_success(self, client, test_customer, test_vendor, test_product):
@@ -22,9 +22,9 @@ class TestAddToCart:
             "vendor_id": test_vendor,
             "product_id": test_product,
             "quantity": 2,
-            "selected_sugar": "normal",
-            "selected_ice": "less",
-            "selected_size": "medium"
+            "selected_sugar": "50%",
+            "selected_ice": "70%",
+            "selected_size": "M"
         }
 
         response = client.post(
@@ -36,6 +36,17 @@ class TestAddToCart:
         assert response.status_code == 200
         data = response.get_json()
         assert data['success'] is True
+        
+        with client.session_transaction() as sess:
+            cart = sess["cart"]
+            item = cart["items"][0]
+            
+            assert cart["vendor_id"] == test_vendor
+            assert item["product_id"] ==  test_product
+            assert item["quantity"] == 2
+            assert item["selected_sugar"] == "50%"
+            assert item["selected_ice"] == "70%"
+            assert item["selected_size"] == "M"
 
     def test_add_to_cart_missing_customer_id(self, client, test_vendor, test_product):
         """Test adding to cart fails without customer_id."""
@@ -54,7 +65,9 @@ class TestAddToCart:
         assert response.status_code == 400
         data = response.get_json()
         assert data['success'] is False
-        assert 'customer_id' in data['message']
+        
+        with client.session_transaction() as sess:
+            assert "cart" not in sess
 
     def test_add_to_cart_missing_vendor_id(self, client, test_customer, test_product):
         """Test adding to cart fails without vendor_id."""
@@ -74,6 +87,9 @@ class TestAddToCart:
         data = response.get_json()
         assert data['success'] is False
         assert 'vendor_id' in data['message']
+        
+        with client.session_transaction() as sess:
+            assert "cart" not in sess
 
     def test_add_multiple_items_same_vendor(self, client, test_customer, test_vendor, test_product, test_product_2):
         """Test adding multiple items from same vendor."""
@@ -83,9 +99,9 @@ class TestAddToCart:
             "vendor_id": test_vendor,
             "product_id": test_product,
             "quantity": 1,
-            "selected_sugar": "normal",
-            "selected_ice": "normal",
-            "selected_size": "large"
+            "selected_sugar": "50%",
+            "selected_ice": "50%",
+            "selected_size": "M"
         }
 
         response1 = client.post(
@@ -95,6 +111,17 @@ class TestAddToCart:
         )
 
         assert response1.status_code == 200
+        
+        with client.session_transaction() as sess:
+            cart = sess["cart"]
+            item = cart["items"][0]
+            
+            assert cart["vendor_id"] == test_vendor
+            assert item["product_id"] ==  test_product
+            assert item["quantity"] == 1
+            assert item["selected_sugar"] == "50%"
+            assert item["selected_ice"] == "50%"
+            assert item["selected_size"] == "M"
 
         # Add second product
         payload2 = {
@@ -102,9 +129,9 @@ class TestAddToCart:
             "vendor_id": test_vendor,
             "product_id": test_product_2,
             "quantity": 2,
-            "selected_sugar": "less",
-            "selected_ice": "less",
-            "selected_size": "medium"
+            "selected_sugar": "30%",
+            "selected_ice": "30%",
+            "selected_size": "M"
         }
 
         response2 = client.post(
@@ -116,21 +143,243 @@ class TestAddToCart:
         assert response2.status_code == 200
         data2 = response2.get_json()
         assert data2['success'] is True
+        
+        with client.session_transaction() as sess:
+            cart = sess["cart"]
+            item = cart["items"][1]
+            
+            assert cart["vendor_id"] == test_vendor
+            assert item["product_id"] ==  test_product_2
+            assert item["quantity"] == 2
+            assert item["selected_sugar"] == "30%"
+            assert item["selected_ice"] == "30%"
+            assert item["selected_size"] == "M"
+            
+    def test_add_multiple_items_different_vendor(self, client, 
+        test_vendor, test_vendor2, test_product, test_product_2):
+        payload1 = {
+            # "customer_id": test_customer,
+            "vendor_id": test_vendor,
+            "product_id": test_product,
+            "quantity": 1,
+            "selected_sugar": "50%",
+            "selected_ice": "50%",
+            "selected_size": "M"
+        }
 
+        response1 = client.post(
+            '/api/cart/add',
+            data=json.dumps(payload1),
+            content_type='application/json'
+        )
+
+        assert response1.status_code == 200
+        
+        with client.session_transaction() as sess:
+            cart = sess["cart"]
+            item = cart["items"][0]
+            
+            assert cart["vendor_id"] == test_vendor
+            assert item["product_id"] ==  test_product
+            assert item["quantity"] == 1
+            assert item["selected_sugar"] == "50%"
+            assert item["selected_ice"] == "50%"
+            assert item["selected_size"] == "M"
+            
+        payload2 = {
+            # "customer_id": test_customer,
+            "vendor_id": test_vendor2,
+            "product_id": test_product_2,
+            "quantity": 2,
+            "selected_sugar": "30%",
+            "selected_ice": "30%",
+            "selected_size": "M"
+        }
+
+        response2 = client.post(
+            '/api/cart/add',
+            data=json.dumps(payload2),
+            content_type='application/json'
+        )
+
+        assert response2.status_code == 200
+        data2 = response2.get_json()
+        assert data2['success'] is True
+        
+        with client.session_transaction() as sess:
+            cart = sess["cart"]
+            item = cart["items"][0]
+            
+            assert cart["vendor_id"] == test_vendor2
+            assert item["product_id"] ==  test_product_2
+            assert item["quantity"] == 2
+            assert item["selected_sugar"] == "30%"
+            assert item["selected_ice"] == "30%"
+            assert item["selected_size"] == "M"
+
+        
+class TestAddToCartWithLogin:
+    """Test suite for add to cart endpoint with authenticated users."""
+
+    def test_add_to_cart_success(self, authenticated_client, test_customer, test_vendor, test_product):
+        """Test successfully adding a product to cart when logged in."""
+        
+        payload = {
+            "customer_id": test_customer,
+            "vendor_id": test_vendor,
+            "product_id": test_product,
+            "quantity": 2,
+            "selected_sugar": "50%",
+            "selected_ice": "70%",
+            "selected_size": "M"
+        }
+
+        response = authenticated_client.post(
+            '/api/cart/add',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['success'] is True
+
+    def test_add_to_cart_missing_customer_id(self, authenticated_client, test_vendor, test_product):
+        """Test adding to cart fails without customer_id when logged in."""
+        
+        payload = {
+            "vendor_id": test_vendor,
+            "product_id": test_product,
+            "quantity": 1
+        }
+
+        response = authenticated_client.post(
+            '/api/cart/add',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+
+        assert response.status_code == 400
+        data = response.get_json()
+        assert data['success'] is False
+        
+
+    def test_add_to_cart_missing_vendor_id(self, authenticated_client, test_customer, test_product):
+        """Test adding to cart fails without vendor_id when logged in."""
+        
+        payload = {
+            "customer_id": test_customer,
+            "product_id": test_product,
+            "quantity": 1
+        }
+
+        response = authenticated_client.post(
+            '/api/cart/add',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+
+        assert response.status_code == 400
+        data = response.get_json()
+        assert data['success'] is False
+        
+
+    def test_add_multiple_items_same_vendor(self, authenticated_client, test_customer, test_vendor, test_product, test_product_2):
+        """Test adding multiple items from same vendor when logged in."""        
+        # Add first product
+        payload1 = {
+            "customer_id": test_customer,
+            "vendor_id": test_vendor,
+            "product_id": test_product,
+            "quantity": 1,
+            "selected_sugar": "50%",
+            "selected_ice": "50%",
+            "selected_size": "M"
+        }
+
+        response1 = authenticated_client.post(
+            '/api/cart/add',
+            data=json.dumps(payload1),
+            content_type='application/json'
+        )
+
+        assert response1.status_code == 200
+        data = response1.get_json()
+        assert data['success'] is True
+        
+        # Add second product
+        payload2 = {
+            "customer_id": test_customer,
+            "vendor_id": test_vendor,
+            "product_id": test_product_2,
+            "quantity": 2,
+            "selected_sugar": "30%",
+            "selected_ice": "30%",
+            "selected_size": "M"
+        }
+
+        response2 = authenticated_client.post(
+            '/api/cart/add',
+            data=json.dumps(payload2),
+            content_type='application/json'
+        )
+
+        assert response2.status_code == 200
+        data2 = response2.get_json()
+        assert data2['success'] is True
+        
+            
+    def test_add_multiple_items_different_vendor(self, authenticated_client, test_customer,
+        test_vendor, test_vendor2, test_product, test_product_2):
+        """Test adding items from different vendors when logged in (should replace cart)."""
+        
+        payload1 = {
+            "customer_id": test_customer,
+            "vendor_id": test_vendor,
+            "product_id": test_product,
+            "quantity": 1,
+            "selected_sugar": "50%",
+            "selected_ice": "50%",
+            "selected_size": "M"
+        }
+
+        response1 = authenticated_client.post(
+            '/api/cart/add',
+            data=json.dumps(payload1),
+            content_type='application/json'
+        )
+
+        assert response1.status_code == 200
+            
+        payload2 = {
+            "customer_id": test_customer,
+            "vendor_id": test_vendor2,
+            "product_id": test_product_2,
+            "quantity": 2,
+            "selected_sugar": "30%",
+            "selected_ice": "30%",
+            "selected_size": "M"
+        }
+
+        response2 = authenticated_client.post(
+            '/api/cart/add',
+            data=json.dumps(payload2),
+            content_type='application/json'
+        )
+
+        assert response2.status_code == 200
+        data2 = response2.get_json()
+        assert data2['success'] is True
+            
 
 class TestViewCart:
     """Test suite for view cart endpoint."""
 
-    def test_view_empty_cart(self, client, test_customer, test_vendor):
+    def test_view_empty_cart(self, client, authenticated_client, test_customer, test_vendor):
         """Test viewing an empty cart."""
-        payload = {
-            "customer_id": test_customer,
-            "vendor_id": test_vendor
-        }
-
-        response = client.post(
-            '/api/cart/view',
-            data=json.dumps(payload),
+        """Without login"""
+        response = client.get(
+            f'/api/cart/view/{test_customer}',
             content_type='application/json'
         )
 
@@ -140,8 +389,23 @@ class TestViewCart:
         assert data['data'] == []
         assert data['total_amount'] == 0
         assert 'empty' in data['message'].lower()
+        
+        """With login"""
+        response = authenticated_client.get(
+            f'/api/cart/view/{test_customer}',
+            content_type='application/json'
+        )
 
-    def test_view_cart_with_items(self, client, test_customer, test_vendor, test_product):
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['success'] is True
+        assert data['data'] == []
+        assert data['total_amount'] == 0
+        assert 'empty' in data['message'].lower()
+        
+        
+
+    def test_view_cart_with_items(self, client, authenticated_client, test_customer, test_vendor, test_product):
         """Test viewing cart with items."""
         # First add an item
         add_payload = {
@@ -160,15 +424,14 @@ class TestViewCart:
             content_type='application/json'
         )
 
-        # Then view cart
+        """Without login"""
         view_payload = {
             "customer_id": test_customer,
             "vendor_id": test_vendor
         }
 
-        response = client.post(
-            '/api/cart/view',
-            data=json.dumps(view_payload),
+        response = client.get(
+            f'/api/cart/view/{test_customer}',
             content_type='application/json'
         )
 
@@ -188,72 +451,64 @@ class TestViewCart:
         assert 'subtotal' in item
         assert item['selected_sugar'] == "normal"
         assert item['selected_ice'] == "less"
-
-    def test_view_cart_cross_vendor_conflict(self, session, client, test_customer, test_vendor, vendor_manager):
-        """Test viewing cart with cross-vendor conflict."""
-        # Create a second vendor
-        from models import Vendor
-        from werkzeug.security import generate_password_hash
-
-        vendor2 = Vendor(
-            name="Second Vendor",
-            email="vendor2@test.com",
-            password=generate_password_hash("password"),
-            phone_number="0988888888",
-            address="Address 2",
-            vendor_manager_id=vendor_manager.id,
-            is_active=True,
-            role="vendor"
-        )
-        session.add(vendor2)
-        session.commit()
-
-        # Add item from first vendor
-        from models import Cart
-        cart = Cart(customer_id=test_customer, vendor_id=test_vendor)
-        session.add(cart)
-        session.commit()
-
-        # Try to view with different vendor_id
-        payload = {
-            "customer_id": test_customer,
-            "vendor_id": vendor2.id
-        }
-
-        response = client.post(
-            '/api/cart/view',
-            data=json.dumps(payload),
+        
+        """With login"""
+        response = authenticated_client.get(
+            f'/api/cart/view/{test_customer}',
             content_type='application/json'
         )
-
-        assert response.status_code == 400
+        
+        assert response.status_code == 200
         data = response.get_json()
-        assert data['success'] is False
-        assert '跨店' in data['message'] or 'cross' in data['message'].lower()
+        assert data['success'] is True
+        assert len(data['data']) > 0
+        assert data['total_amount'] > 0
 
+        # Verify item structure
+        item = data['data'][0]
+        assert 'cart_item_id' in item
+        assert 'product_id' in item
+        assert 'product_name' in item
+        assert 'price' in item
+        assert 'quantity' in item
+        assert 'subtotal' in item
+        assert item['selected_sugar'] == "normal"
+        assert item['selected_ice'] == "less"
+        
+        
+    def test_view_cart_with_invalid_customer_id(self, authenticated_client, test_customer):
+        response = authenticated_client.get(
+            f'/api/cart/view/{test_customer + 1}',
+            content_type='application/json'
+        )
+        
+        assert response.status_code == 404
+        
 
+    
 class TestRemoveFromCart:
     """Test suite for remove from cart endpoint."""
 
-    def test_remove_from_cart_success(self, session, client, test_customer, test_vendor, test_product):
+    def test_remove_from_cart_success(self, authenticated_client, test_customer, test_vendor, test_product):
         """Test successfully removing an item from cart."""
         # First add an item
         from models import Cart, Cart_Item
+        from config import db
 
         cart = Cart(customer_id=test_customer, vendor_id=test_vendor)
-        session.add(cart)
-        session.commit()
+        db.session.add(cart)
+        db.session.commit()
 
         cart_item = Cart_Item(
             cart_id=cart.customer_id,
             product_id=test_product,
             quantity=2,
-            selected_sugar="normal",
-            selected_ice="normal",
-            selected_size="medium"
+            selected_sugar="50%",
+            selected_ice="50%",
+            selected_size="M"
         )
-        session.add(cart_item)
-        session.commit()
+        db.session.add(cart_item)
+        db.session.commit()
 
         # Now remove it
         payload = {
@@ -261,7 +516,7 @@ class TestRemoveFromCart:
             "customer_id": test_customer
         }
 
-        response = client.post(
+        response = authenticated_client.post(
             '/api/cart/remove',
             data=json.dumps(payload),
             content_type='application/json'
@@ -271,14 +526,14 @@ class TestRemoveFromCart:
         data = response.get_json()
         assert data['success'] is True
 
-    def test_remove_nonexistent_item(self, client, test_customer):
+    def test_remove_nonexistent_item(self, authenticated_client, test_customer):
         """Test removing non-existent cart item."""
         payload = {
             "cart_item_id": 99999,
             "customer_id": test_customer
         }
 
-        response = client.post(
+        response = authenticated_client.post(
             '/api/cart/remove',
             data=json.dumps(payload),
             content_type='application/json'
@@ -287,14 +542,15 @@ class TestRemoveFromCart:
         # Should fail or return error message
         data = response.get_json()
         assert data['success'] is False
+        assert data['message'] == 'cart_item_id not found'
 
-    def test_remove_missing_cart_item_id(self, client, test_customer):
+    def test_remove_missing_cart_item_id(self, authenticated_client, test_customer):
         """Test removing without cart_item_id."""
         payload = {
             "customer_id": test_customer
         }
 
-        response = client.post(
+        response = authenticated_client.post(
             '/api/cart/remove',
             data=json.dumps(payload),
             content_type='application/json'
@@ -303,6 +559,7 @@ class TestRemoveFromCart:
         assert response.status_code == 400
         data = response.get_json()
         assert data['success'] is False
+        assert data['message'] == 'loss cart_item_id'
 
 
 class TestCartIntegration:
@@ -330,14 +587,9 @@ class TestCartIntegration:
         assert add_response.status_code == 200
 
         # Step 2: View cart
-        view_payload = {
-            "customer_id": test_customer,
-            "vendor_id": test_vendor
-        }
 
-        view_response = client.post(
-            '/api/cart/view',
-            data=json.dumps(view_payload),
+        view_response = client.get(
+            f'/api/cart/view/{test_customer}',
             content_type='application/json'
         )
 
@@ -361,11 +613,13 @@ class TestCartIntegration:
         assert remove_response.status_code == 200
 
         # Step 4: Verify cart is empty
-        final_view = client.post(
-            '/api/cart/view',
-            data=json.dumps(view_payload),
+        final_view = client.get(
+            f'/api/cart/view/{test_customer}',
             content_type='application/json'
         )
 
         final_data = final_view.get_json()
+        assert final_view.status_code == 200
+        assert final_data["success"] == True
         assert final_data['total_amount'] == 0
+        assert final_data["data"] == []

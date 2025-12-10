@@ -23,3 +23,16 @@ def require_login(role):
         return wrapper
     return decorator
     
+
+def switcher(user_bhvr, guest_bhvr):
+    """
+    根據登入狀態切換處理函數
+    if login return function user_behavior
+    else return function guest_behavior 
+    (not the result of the function just function)
+    """
+    @wraps(user_bhvr)
+    def wrapper(*args, **kwargs):
+        handler = guest_bhvr if "user_id" not in session or "role" not in session else user_bhvr
+        return handler(*args, **kwargs)
+    return wrapper

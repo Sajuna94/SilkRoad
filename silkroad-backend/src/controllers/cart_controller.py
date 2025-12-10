@@ -1,7 +1,9 @@
-from flask import jsonify, request
+from flask import jsonify, request, session
 from config import db
-from models import Cart_Item
-from models import Cart
+from models import Cart_Item, Cart, Customer, Product
+from utils import require_login
+
+import uuid
 
 def get_user_cart(customer_id, vendor_id):
     
@@ -20,8 +22,9 @@ def get_user_cart(customer_id, vendor_id):
         return new_cart
     except Exception as e:
         db.session.rollback()
-        return Cart.query.get(customer_id) #find again
+        raise e
     
+@require_login(["customer"])
 def add_to_cart():
     data = request.get_json()
     
@@ -47,7 +50,16 @@ def add_to_cart():
         return jsonify({"message": "缺少 customer_id 或 vendor_id ",
                         "success": False}), 400
 
-    get_user_cart(customer_id, vendor_id)
+    try:
+        cart = get_user_cart(customer_id, vendor_id)
+    except Exception as e:
+        return jsonify({"message": f"{e}",
+                        "success": False}), 404
+    
+
+    if cart.vendor_id != vendor_id:
+        cart.clear()
+        cart.vendor_id = vendor_id
 
     cart_id = customer_id
 
@@ -74,54 +86,39 @@ def add_to_cart():
                         "success": False
                         }), 500
     
-    return jsonify({"message": "新增商品成功",
-                    "success": True
-                    }), 201 
-
+    return jsonify({"message": "新增商品成功", "success": True}), 200
+    
+@require_login(["customer"])
 def remove_from_cart():
     data = request.get_json()
 
-    #     預計傳給我{
-    #     "cart_item_id":XXX,
-    #     "customer_id":XXX,
-    #     }
-
     cart_item_id = data.get('cart_item_id')
-    customer_id = data.get('customer_id')
 
-    if not cart_item_id or not customer_id:
-        return jsonify({"message": "缺少 cart_item_id 或 customer_id",
-                        "success": False
-                        }), 400
+    if not cart_item_id:
+        return jsonify({"message": "loss cart_item_id", "success": False}), 400
+        
     try:
         item_to_delete = Cart_Item.query.get(cart_item_id)
 
         if not item_to_delete:
-            return jsonify({"message": "cart_item do not exist",
-                            "success": False
-                            }), 404
-        
-        if item_to_delete.customer_id != customer_id:
-            return jsonify({"message": "customer_id not match",
-                            "success":False
-                            }), 403 
+            return jsonify({"message": "cart_item_id not found", "success": False}), 404
 
         parent_cart = item_to_delete.cart 
 
         db.session.delete(item_to_delete)
         db.session.commit()
 
-        remaining_items_count = db.session.query(Cart_Item).filter_by(customer_id=customer_id).count()
+        # remaining_items_count = db.session.query(Cart_Item).filter_by(cart_id=customer_id).count()
 
-        if remaining_items_count == 0:
-            if parent_cart:
-                db.session.delete(parent_cart)
-                db.session.commit()
+        # if remaining_items_count == 0:
+        #     if parent_cart:
+        #         db.session.delete(parent_cart)
+        #         db.session.commit()
             
-            return jsonify({
-                "message": "購物車已清空",
-                "success": True
-            }), 200
+        #     return jsonify({
+        #         "message": "購物車已清空",
+        #         "success": True
+        #     }), 200
 
         return jsonify({
             "message": "成功移除購物車項目",
@@ -134,44 +131,27 @@ def remove_from_cart():
         print(f"Error removing item: {e}")
         return jsonify({"message": "系統錯誤，移除失敗", "error": str(e)}), 500
 
-def view_cart():
-    data = request.get_json()
-
-    #     預計傳給我{
-    #     "customer_id":XXX,
-    #     "vendor_id":XXX,
-    #     }
-
-    if not data:
-        return jsonify({'message': '無效的請求數據'}), 400
+@require_login(["customer"])
+def view_cart(cart_id : int):
     
-    customer_id = data.get("customer_id")
-    request_vendor_id = data.get("vendor_id")
-
-    if not customer_id or not request_vendor_id:
-        return jsonify({"message": "缺少 customer_id 或 vendor_id "}), 400
+    customer_id = cart_id
+    
+    if not customer_id:
+        return jsonify({"message": "缺少 customer_id", "success": False}), 400
 
     try:
         current_cart = Cart.query.filter_by(customer_id=customer_id).first()
 
         if not current_cart:
-            return jsonify({
-                "data": [],
-                "message": "cart is empty",
-                "success": True,
-                #"customer_id": customer_id,
-                #"vendor_id": request_vendor_id,                            
-                "total_amount": 0
-            }), 200
-
-        if current_cart.vendor_id != request_vendor_id:  # 比較vendor_id有沒有衝突，如果沒有這個需求，可以拿掉
-            return jsonify({
-                #"status": "conflict",
-                "message": "購物車跨店購物。",
-                "success": False
-                #"existing_vendor_id": current_cart.vendor_id,
-                #"current_vendor_id": request_vendor_id
-            }), 409
+            if Customer.query.get(customer_id):
+                return jsonify({
+                    "data": [],
+                    "message": "cart is empty",
+                    "success": True,
+                    "total_amount": 0
+                }), 200
+            else:
+                return jsonify({"message": "invalid customer_id", "success": False}), 404
 
         cart_items = current_cart.items 
         
@@ -205,11 +185,136 @@ def view_cart():
             "data": result_list,
             "total_amount": total_price,
             "message": "cart item view",
-            "success": True,
-            #"customer_id": customer_id,
-            #"vendor_id": current_cart.vendor_id,        
+            "success": True
         }), 200
 
     except Exception as e:
         print(f"Error details: {e}")
         return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
+
+#================ guest user ================
+def add_to_cart_guest():
+    data = request.get_json()
+    
+    vendor_id = data.get("vendor_id")
+    product_id = data.get("product_id")
+    quantity = data.get("quantity")   
+    selected_sugar = data.get("selected_sugar")
+    selected_ice = data.get("selected_ice")
+    selected_size = data.get("selected_size")
+    
+    if not vendor_id:
+        return jsonify({"message": "缺少 vendor_id ",
+                        "success": False}), 400
+        
+    if not all([product_id, quantity, selected_sugar, selected_ice, selected_size]):
+        return jsonify({"message": "缺少必要欄位 (product_id, quantity, selected_sugar...)",
+                        "success": False
+                        }), 400
+    if "cart" not in session:
+        session["cart"] = {
+            "vendor_id" : vendor_id,
+            "items" : []
+        }
+        
+    if vendor_id != session["cart"]["vendor_id"]:
+        session["cart"] = {
+            "vendor_id" : vendor_id,
+            "items" : []
+        }
+        
+    session["cart"]["items"].append({
+        "tmp_cart_item_id": str(uuid.uuid4())[:8],
+        "product_id": product_id,
+        "quantity": quantity,
+        "selected_sugar": selected_sugar,
+        "selected_ice": selected_ice,
+        "selected_size": selected_size
+    })
+    
+    session.modified = True
+    
+    return jsonify({"message": "新增商品成功", "success": True}), 200
+
+def remove_from_cart_guest():
+    data = request.get_json()
+    
+    cart_item_id = data.get('cart_item_id')
+    customer_id = data.get('customer_id')
+
+    if not cart_item_id or not customer_id:
+        return jsonify({"message": "缺少 cart_item_id 或 customer_id",
+                        "success": False
+                        }), 400
+    if "cart" not in session or session["cart"]["items"] == []:
+        return jsonify({"message": "empty cart",
+                        "success": False
+                        }), 404
+        
+    for item in session["cart"]["items"]:
+        if item["tmp_cart_item_id"] == cart_item_id:
+            session["cart"]["items"].remove(item)
+            session.modified = True
+            return jsonify({"message": "刪除商品成功",
+                            "success": True
+                            }), 200
+    return jsonify({"message": "cart_item_id not found",
+                    "success": False
+                    }), 404
+    
+def view_cart_guest(*args, **kwargs):
+    if "cart" not in session or session["cart"]["items"] == []:
+        return jsonify({
+            "data": [],
+            "message": "cart is empty",
+            "success": True,                           
+            "total_amount": 0
+        }), 200
+    
+    total_price = 0    
+    result = []
+    # try:
+    for item in session["cart"]["items"]:
+        try:
+            product = Product.query.get(item["product_id"])
+        except Exception as e:
+            return jsonify({
+                "message": str(e),
+                "success": False
+            }), 500
+        
+        if not product:
+            # Should not happen, but handle it gracefully
+            continue
+            
+        item_sub_price = product.price * item["quantity"]
+        total_price += item_sub_price    
+            
+        result.append({
+            "cart_item_id": item["tmp_cart_item_id"],
+            "product_id": item["product_id"],
+
+            "product_name": product.name,
+            "product_image": product.image_url,
+
+            "price": product.price,
+            "quantity": item["quantity"],
+            "subtotal": item_sub_price,
+
+            "selected_sugar": item["selected_sugar"],
+            "selected_ice": item["selected_ice"],
+            "selected_size": item["selected_size"]
+        })
+        
+    return jsonify({
+        "message": "success",
+        "success": True,
+        "total_price": total_price,
+        "data": result
+    }), 200
+    # except Exception as e:
+    #     return jsonify({
+    #         "message": str(e),
+    #         "success": False
+    #     }), 500
+    

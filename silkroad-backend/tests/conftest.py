@@ -138,6 +138,33 @@ def test_vendor(app, vendor_manager):
 
 
 @pytest.fixture(scope='function')
+def test_vendor2(app, vendor_manager):
+    """Create a test vendor user. Returns vendor ID."""
+    import uuid
+    import random
+    with app.app_context():
+        # Use unique email, phone, and address for each test to ensure isolation
+        unique_id = str(uuid.uuid4())[:8]
+        unique_email = f"vendor-{unique_id}@test.com"
+        unique_phone = f"09{random.randint(10000000, 99999999)}"
+        unique_address = f"Test Vendor2 Address {unique_id}"
+        vendor = Vendor(
+            name="Test Vendor2",
+            email=unique_email,
+            password=generate_password_hash("vendor2123"),
+            phone_number=unique_phone,
+            address=unique_address,
+            vendor_manager_id=vendor_manager,  # vendor_manager is now ID
+            is_active=True,
+            role="vendor"
+        )
+        db.session.add(vendor)
+        db.session.commit()
+        vendor_id = vendor.id
+        return vendor_id
+
+
+@pytest.fixture(scope='function')
 def test_customer(app):
     """Create a test customer user. Returns customer ID."""
     import uuid

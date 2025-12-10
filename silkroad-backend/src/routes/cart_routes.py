@@ -1,13 +1,21 @@
-from controllers import add_to_cart, remove_from_cart, view_cart
+from controllers import (
+    add_to_cart, 
+    add_to_cart_guest, 
+    remove_from_cart_guest,
+    remove_from_cart, 
+    view_cart, 
+    view_cart_guest
+)
+from utils import switcher
 from flask import Blueprint
 
 cart_routes = Blueprint("cart", __name__)
 
 
-cart_routes.route('/add', methods=['POST'])(add_to_cart)
+cart_routes.route('/add', methods=['POST'])(switcher(add_to_cart, add_to_cart_guest))
 '''
 需要{
-"customer_id":XXX,
+"customer_id":XXX,  (if login)
 "vendor_id":XXX,
 "product_id":XXX,
 "quantity":XXX,
@@ -22,11 +30,10 @@ cart_routes.route('/add', methods=['POST'])(add_to_cart)
 "success": True/False
 }
 '''
-cart_routes.route('/remove', methods=['POST'])(remove_from_cart)
+cart_routes.route('/remove', methods=['POST'])(switcher(remove_from_cart, remove_from_cart_guest))
 '''
 需要{
-" cart_item_id":XXX,
-"customer_id":XXX,
+" cart_item_id":XXX
 }
 
 可能會回傳:
@@ -35,11 +42,10 @@ cart_routes.route('/remove', methods=['POST'])(remove_from_cart)
 "success": True/False
 }    
 '''
-cart_routes.route('/view', methods=['POST'])(view_cart)
+cart_routes.route('/view/<int:cart_id>', methods=['GET'])(switcher(view_cart, view_cart_guest))
 '''
 需要{
-"customer_id":XXX,
-"vendor_id":XXX,
+"customer_id":XXX
 }
 
 可能會回傳:
@@ -49,21 +55,15 @@ cart_routes.route('/view', methods=['POST'])(view_cart)
     "message": "cart is empty",
     "success": True,                           
     "total_amount": 0
-    }
-
-或     ---vendor_id 衝突錯誤---
-{
-    "message": "購物車跨店購物。",
-    "success": False
 }
 
 或    ---成功回傳---
-    {
+{
     "data": result_list,
     "total_amount": total_price,
     "message": "cart item view",
     "success": True,
-    }
+}
 
 data包含
 
@@ -82,6 +82,4 @@ data包含
     "selected_ice": item.selected_ice,
     "selected_size": item.selected_size
 }
-
-
 '''
