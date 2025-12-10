@@ -17,7 +17,7 @@ export default function LabeledInput({
     type = "text",
     value,
     onChange,
-    required = false,
+    required = true,
     error,
 }: LabeledInputProps) {
     const [showPassword, setShowPassword] = useState(false);

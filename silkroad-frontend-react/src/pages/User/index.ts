@@ -1,1 +1,1 @@
-export { default as UserOrders } from "./Orders";
+export { default as UserOrders } from "./Orders/index";

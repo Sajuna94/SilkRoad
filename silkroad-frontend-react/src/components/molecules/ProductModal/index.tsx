@@ -2,7 +2,7 @@ import type { Product } from "@/types/store";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import styles from "./ProductModal.module.scss"
 import { Dialog, type DialogRef } from "@/components/ui/Dialog";
-import { QuantityInput } from "@/components/atoms/QuantityInput/QuantityInput";
+import { QuantityInput } from "@/components/atoms/QuantityInput";
 
 export interface ProductModalRef {
     open: (product: Product, quantity?: number) => void;

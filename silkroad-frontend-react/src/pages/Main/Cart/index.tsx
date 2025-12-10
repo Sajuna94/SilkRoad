@@ -1,9 +1,9 @@
 // import { useNavigate } from "react-router-dom";
 import styles from "./Cart.module.scss";
-import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal/ProductModal";
+import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal";
 import { useRef, useState } from "react";
 import { products } from "@/types/data/product";
-import { FadeInImage } from "@/components/atoms/FadeInImage/FadeInImage";
+import { FadeInImage } from "@/components/atoms/FadeInImage";
 import type { CartItem } from "@/types/order";
 import type { Product } from "@/types/store";
 import { cartItems } from "@/types/data/cartitem";

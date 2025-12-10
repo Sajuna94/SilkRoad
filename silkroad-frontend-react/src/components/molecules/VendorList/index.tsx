@@ -1,5 +1,5 @@
 import styles from "./VendorList.module.scss";
-import VendorCard from "@/components/molecules/VendorCard/VendorCard";
+import VendorCard from "@/components/molecules/VendorCard";
 import { InfiniteList } from "@/components/atoms/InfiniteList";
 
 export interface Vendor {
