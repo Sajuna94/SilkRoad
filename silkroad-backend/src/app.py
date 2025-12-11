@@ -55,6 +55,15 @@ app.register_blueprint(admin_routes,url_prefix='/api/admin')
 app.register_blueprint(order_routes,url_prefix='/api/order')
 app.register_blueprint(vendor_routes, url_prefix='/api/vendor')
 
+@app.route("/")
+def index():
+    return "test"
+
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    """提供上傳的檔案（如產品圖片）"""
+    uploads_dir = os.path.join(os.path.dirname(__file__), '..', 'uploads')
+    return send_from_directory(uploads_dir, filename)
 
 if __name__ == '__main__':
     route_info_printer(True)
