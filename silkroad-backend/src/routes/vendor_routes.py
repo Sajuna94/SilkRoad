@@ -94,13 +94,13 @@ return:
 vendor_routes.route("/add_discount", methods=["POST"])(add_discount_policy)
 '''
 需要{
-    "vendor_id":XXX,
-    "type":XXX,
-    "value":XXX,
-    "min_purchase":XXX,
-    "max_discount":XXX,
-    "membership_limit":XXX,
-    "expiry_date":XXX,
+    "vendor_id": int,
+    "type": string,
+    "value": int,
+    "min_purchase": int,
+    "max_discount": int,
+    "membership_limit": int,
+    "expiry_date": string,
     }
 '''
 

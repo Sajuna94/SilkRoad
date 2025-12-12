@@ -9,6 +9,8 @@ Tests cover:
 - View discount policies
 """
 
+from copy import deepcopy
+from typing_extensions import Required
 import pytest
 import json
 from datetime import datetime, timedelta
@@ -273,9 +275,9 @@ class TestDiscountPolicy:
             data=json.dumps(payload),
             content_type='application/json'
         )
-
-        assert response.status_code == 201
+        
         data = response.get_json()
+        assert response.status_code == 201
         assert data['success'] is True
         assert 'policy_id' in data
 
@@ -296,6 +298,84 @@ class TestDiscountPolicy:
         assert response.status_code == 400
         data = response.get_json()
         assert data['success'] is False
+        
+    def test_add_discount_with_invalid_data(self, vendor_client, test_vendor):
+        
+        expiry_date = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+        payload = {
+            "vendor_id": test_vendor,
+            "type": "percent",
+            "value": 10,
+            "min_purchase": 100,
+            "max_discount": 50,
+            "membership_limit": 0,
+            "expiry_date": expiry_date
+        }
+        
+        def call(key, value):
+            
+            PL = deepcopy(payload)
+            PL[key] = value
+            response = vendor_client.post(
+                '/api/vendor/add_discount',
+                data=json.dumps(PL),
+                content_type='application/json'
+            )
+            assert response.status_code == 400
+            return response.get_json()
+        
+        #start incorrect "type"
+        data = call("type", "good")
+        assert "type" in data["message"]
+        #end incorrect "type"
+        
+        
+        #start incorrect "value" with "type" == "percent"
+        data = call("value", 100)
+        assert "less" in data["message"]
+        
+        data = call("value", 101)
+        assert "less" in data["message"]
+        
+        data = call("value", -1)
+        assert "greater" in data["message"]
+        #end incorrect "value" with "type" == "percent"
+
+        
+        #start incorrect "value" with "type" == "fixed"
+        payload["type"] = "fixed"
+        
+        data = call("value", -1)
+        assert "greater" in data["message"]
+        
+        data = call("min_purchase", -1)
+        assert "greater" in data["message"]
+        
+        data = call("min_purchase", 5)
+        assert "greater" in data["message"]
+        
+        payload["type"] = "percent" #fix to origin
+        #end incorrect "value" with "type" == "fixed"
+        
+        #start with incorrect "min_purchase"
+        payload["type"] = "fixed"
+        
+        #min_pirchase must greater than or equal to 0
+        data = call("min_purchase", 0)
+        assert "greater" in data["message"]
+        data = call("min_purchase", -1)
+        assert "greater" in data["message"]
+        
+        #min_purchase must be greater than value
+        data = call("min_purchase", 10)
+        assert "greater" in data["message"]
+        data = call("min_purchase", 9)
+        assert "greater" in data["message"]
+        
+        payload["type"] = "percent" #fix to origin
+        #end with incorrect value and min_purchase
+        
+        
 
     def test_view_discount_policies_empty(self, authenticated_client, test_vendor):
         """Test viewing discount policies when none exist."""
@@ -325,6 +405,7 @@ class TestDiscountPolicy:
             expiry_date = datetime.now() + timedelta(days=30)
             policy = Discount_Policy(
                 vendor_id=test_vendor,
+                is_available=True,
                 type="percent",
                 value=15,
                 min_purchase=200,

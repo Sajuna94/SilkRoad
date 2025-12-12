@@ -8,7 +8,7 @@ class Discount_Policy(db.Model):
     #database
     id               = db.Column(db.Integer, primary_key=True, autoincrement=True)
     vendor_id        = db.Column(db.Integer, db.ForeignKey("auth.vendors.user_id"), nullable=False)
-    is_available     = db.Column(db.Boolean, nullable = False, server_default = db.text('true'))
+    is_available     = db.Column(db.Boolean, nullable = False)
     type             = db.Column(Enum('percent', 'fixed'), nullable=False)
     value            = db.Column(db.Integer, nullable=False)
     min_purchase     = db.Column(db.Integer, server_default=db.text("0"))
