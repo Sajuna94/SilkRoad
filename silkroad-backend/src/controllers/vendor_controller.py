@@ -302,7 +302,6 @@ def add_discount_policy():
                             "success": False}), 400
         
     if type_val == "fixed":
-        
         if min_purchase is None:
             return jsonify({"message": "min_purchase is required for fixed type", 
                             "success": False}), 400
