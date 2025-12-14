@@ -141,13 +141,13 @@ def login_user():
     session["user_id"] = user.id
     session["role"] = user.role
     return jsonify({
-        "data": {
+        "data": [{
             "id": user.id,          # 用於後續 API 請求 (例如 /cart/<user_id>)
             "name": user.name,      # 用於顯示
             "email": user.email,    # 用於顯示
             "role": user.role,      # 關鍵！用於前端路由判斷 (Router)
             "phone_number": user.phone_number
-        },
+        }],
         "message": "Login successful",
         "success": True
     }), 200
@@ -204,14 +204,14 @@ def update_user(user_id):
         return jsonify({
             "message": "User profile updated successfully",
             "success": True,
-            "data": {
+            "data": [{
                 "id": user.id,
                 "name": user.name,
                 "email": user.email,
                 "role": user.role,
                 "phone_number": user.phone_number,
                 "address": getattr(user, 'address', None) # 如果是 vendor/customer 嘗試回傳 address，否則回傳 None
-            }
+            }]
         }), 200
 
     except Exception as e:

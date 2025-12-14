@@ -2,31 +2,32 @@
 import React from "react";
 import styles from "./Form.module.scss";
 import { Link, useNavigate } from "react-router-dom";
-import { useLogin } from "@/hooks/auth/login";
+import { useLogin } from "@/hooks/auth/user";
 import LabeledInput from "@/components/molecules/LabeledInput";
 
 export const LoginForm = () => {
     const prefill = undefined as { email?: string; password?: string } | undefined;
     const [form, setForm] = React.useState({
-        email: prefill?.email || "admin@example.com",
+        email: prefill?.email || "customer@example.com",
         password: prefill?.password || "123"
     });
+    const [error, setError] = React.useState<any>(" ");
     const navigate = useNavigate();
     const loginMutation = useLogin();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Login:", form);
+        console.log("Login Form:", form);
 
         loginMutation.mutate(
             { email: form.email, password: form.password },
             {
-                onSuccess: (user) => {
-                    console.log("登入成功:", user);
+                onSuccess: (data) => {
+                    console.log("Login successful:", data);
                     navigate("/home");
                 },
                 onError: (error) => {
-                    console.error("登入失敗:", error.response?.data);
+                    setError(error.response?.data.message);
                 }
             }
         );
@@ -43,12 +44,17 @@ export const LoginForm = () => {
                 onChange={(value) => setForm({ ...form, email: value })}
             />
 
-            <LabeledInput
-                label="Password"
-                type="password"
-                value={form.password}
-                onChange={(value) => setForm({ ...form, password: value })}
-            />
+            <div>
+                <LabeledInput
+                    label="Password"
+                    type="password"
+                    value={form.password}
+                    onChange={(value) => setForm({ ...form, password: value })}
+                />
+
+                <Error message={error} />
+            </div>
+
 
             <button
                 type="submit"
@@ -65,3 +71,11 @@ export const LoginForm = () => {
         </form>
     );
 }
+
+const Error = ({ message }: { message: string }) => {
+    return (
+        <div style={{ fontSize: '0.8rem', color: 'red' }}>
+            {message}
+        </div>
+    );
+};

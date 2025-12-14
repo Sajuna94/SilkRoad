@@ -12,6 +12,11 @@ export const api = axios.create({
 	timeout: 10000,
 });
 
+export type ApiErrorBody = {
+	success: false;
+	message: string;
+};
+
 api.interceptors.response.use(
 	res => res,
 	err => {

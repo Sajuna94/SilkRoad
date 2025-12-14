@@ -1,20 +1,25 @@
-type Role = "admin" | "vendor" | "customer" | "guest";
+export enum UserRole {
+	ADMIN = 'admin',
+	VENDOR = 'vendor',
+	CUSTOMER = 'customer',
+	GUEST = 'guest',
+}
 
 interface BaseUser {
 	id: number
 	name: string
 	email: string
 	phone_number: string
-	role: Role
-	created_at: string
+	role: UserRole
+	created_at?: string
 }
 
 export interface Admin extends BaseUser {
-	role: 'admin'
+	role: UserRole.ADMIN
 }
 
 export interface Vendor extends BaseUser {
-	role: 'vendor'
+	role: UserRole.VENDOR
 	is_active: boolean
 	revenue: number
 	address: string
@@ -22,7 +27,7 @@ export interface Vendor extends BaseUser {
 }
 
 export interface Customer extends BaseUser {
-	role: 'customer'
+	role: UserRole.CUSTOMER
 	is_active: boolean
 	membership_level: number
 	stored_balance: number
@@ -31,11 +36,3 @@ export interface Customer extends BaseUser {
 
 export type User = Admin | Vendor | Customer;
 
-export type RegisterPayload = {
-	name: string;
-	email: string;
-	password: string;
-	phone_number: string;
-	address: string;
-	role: string;
-};
