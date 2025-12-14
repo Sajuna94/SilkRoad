@@ -262,11 +262,18 @@ def test_product(app, test_vendor):
             price=50,
             description="Delicious test bubble tea",
             image_url=f"https://example.com/test-{unique_id}.jpg",
-            is_listed=True
+            is_listed=True,
         )
         db.session.add(product)
-        db.session.commit()
+        db.session.flush()
         product_id = product.id
+        sgr_opt = Sugar_Option(product_id=product_id, options="50%, 30%, 10%")
+        ice_opt = Ice_Option(product_id=product_id, options="Hot, Warm, Cold")
+        size_opt = Sizes_Option(product_id=product_id, options="Small, Medium, Large")
+        db.session.add(sgr_opt)
+        db.session.add(ice_opt)
+        db.session.add(size_opt)
+        db.session.commit()
         return product_id
 
 
@@ -286,6 +293,17 @@ def test_product_2(app, test_vendor):
             is_listed=True
         )
         db.session.add(product)
+        db.session.flush()
+        product_id = product.id
+        
+        sgr_opt = Sugar_Option(product_id=product_id, options="100%, 50%, 30%")
+        ice_opt = Ice_Option(product_id=product_id, options="without Ice, Cold, Iced")
+        size_opt = Sizes_Option(product_id=product_id, options="Medium, Large")
+        db.session.add(sgr_opt)
+        db.session.add(ice_opt)
+        db.session.add(size_opt)
+        db.session.flush()
+        
         db.session.commit()
         product_id = product.id
         return product_id

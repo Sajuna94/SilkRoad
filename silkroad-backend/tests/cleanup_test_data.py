@@ -72,7 +72,8 @@ def cleanup_direct():
         from models import (
             User, Customer, Vendor, Admin, Vendor_Manager,
             Product, Cart, Cart_Item, Order, Order_Item,
-            Discount_Policy, Review, System_Announcement, Block_Record
+            Discount_Policy, Review, System_Announcement, Block_Record,
+            Sugar_Option, Ice_Option, Sizes_Option
         )
 
         # Load environment variables
@@ -92,6 +93,9 @@ def cleanup_direct():
             db.session.query(Cart).delete()
             db.session.query(Review).delete()
             db.session.query(Discount_Policy).delete()  # Must be before Vendor
+            db.session.query(Sugar_Option).delete() # Must be before Product
+            db.session.query(Ice_Option).delete() # Must be before Product
+            db.session.query(Sizes_Option).delete() # Must be before Product
             db.session.query(Product).delete()  # Must be before Vendor
             db.session.query(Block_Record).delete()
             db.session.query(System_Announcement).delete()
