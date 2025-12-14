@@ -310,7 +310,7 @@ class TestPasswordUpdate:
             content_type='application/json'
         )
 
-        assert response.status_code == 400
+        assert response.status_code == 401
         data = response.get_json()
         assert data['success'] is False
 

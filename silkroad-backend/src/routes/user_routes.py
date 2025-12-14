@@ -5,7 +5,9 @@ from controllers.user_controller import (
     logout_user, 
     update_user, 
     update_password, 
-    delete_user
+    delete_user,
+    get_current_user,
+    check_login_status
 )
 
 user_routes = Blueprint('user', __name__)
@@ -162,5 +164,52 @@ else:
 {
     "message": "...",
     "success": False
+}
+"""
+
+user_routes.route('/profile', methods=['GET'])(get_current_user)
+"""
+Get Current User Profile
+Header: Cookie (session) required
+Return:
+{
+    "data": [{        
+        "id": int,
+        "name": string,
+        "email": string,
+        "phone_number": string,
+        "role": string,
+        "created_at": datetime,
+        if have: else null
+        "address": string,
+        "is_active": bool,
+        "vendor_manager_id": int,
+        "membership_level": int,
+        "stored_balance": int
+    }],
+    "message": "...",
+    "success": True
+}
+else:
+{
+    "message": "...",
+    "success": False
+}
+"""
+
+user_routes.route('/status', methods=['GET'])(check_login_status)
+"""
+Check Login Status (Lightweight)
+Header: Cookie (optional)
+Return:
+{
+    "success": True,
+    "message": "...",
+    "data": [{ 
+        "is_login": Boolean, 
+        "id": int (optional), 
+        "role": string (optional), 
+        "name": string (optional) 
+    }]
 }
 """

@@ -6,15 +6,15 @@ vendor_routes = Blueprint('vendor', __name__)
 vendor_routes.route("/Add_Product", methods=["POST"])(add_product)
 """
 function:
-    增加product (支援圖片上傳)
+    增加product
     
-expected get (multipart/form-data):
+expected get:
     vendor_id: int
     name: string
     price: int
     description: string
     is_listed: bool (true/false, default=True)
-    image: file (required, 支援格式: png, jpg, jpeg, gif, webp, 最大 5MB)
+    image_url: string
 
 return:
 {
@@ -23,16 +23,9 @@ return:
     "product": { (if success)
         "id": int,
         "name": string,
-        "price": int,
-        "image_url": string
+        "price": int
     }
 }
-
-Note:
-- 必須使用 FormData 傳送，不是 JSON
-- image 欄位為必填
-- 圖片會儲存在 uploads/products/ 目錄
-- image_url 格式: /uploads/products/product_{vendor_id}_{timestamp}.{ext}
 """
 
 vendor_routes.route("/update_products", methods=["PATCH"])(update_products) #WIP same vendor check
@@ -101,13 +94,13 @@ return:
 vendor_routes.route("/add_discount", methods=["POST"])(add_discount_policy)
 '''
 需要{
-    "vendor_id":XXX,
-    "type":XXX,
-    "value":XXX,
-    "min_purchase":XXX,
-    "max_discount":XXX,
-    "membership_limit":XXX,
-    "expiry_date":XXX,
+    "vendor_id": int,
+    "type": string,
+    "value": int,
+    "min_purchase": int,
+    "max_discount": int,
+    "membership_limit": int,
+    "expiry_date": string,
     }
 '''
 

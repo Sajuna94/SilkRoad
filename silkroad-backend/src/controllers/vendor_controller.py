@@ -1,20 +1,10 @@
-from typing_extensions import Required
+from multiprocessing import Value
 from flask import jsonify, request
 from models import Vendor, Product, Discount_Policy
 from config.database import db
 from utils import require_login
 
-from datetime import datetime, date
-from werkzeug.utils import secure_filename
-import os
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, '..', 'uploads', 'products')
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
-
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
+from datetime import datetime
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -37,36 +27,18 @@ def validate_expiry_date(date_string):
 
 @require_login(role = ["vendor"]) 
 def add_product():
-    vendor_id = request.form.get('vendor_id')
-    name = request.form.get('name')
-    price = request.form.get('price')
-    description = request.form.get('description')
-    is_listed = request.form.get('is_listed')
+    data = request.get_json()
+    
+    vendor_id = data.get('vendor_id')
+    name = data.get('name')
+    price = data.get('price')
+    description = data.get('description')
+    is_listed = data.get('is_listed')
+    img_url = data.get('img_url')
         
     if not vendor_id or not name or not price or description is None: 
         return jsonify({
             "message": "Missing required fields",
-            "success": False
-        }), 400
-        
-    # ===== 檢查是否有圖片 =====
-    if 'image' not in request.files:
-        return jsonify({
-            "message": "No image file provided",
-            "success": False
-        }), 400
-    
-    image_file = request.files['image']
-    
-    if image_file.filename == '' or image_file.filename is None:
-        return jsonify({
-            "message": "No image selected",
-            "success": False
-        }), 400
-    
-    if not allowed_file(image_file.filename):
-        return jsonify({
-            "message": "Invalid image type. Allowed types: png, jpg, jpeg, gif, webp",
             "success": False
         }), 400
     
@@ -109,24 +81,6 @@ def add_product():
             "success": False
         }), 400
     
-    # ===== 儲存圖片 =====
-    try:
-        filename = secure_filename(image_file.filename)
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
-        name_part, ext = os.path.splitext(filename)
-        unique_filename = f"product_{vendor_id}_{timestamp}{ext}"
-        
-        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
-        image_file.save(filepath)
-        
-        image_url = f"/uploads/products/{unique_filename}"
-        
-    except Exception as e:
-        return jsonify({
-            "message": f"Failed to save image: {str(e)}",
-            "success": False
-        }), 500
-    
     # ===== 創建產品 =====
     new_product = Product(
         vendor_id=vendor_id,
@@ -134,7 +88,7 @@ def add_product():
         price=price,
         description=description,
         is_listed=is_listed,
-        image_url=image_url
+        image_url=img_url
     )
     
     try:
@@ -147,21 +101,12 @@ def add_product():
             "product": {
                 "id": new_product.id,
                 "name": new_product.name,
-                "price": new_product.price,
-                "image_url": image_url
+                "price": new_product.price
             }
         }), 201
         
     except Exception as e:
         db.session.rollback()
-        
-        # 如果資料庫失敗,刪除已上傳的圖片
-        try:
-            if os.path.exists(filepath):
-                os.remove(filepath)
-        except:
-            pass
-        
         return jsonify({
             "message": f"Failed to add product: {str(e)}",
             "success": False
@@ -327,15 +272,56 @@ def add_discount_policy():
 
     type_val = data.get("type")
     value = data.get("value")
-    membership_limit = data.get("membership_limit") 
-    min_purchase = data.get("min_purchase")         
-    max_discount = data.get("max_discount")       
+    membership_limit = data.get("membership_limit")
+    min_purchase = data.get("min_purchase")     
+    max_discount = data.get("max_discount")
     
     if type_val is None or value is None or membership_limit is None:
         return jsonify({"message": "type, value, membership_limit 不可為空或 None", 
                         "success": False}), 400
-
-
+        
+    try:
+        value = int(value)
+        membership_limit = int(membership_limit)
+    except (ValueError, TypeError):
+        return jsonify({"message": "invalid value type for: 'value', 'membership_limit'", 
+                        "success": False}), 400
+        
+    #check enum 
+    if type_val != "percent" and type_val != "fixed":
+        return jsonify({"message": "invalid value type for: 'type'",
+                        "success": False}), 400
+        
+    #check value
+    if type_val == "percent":
+        if value < 0:
+            return jsonify({"message": "percent value must be greater than or equal to 0", 
+                            "success": False}), 400
+        if value >= 100:
+            return jsonify({"message": "percent value must be less than 100", 
+                            "success": False}), 400
+        
+    if type_val == "fixed":
+        if min_purchase is None:
+            return jsonify({"message": "min_purchase is required for fixed type", 
+                            "success": False}), 400
+        try:
+            min_purchase = int(min_purchase)
+        except (ValueError, TypeError):
+            return jsonify({"message": "invalid value type for: 'min_purchase'", 
+                            "success": False}), 400
+            
+        if value < 0:
+            return jsonify({"message": "fixed value must be greater than or equal to 0", 
+                            "success": False}), 400
+        if min_purchase < 0:
+            return jsonify({"message": "min_purchase must be greater than or equal to 0", 
+                            "success": False}), 400 
+        if min_purchase <= value:
+            return jsonify({"message": "min_purchase must be greater than fixed value", 
+                            "success": False}), 400
+            
+        
     expiry_date_str = data.get("expiry_date") 
     parsed_expiry_date = None
     
@@ -351,6 +337,7 @@ def add_discount_policy():
         add_discount_policy = Discount_Policy(
             vendor_id = vendor_id,
             type = type_val,
+            is_available = True,
             value = value,
             membership_limit = membership_limit, 
             expiry_date = parsed_expiry_date    
@@ -430,7 +417,6 @@ def view_discount_policy():
         print(f"Error details: {e}")
         return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
 
-
 def invalid_discount_policy():
     data = request.get_json()
     '''
@@ -478,8 +464,4 @@ def invalid_discount_policy():
         db.session.rollback()
         print(f"Error details: {e}")
         return jsonify({'message': '系統錯誤，停用失敗', 'error': str(e), "success": False}), 500
-
-
-
-
 

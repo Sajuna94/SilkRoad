@@ -283,3 +283,79 @@ def delete_user(user_id):
             "message": f"Cannot delete user (Foreign Key Constraint): {str(e)}",
             "success": False
         }), 500
+    
+@require_login(role=["admin", "vendor", "customer"])
+def get_current_user():
+    """
+    [getUser] 獲取當前登入使用者的完整資料
+    需要 Session (Cookie)
+    """
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+
+    if not user:
+        # 防呆：Session 有 ID 但資料庫找不到人 (可能被刪除了)
+        session.clear()
+        return jsonify({
+            "message": "User not found (session cleared)",
+            "success": False
+        }), 404
+
+    # 根據不同身分組裝資料
+    user_data = {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "phone_number": user.phone_number,
+        "role": user.role,
+        "created_at": user.created_at,
+        # 使用 getattr 安全獲取子類別欄位 (Admin 沒有這些欄位)
+        "address": getattr(user, 'address', None),
+        "is_active": getattr(user, 'is_active', None),
+        "vendor_manager_id": getattr(user, 'vendor_manager_id', None),
+        "membership_level": getattr(user, 'membership_level', None),
+        "stored_balance": getattr(user, 'stored_balance', None)
+    }
+
+    return jsonify({
+        "success": True,
+        "message": "User profile retrieved",
+        "data": [user_data]
+    }), 200
+
+
+def check_login_status():
+    """
+    [userIsLogin] 檢查使用者是否登入
+    """
+    user_id = session.get('user_id')
+
+    # 1. Session 沒東西 -> 未登入
+    if not user_id:
+        return jsonify({
+            "message": "User is not logged in",
+            "success": True,
+            "data": [{"is_login": False}]  # 放在這裡
+        }), 200
+
+    # 2. 有 Session 但資料庫找不到人 -> 清除無效 Session
+    user = User.query.get(user_id)
+    if not user:
+        session.clear()
+        return jsonify({
+            "message": "Session expired or invalid",
+            "success": True,
+            "data": [{"is_login": False}]  # 放在這裡
+        }), 200
+
+    # 3. 登入中 -> 回傳基本資料 + is_login: True
+    return jsonify({
+        "message": "User is logged in",
+        "success": True,
+        "data": [{
+            "is_login": True,  # 放在這裡
+            "id": user.id,
+            "role": user.role,
+            "name": user.name
+        }]
+    }), 200
