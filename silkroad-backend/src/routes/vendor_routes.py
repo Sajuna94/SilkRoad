@@ -60,17 +60,20 @@ return:
     "message": "...",
     "success": bool,
     "Changed": [int] (if failed. id of Changed products),
-    "product": { 
-        "vendor_id": int,
-        "name": string,
-        "price": int,
-        "description": string,
-        "image_url": string,
-        "is_listed": bool,
-        "sugar_options": list[string],
-        "ice_options": list[string],
-        "size_options": list[string]
-    }
+    "products": [
+        { 
+            "vendor_id": int,
+            "name": string,
+            "price": int,
+            "description": string,
+            "image_url": string,
+            "is_listed": bool,
+            "sugar_options": list[string],
+            "ice_options": list[string],
+            "size_options": list[string]
+        }
+    ]
+        
 }
 
 (if failed)
