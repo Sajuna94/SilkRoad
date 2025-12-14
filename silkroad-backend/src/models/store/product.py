@@ -14,6 +14,10 @@ class Product(db.Model):
     created_at   = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
 
     vendor = db.relationship("Vendor", back_populates="products")
+    
+    sugar_option = db.relationship("Sugar_Option", uselist=False, cascade="all, delete-orphan")
+    ice_option = db.relationship("Ice_Option", uselist=False, cascade="all, delete-orphan")
+    sizes_option = db.relationship("Sizes_Option", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Product {self.name} - Price {self.price}>"

@@ -15,6 +15,9 @@ from models.store.review import Review
 from models.auth.system_announcement import System_Announcement
 from models.auth.vendor_manager import Vendor_Manager
 from models.auth.vendor import Vendor
+from models.store.sugar_option import Sugar_Option
+from models.store.sizes_option import Sizes_Option
+from models.store.ice_option import Ice_Option
 
 """
 NOTE: I don't recommend using wildcard imports (from module import *) in production code,
@@ -35,4 +38,7 @@ __all__ = [
     "User",
     "Vendor_Manager",
     "Vendor",
+    "Sugar_Option",
+    "Sizes_Option",
+    "Ice_Option"
 ]
