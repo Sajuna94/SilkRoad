@@ -9,9 +9,7 @@ Tests cover:
 - View discount policies
 """
 
-from copy import deepcopy
-from typing_extensions import Required
-import pytest
+from copy import deepcopy, copy
 import json
 from datetime import datetime, timedelta
 
@@ -27,7 +25,10 @@ class TestAddProduct:
             "price": 55,
             "description": "Fresh and delicious",
             "image_url": "https://example.com/new.jpg",
-            "is_listed": True
+            "is_listed": True,
+            "sugar_options": "100%, 70%, 50%, 30%, 0%",
+            "ice_options": "Hot, Warm, Cold, Iced",
+            "size_options": "Small, Medium, Large"
         }
 
         response = vendor_client.post(
@@ -40,78 +41,84 @@ class TestAddProduct:
         data = response.get_json()
         assert data['success'] is True
         assert 'id' in data["product"]
-
-    def test_add_product_minimal_bad(self, vendor_client, test_vendor):
-        """Test adding product with minimal required fields."""
-        payload = {
-            "vendor_id": test_vendor,  # test_vendor is now ID
-            "name": "good drink",
-            "price": 30,
-            "description": "Very fresh and delicious",
-            "image_url": "https://example.com/new2.jpg"
-        }
-
+        
+        # test minimal fields
+        del payload["is_listed"]
+        del payload["image_url"]
         response = vendor_client.post(
             '/api/vendor/Add_Product',
             data=json.dumps(payload),
             content_type='application/json'
         )
-
-        # Should succeed with defaults
+        
         assert response.status_code == 201
         data = response.get_json()
         assert data['success'] is True
-
-    def test_add_product_missing_vendor_id(self, vendor_client):
-        """Test adding product without vendor_id fails."""
-        payload = {
-            "name": "Orphan Product",
-            "price": 40
-        }
-
-        response = vendor_client.post(
-            '/api/vendor/Add_Product',
-            data=json.dumps(payload),
-            content_type='application/json'
-        )
-
-        assert response.status_code == 400
-        data = response.get_json()
-        assert data['success'] is False
-
-    def test_add_product_missing_name(self, vendor_client, test_vendor):
-        """Test adding product without name fails."""
+        assert 'id' in data["product"]
+        
+        
+    def test_add_product_bad(self, vendor_client, test_vendor):
+        """Test adding product with minimal required fields."""
         payload = {
             "vendor_id": test_vendor,  # test_vendor is now ID
-            "price": 40
+            "name": "New Bubble Tea",
+            "price": 55,
+            "description": "Fresh and delicious",
+            "image_url": "https://example.com/new.jpg",
+            "is_listed": True,
+            "sugar_options": "100%, 70%, 50%, 30%, 0%",
+            "ice_options": "Hot, Warm, Cold, Iced",
+            "size_options": "Small, Medium, Large"
         }
+        
+        def _helper(col : str):
+            PL = copy(payload)
+            del PL[col]
+            response = vendor_client.post(
+                '/api/vendor/Add_Product',
+                data=json.dumps(PL),
+                content_type='application/json'
+            )
+            assert response.status_code == 400
+            return response
+        
+        rsp = _helper("vendor_id")
+        assert rsp.get_json()['message'] == 'Missing required fields'
+        
+        rsp = _helper("name")
+        assert rsp.get_json()['message'] == 'Missing required fields'
+        
+        rsp = _helper("price")
+        assert rsp.get_json()['message'] == 'Missing required fields'
+        
+        rsp = _helper("description")
+        assert rsp.get_json()['message'] == 'Missing required fields'
+        
+        rsp = _helper("sugar_options")
+        assert rsp.get_json()['message'] == 'Missing required fields: options'
+        
+        rsp = _helper("ice_options")
+        assert rsp.get_json()['message'] == 'Missing required fields: options'
+        
+        rsp = _helper("size_options")
+        assert rsp.get_json()['message'] == 'Missing required fields: options'
 
-        response = vendor_client.post(
-            '/api/vendor/Add_Product',
-            data=json.dumps(payload),
-            content_type='application/json'
-        )
 
-        assert response.status_code == 400
-        data = response.get_json()
-        assert data['success'] is False
-
-
-class TestGetVendorProducts:
+class TestViewVendorProducts:
     """Test suite for getting vendor products."""
 
-    def test_get_products_empty(self, authenticated_client, test_vendor):
+    def test_view_products_empty(self, client, test_vendor):
         """Test getting products when vendor has none."""
-        response = authenticated_client.get(f'/api/vendor/{test_vendor}/get_products')
+        response = client.get(f'/api/vendor/{test_vendor}/view_products')
 
         assert response.status_code == 200
         data = response.get_json()
         assert data['success'] is True
         assert data['products'] == []
 
-    def test_get_products_with_items(self, authenticated_client, test_vendor, test_product, test_product_2):
+    def test_view_products_with_items(self, client, test_vendor, test_product, test_product_2):
         """Test getting products when vendor has items."""
-        response = authenticated_client.get(f'/api/vendor/{test_vendor}/get_products')
+        response = client.get(f'/api/vendor/{test_vendor}/view_products')
 
         assert response.status_code == 200
         data = response.get_json()
@@ -123,13 +130,12 @@ class TestGetVendorProducts:
         assert 'id' in product
         assert 'name' in product
         assert 'price' in product
-        assert 'description' in product
         assert 'image_url' in product
         assert 'is_listed' in product
-
-    def test_get_products_nonexistent_vendor(self, authenticated_client):
+        
+    def test_view_products_nonexistent_vendor(self, client):
         """Test getting products for non-existent vendor."""
-        response = authenticated_client.get('/api/vendor/99999/get_products')
+        response = client.get('/api/vendor/99999/view_products')
 
         assert response.status_code == 404
         data = response.get_json()
@@ -139,75 +145,84 @@ class TestGetVendorProducts:
 class TestUpdateProducts:
     """Test suite for updating products."""
 
-    def test_update_product_name(self, vendor_client, test_product):
-        """Test updating product name."""
+    def test_update_good(self, vendor_client, test_product):
+        """Test updating single product with any mutable attribute."""
+        
+        def _helper(col_name : str, value : str):
+            payload = [
+                {
+                    "product_id": test_product,
+                    "behavior": {
+                        "col_name": col_name,
+                        "value": value
+                    }
+                }
+            ]
+            response = vendor_client.patch(
+                '/api/vendor/update_products',
+                data=json.dumps(payload),
+                content_type='application/json'
+            )
+            assert response.status_code == 200
+            return response.get_json() 
+        
+        rsp = _helper('name', 'Updated Tea Name')
+        assert rsp['products'][0]['name'] == "Updated Tea Name"
+        
+        rsp = _helper('description', 'Updated Tea Description')
+        assert rsp['products'][0]['description'] == "Updated Tea Description"
+        
+        rsp = _helper('price', '60')
+        assert rsp['products'][0]['price'] == 60
+        
+        rsp = _helper("image_url", "https://example.com/image.jpg")
+        assert rsp['products'][0]['image_url'] == "https://example.com/image.jpg"
+        
+        rsp = _helper("is_listed", "false")
+        assert not rsp['products'][0]['is_listed']
+        
+        rsp = _helper("is_listed", "true")
+        assert rsp['products'][0]['is_listed']
+        
+        rsp = _helper("sugar_options", "10%, 0%")
+        assert rsp['products'][0]['sugar_options'] == ["10%", "0%"]
+        
+        rsp = _helper("ice_options", "10%, 0%, 50%")
+        assert rsp['products'][0]['ice_options'] == ["10%", "0%", "50%"]
+        
+        rsp = _helper("size_options", "10%, 0%, 50%, 20%")
+        assert rsp['products'][0]['size_options'] == ["10%", "0%", "50%", "20%"]
+        
+        
+        """mutable_column"""
         payload = [
             {
                 "product_id": test_product,
                 "behavior": {
                     "col_name": "name",
-                    "value": "Updated Tea Name"
+                    "value": "new name"
                 }
-            }
-        ]
-
-        response = vendor_client.patch(
-            '/api/vendor/update_products',
-            data=json.dumps(payload),
-            content_type='application/json'
-        )
-
-        assert response.status_code == 200
-        data = response.get_json()
-        assert data['success'] is True
-        assert data['products'][0]['name'] == "Updated Tea Name"
-
-    def test_update_product_price(self, vendor_client, test_product):
-        """Test updating product price."""
-        payload = [
+            },
             {
                 "product_id": test_product,
                 "behavior": {
-                    "col_name": "price",
-                    "value": "60"
+                    "col_name": "description",
+                    "value": "new description"
                 }
             }
         ]
-
         response = vendor_client.patch(
             '/api/vendor/update_products',
             data=json.dumps(payload),
             content_type='application/json'
         )
-
         assert response.status_code == 200
         data = response.get_json()
         assert data['success'] is True
-        assert data['products'][0]['price'] == 60
-
-    def test_update_product_listing_status(self, vendor_client, test_product):
-        """Test toggling product listing status."""
-        payload = [
-            {
-                "product_id": test_product,
-                "behavior": {
-                    "col_name": "is_listed",
-                    "value": "false"
-                }
-            }
-        ]
-
-        response = vendor_client.patch(
-            '/api/vendor/update_products',
-            data=json.dumps(payload),
-            content_type='application/json'
-        )
-
-        assert response.status_code == 200
-        data = response.get_json()
-        assert data['success'] is True
-        assert data['products'][0]['is_listed'] is False
-
+        assert data['products'][0]["name"] == "new name"
+        assert data['products'][1]["description"] == "new description"
+        
+        
     def test_update_product_invalid_column(self, vendor_client, test_product):
         """Test updating with invalid column name fails."""
         payload = [
@@ -230,6 +245,7 @@ class TestUpdateProducts:
         data = response.get_json()
         assert data['success'] is False
 
+
     def test_update_nonexistent_product(self, vendor_client):
         """Test updating non-existent product fails."""
         payload = [
@@ -251,8 +267,8 @@ class TestUpdateProducts:
         assert response.status_code == 404
         data = response.get_json()
         assert data['success'] is False
-
-
+        
+        
 class TestDiscountPolicy:
     """Test suite for discount policy management."""
 
@@ -457,7 +473,10 @@ class TestVendorIntegration:
             "price": 50,
             "description": "Test product",
             "image_url": f"https://example.com/lifecycle-{str(uuid.uuid4())[:8]}.jpg",
-            "is_listed": True
+            "is_listed": True,
+            "sugar_options": "100%, 70%, 50%, 30%, 0%",
+            "ice_options": "Hot, Warm, Cold, Iced",
+            "size_options": "Small, Medium, Large"
         }
 
         add_response = vendor_client.post(
@@ -490,7 +509,7 @@ class TestVendorIntegration:
         assert update_response.get_json()['products'][0]['price'] == 55
 
         # Step 3: Get all products (vendor can view their own products)
-        list_response = vendor_client.get(f'/api/vendor/{test_vendor}/get_products')
+        list_response = vendor_client.get(f'/api/vendor/{test_vendor}/view_products')
 
         assert list_response.status_code == 200
         products = list_response.get_json()['products']

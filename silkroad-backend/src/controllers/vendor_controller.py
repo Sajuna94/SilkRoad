@@ -281,7 +281,6 @@ def update_products():
         ), 500
 
 
-@require_login(role=["vendor", "customer"])
 def view_vendor_products(vendor_id):
     try:
         vendor = Vendor.query.get(vendor_id)
