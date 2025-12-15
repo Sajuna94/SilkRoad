@@ -1,10 +1,14 @@
 from flask import request, jsonify, session
 from models import User
-from models import Admin,Vendor,Customer,Vendor_Manager
+from models import Admin,Vendor,Customer,Vendor_Manager,Cart,Cart_Item
 from config import db
 from utils import require_login
 
-def register_user():
+def register_step1():
+    """
+    第一步：驗證共同欄位 (Role, Name, Email, Password, Phone)
+    並將資料暫存在 Session 中，不寫入 DB
+    """
     data = request.get_json()
     
     # 1. 提取參數
@@ -13,28 +17,70 @@ def register_user():
     email = data.get('email')
     password = data.get('password')
     phone_number = data.get('phone_number')
-    
-    address = data.get('address')
-    mgr = data.get("manager")
 
     # 2. 基礎欄位檢查
     if not all([role, name, email, password, phone_number]):
         return jsonify({
-            "message": "Columes are needed(role, name, email, password, phone_number)", 
+            "message": "Columns are needed(role, name, email, password, phone_number)", 
             "success": False
         }), 400
 
     target_role = role.lower()
+    if target_role not in ['vendor', 'customer']:
+        return jsonify({"message": "Invalid role", "success": False}), 400
+
+    # 3. 預先檢查 Email 與 Phone 是否重複 (Fail Fast)
+    # 雖然 User.register 也會檢查，但在第一步就擋下來可以提升 UX
+    if User.query.filter_by(email=email).first():
+        return jsonify({"message": "Email has been registered", "success": False}), 409
+    if User.query.filter_by(phone_number=phone_number).first():
+        return jsonify({"message": "Phone number has been registered", "success": False}), 409
+
+    # 4. 將資料暫存入 Session
+    # 注意：密碼在這裡是明文存 Session，建議 production 環境要確保是 HTTPS，
+    # 或者在這裡先 hash 過再存 (但你的 User.register 有做 hash，所以這裡維持原樣)
+    session['reg_temp'] = {
+        'role': target_role,
+        'name': name,
+        'email': email,
+        'password': password,
+        'phone_number': phone_number
+    }
+    session.modified = True # 確保 session 被更新
+
+    return jsonify({
+        "message": "Step 1 passed. Please proceed to Step 2 with role-specific attributes.",
+        "success": True,
+    }), 201
+
+
+def register_step2():
+    """
+    第二步：接收角色特定欄位，合併 Session 資料，寫入 DB
+    """
+    # 1. 檢查是否有第一步的暫存資料
+    temp_data = session.get('reg_temp')
+    if not temp_data:
+        return jsonify({
+            "message": "Session expired or Step 1 not completed.",
+            "success": False
+        }), 400
+
+    data = request.get_json()
+    target_role = temp_data['role']
     new_user = None
+    
+    # 用來暫存 manager 物件以便最後回傳使用 (僅 Vendor 用)
+    created_manager = None 
 
     try:
-        # 3. 根據角色呼叫 register
-        # 如果有重複，register 方法會直接 '報錯' (raise ValueError)
-        # 程式會跳到下面的 except ValueError 區塊
-        
+        #  Vendor 邏輯
         if target_role == 'vendor':
+            address = data.get('address')
+            mgr = data.get('manager')
+
             if not address or not mgr:
-                return jsonify({"message": "Vendor address or manager_id are needed", "success": False}), 400
+                return jsonify({"message": "Vendor address and manager info are needed", "success": False}), 400
 
             # check manager fields
             mgr_necessary = ["name", "email", "phone_number"]
@@ -45,73 +91,135 @@ def register_user():
                     "success": False
                 }), 400
 
-            #建立manager
-            vndr_mgr = Vendor_Manager(
+            # 建立 manager
+            created_manager = Vendor_Manager(
                 name=mgr.get("name"),
                 email=mgr.get("email"),
                 phone_number=mgr.get("phone_number")
             )
-            db.session.add(vndr_mgr)
-            db.session.flush()
+            db.session.add(created_manager)
+            db.session.flush() # flush 以取得 manager id
 
+            # 呼叫 Vendor.register
             new_user = Vendor.register(
-                name=name, email=email, password=password, phone_number=phone_number,
+                name=temp_data['name'], 
+                email=temp_data['email'], 
+                password=temp_data['password'], 
+                phone_number=temp_data['phone_number'],
                 address=address,
-                vendor_manager_id=vndr_mgr.id,
+                vendor_manager_id=created_manager.id,
                 is_active=True
             )
             
-
+        #  Customer 邏輯
         elif target_role == 'customer':
-            """
-                TODO: guest cart should be created automatically
-                
-            """
+            address = data.get('address')
             if not address:
-                return jsonify({"message": "Customer need address", "success": False}), 400
+                return jsonify({"message": "Customer needs address", "success": False}), 400
             
+            # 1. 建立 Customer 物件
             new_user = Customer.register(
-                name=name, email=email, password=password, phone_number=phone_number,
+                name=temp_data['name'], 
+                email=temp_data['email'], 
+                password=temp_data['password'], 
+                phone_number=temp_data['phone_number'],
                 address=address,
                 membership_level=0
             )
-            
-        elif target_role == 'admin':
-            new_user = Admin.register(
-                name=name, email=email, password=password, phone_number=phone_number
-            )
-        else:
-            return jsonify({"message": "Invalid role", "success": False}), 400
 
-        # 4. 存入資料庫
-        new_user.set_password(password)
-        db.session.add(new_user)
+            # 2. 先加入 session 並 flush，以取得 new_user.id
+            db.session.add(new_user)
+            db.session.flush() 
+
+            # 3. 檢查並轉移訪客購物車
+            guest_cart = session.get('cart')
+            if guest_cart and guest_cart.get("items"):
+                
+                # A. 建立資料庫 Cart
+                new_db_cart = Cart(
+                    customer_id=new_user.id,
+                    vendor_id=guest_cart["vendor_id"]
+                )
+                db.session.add(new_db_cart)
+                
+                # B. 搬移商品
+                for item in guest_cart["items"]:
+                    new_db_item = Cart_Item(
+                        cart_id=new_user.id,
+                        product_id=item["product_id"],
+                        quantity=item["quantity"],
+                        selected_sugar=item["selected_sugar"],
+                        selected_ice=item["selected_ice"],
+                        selected_size=item["selected_size"]
+                    )
+                    db.session.add(new_db_item)
+                
+                # C. 清除 Session 購物車
+                session.pop('cart', None)
+
+        # 4. 最終提交
+        # 確保 new_user 被加入 session (Customer 上面加過了，Vendor/Admin 在這裡加)
+        if target_role != 'customer':
+            db.session.add(new_user)
+            
         db.session.commit()
+
+        # 5. 註冊成功後的 Session 處理
+        session.pop('reg_temp', None)
         session['user_id'] = new_user.id
         session['role'] = target_role
 
+        # 回傳資料 (Response Data Construction)
+        response_data = {}
 
-    except ValueError:
-        # [新增] 這裡專門捕捉 "重複註冊" 的錯誤 (由 User.register 拋出)
-        # e 的內容就是 "Email has been registered" 或 "Phone number..."
+        if target_role == 'customer':
+            response_data = {
+                "id": new_user.id,
+                "role": "customer",
+                "name": new_user.name,
+                "email": new_user.email,
+                "phone_number": new_user.phone_number,
+                "address": new_user.address,
+                "membership_level": new_user.membership_level,
+                "is_active": new_user.is_active
+            }
+        
+        elif target_role == 'vendor':
+            # Vendor 需要額外回傳 Manager 資訊
+            response_data = {
+                "id": new_user.id,
+                "role": "vendor",
+                "name": new_user.name,
+                "email": new_user.email,
+                "phone_number": new_user.phone_number,
+                "address": new_user.address,
+                "is_active": new_user.is_active,
+                "manager": {
+                    "id": created_manager.id,
+                    "name": created_manager.name,
+                    "email": created_manager.email,
+                    "phone_number": created_manager.phone_number
+                }
+            }
+
+    except ValueError as e:
         return jsonify({
-            "message": "Email or Phonenumber has been registered",
+            "message": str(e),
             "success": False
         }), 409
 
     except Exception as e:
         db.session.rollback()
-        print('session', session)
-
         return jsonify({
-            "message": f"Database error: {str(e)} {str(session)}", 
+            "message": f"Database error: {str(e)}", 
             "success": False
         }), 500
 
+    # 6. 回傳最終結果
     return jsonify({
-        "message": "Registration successful",              
         "success": True,
-        "user_id": new_user.id
+        "message": "Registration successful",
+        "data": [response_data]
     }), 201
 
 def login_user(): 
@@ -284,78 +392,3 @@ def delete_user(user_id):
             "success": False
         }), 500
     
-@require_login(role=["admin", "vendor", "customer"])
-def get_current_user():
-    """
-    [getUser] 獲取當前登入使用者的完整資料
-    需要 Session (Cookie)
-    """
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-
-    if not user:
-        # 防呆：Session 有 ID 但資料庫找不到人 (可能被刪除了)
-        session.clear()
-        return jsonify({
-            "message": "User not found (session cleared)",
-            "success": False
-        }), 404
-
-    # 根據不同身分組裝資料
-    user_data = {
-        "id": user.id,
-        "name": user.name,
-        "email": user.email,
-        "phone_number": user.phone_number,
-        "role": user.role,
-        "created_at": user.created_at,
-        # 使用 getattr 安全獲取子類別欄位 (Admin 沒有這些欄位)
-        "address": getattr(user, 'address', None),
-        "is_active": getattr(user, 'is_active', None),
-        "vendor_manager_id": getattr(user, 'vendor_manager_id', None),
-        "membership_level": getattr(user, 'membership_level', None),
-        "stored_balance": getattr(user, 'stored_balance', None)
-    }
-
-    return jsonify({
-        "success": True,
-        "message": "User profile retrieved",
-        "data": [user_data]
-    }), 200
-
-
-def check_login_status():
-    """
-    [userIsLogin] 檢查使用者是否登入
-    """
-    user_id = session.get('user_id')
-
-    # 1. Session 沒東西 -> 未登入
-    if not user_id:
-        return jsonify({
-            "message": "User is not logged in",
-            "success": True,
-            "data": [{"is_login": False}]  # 放在這裡
-        }), 200
-
-    # 2. 有 Session 但資料庫找不到人 -> 清除無效 Session
-    user = User.query.get(user_id)
-    if not user:
-        session.clear()
-        return jsonify({
-            "message": "Session expired or invalid",
-            "success": True,
-            "data": [{"is_login": False}]  # 放在這裡
-        }), 200
-
-    # 3. 登入中 -> 回傳基本資料 + is_login: True
-    return jsonify({
-        "message": "User is logged in",
-        "success": True,
-        "data": [{
-            "is_login": True,  # 放在這裡
-            "id": user.id,
-            "role": user.role,
-            "name": user.name
-        }]
-    }), 200

@@ -13,98 +13,166 @@ Tests cover:
 import pytest
 import json
 
-
 class TestUserRegistration:
-    """Test suite for user registration endpoint."""
+    """Test suite for user registration endpoint (Two-Step Process)."""
 
-    def test_register_customer_good(self, client, register_payload):
-        """Test successful customer registration."""
-        response = client.post(
-            '/api/user/register',
-            data=json.dumps(register_payload),
+    def test_register_customer_good(self, client):
+        """Test successful customer registration (Step 1 + Step 2)."""
+        
+        # --- Step 1: Common Info ---
+        step1_payload = {
+            "role": "customer",
+            "name": "New Customer",
+            "email": "customer_step@test.com",
+            "password": "password123",
+            "phone_number": "0911223344"
+        }
+
+        response_step1 = client.post(
+            '/api/user/register/step1',
+            data=json.dumps(step1_payload),
             content_type='application/json'
         )
 
-        assert response.status_code == 201
-        data = response.get_json()
-        assert data['success'] is True
-        assert 'user_id' in data
+        assert response_step1.status_code == 201
+        data_step1 = response_step1.get_json()
+        assert data_step1['success'] is True
+        assert "Step 1 passed" in data_step1['message']
 
-    def test_register_vendor_good(self, app, client):
-        """Test successful vendor registration."""
+        # --- Step 2: Specific Info (Address) ---
+        # Note: 'client' automatically retains cookies from Step 1
+        step2_payload = {
+            "address": "Taipei City 101"
+        }
 
-        payload = {
+        response_step2 = client.post(
+            '/api/user/register/step2',
+            data=json.dumps(step2_payload),
+            content_type='application/json'
+        )
+
+        assert response_step2.status_code == 201
+        data_step2 = response_step2.get_json()
+        
+        # 驗證成功與回傳資料結構
+        assert data_step2['success'] is True
+        assert len(data_step2['data']) > 0
+        user_data = data_step2['data'][0]
+        
+        assert user_data['role'] == 'customer'
+        assert user_data['email'] == step1_payload['email']
+        assert user_data['address'] == step2_payload['address']
+        assert 'id' in user_data
+
+    def test_register_vendor_good(self, client):
+        """Test successful vendor registration (Step 1 + Step 2 with Manager)."""
+
+        # --- Step 1: Common Info ---
+        step1_payload = {
             "role": "vendor",
             "name": "New Vendor",
-            "email": "newvendor@test.com",
+            "email": "vendor_step@test.com",
             "password": "password123",
-            "phone_number": "0944444444",
-            "address": "Vendor Address",
-            "is_active": True,
+            "phone_number": "0955667788"
+        }
+
+        response_step1 = client.post(
+            '/api/user/register/step1',
+            data=json.dumps(step1_payload),
+            content_type='application/json'
+        )
+        assert response_step1.status_code == 201
+
+        # --- Step 2: Specific Info (Address + Manager) ---
+        step2_payload = {
+            "address": "Vendor Factory Address",
             "manager": {
-                "name": "new_vendor_mgr",
-                "email": "manager@email.com",
-                "phone_number": "0912345678"
+                "name": "Vendor Boss",
+                "email": "boss@vendor.com",
+                "phone_number": "0999888777"
             }
         }
 
+        response_step2 = client.post(
+            '/api/user/register/step2',
+            data=json.dumps(step2_payload),
+            content_type='application/json'
+        )
+
+        assert response_step2.status_code == 201
+        data_step2 = response_step2.get_json()
+        
+        assert data_step2['success'] is True
+        user_data = data_step2['data'][0]
+        
+        # 驗證 Vendor 特有的欄位
+        assert user_data['role'] == 'vendor'
+        assert 'manager' in user_data
+        assert user_data['manager']['name'] == step2_payload['manager']['name']
+
+    def test_register_duplicate_email_bad(self, app, client, test_customer):
+        """
+        Test registration fails at Step 1 when email already exists.
+        (We fail fast at step 1 now)
+        """
+        from models.auth.customer import Customer
+
+        # Get existing customer email
+        with app.app_context():
+            customer = Customer.query.get(test_customer)
+            existing_email = customer.email
+
+        payload = {
+            "role": "customer",
+            "name": "Duplicate User",
+            "email": existing_email, # Duplicate
+            "password": "password123",
+            "phone_number": "0900000001" # Unique
+        }
+
         response = client.post(
-            '/api/user/register',
+            '/api/user/register/step1',
             data=json.dumps(payload),
             content_type='application/json'
         )
 
-        assert response.status_code == 201
+        assert response.status_code == 409
         data = response.get_json()
-        assert data['success'] is True
-        assert 'user_id' in data
+        assert data['success'] is False
+        assert 'Email has been registered' in data['message']
 
-    def test_register_duplicate_email_bad(self, app, client, test_customer, register_payload):
-        """同個email重複註冊"""
-        from models import Customer
+    def test_register_duplicate_phone_bad(self, app, client, test_customer):
+        """
+        Test registration fails at Step 1 when phone number already exists.
+        """
+        from models.auth.customer import Customer
 
-        # Get customer email from database
+        # Get existing customer phone
         with app.app_context():
             customer = Customer.query.get(test_customer)
-            customer_email = customer.email
+            existing_phone = customer.phone_number
 
-        register_payload['email'] = customer_email
+        payload = {
+            "role": "customer",
+            "name": "Duplicate Phone User",
+            "email": "unique@test.com", # Unique
+            "password": "password123",
+            "phone_number": existing_phone # Duplicate
+        }
 
         response = client.post(
-            '/api/user/register',
-            data=json.dumps(register_payload),
+            '/api/user/register/step1',
+            data=json.dumps(payload),
             content_type='application/json'
         )
 
         assert response.status_code == 409
         data = response.get_json()
         assert data['success'] is False
-        assert 'Email or Phonenumber has been registered' in data['message']
+        assert 'Phone number has been registered' in data['message']
 
-    def test_register_duplicate_phone_bad(self, app, client, test_customer, register_payload):
-        """Test registration fails with duplicate phone number."""
-        from models import Customer
-
-        # Get customer phone from database
-        with app.app_context():
-            customer = Customer.query.get(test_customer)
-            customer_phone = customer.phone_number
-
-        register_payload['phone_number'] = customer_phone
-
-        response = client.post(
-            '/api/user/register',
-            data=json.dumps(register_payload),
-            content_type='application/json'
-        )
-
-        assert response.status_code == 409
-        data = response.get_json()
-        assert data['success'] is False
-        assert 'Email or Phonenumber has been registered' in data['message']
-
-    def test_register_missing_fields(self, client):
-        """Test registration fails when required fields are missing."""
+    def test_register_step1_missing_fields(self, client):
+        """Test Step 1 fails when required fields are missing."""
         payload = {
             "role": "customer",
             "name": "Incomplete User"
@@ -112,7 +180,7 @@ class TestUserRegistration:
         }
 
         response = client.post(
-            '/api/user/register',
+            '/api/user/register/step1',
             data=json.dumps(payload),
             content_type='application/json'
         )
@@ -120,6 +188,28 @@ class TestUserRegistration:
         assert response.status_code == 400
         data = response.get_json()
         assert data['success'] is False
+
+    def test_register_step2_without_step1(self, client):
+        """
+        Test calling Step 2 directly without Step 1 session.
+        This simulates a user skipping the process or session expiry.
+        """
+        payload = {
+            "address": "Some Address"
+        }
+
+        # 直接呼叫 step2，沒有經過 step1，所以沒有 cookie
+        response = client.post(
+            '/api/user/register/step2',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+
+        # 預期被拒絕 (400 Bad Request)
+        assert response.status_code == 400
+        data = response.get_json()
+        assert data['success'] is False
+        assert "Step 1 not completed" in data['message']
 
 
 class TestUserLogin:
@@ -149,9 +239,9 @@ class TestUserLogin:
         assert response.status_code == 200
         data = response.get_json()
         assert data['success'] is True
-        assert data['data']['id'] == test_customer
-        assert data['data']['email'] == customer_email
-        assert data['data']['role'] == customer_role
+        assert data['data'][0]['id'] == test_customer
+        assert data['data'][0]['email'] == customer_email
+        assert data['data'][0]['role'] == customer_role
 
     def test_login_wrong_password(self, app, client, test_customer):
         """Test login fails with wrong password."""
@@ -241,8 +331,8 @@ class TestUserUpdate:
         assert response.status_code == 200
         data = response.get_json()
         assert data['success'] is True
-        assert data['data']['name'] == "Updated Name"
-        assert data['data']['phone_number'] == "0955555555"
+        assert data['data'][0]['name'] == "Updated Name"
+        assert data['data'][0]['phone_number'] == "0955555555"
 
     def test_update_customer_address(self, authenticated_client, test_customer):
         """Test updating customer address."""
@@ -259,7 +349,7 @@ class TestUserUpdate:
         assert response.status_code == 200
         data = response.get_json()
         assert data['success'] is True
-        assert data['data']['address'] == "New Address 999"
+        assert data['data'][0]['address'] == "New Address 999"
 
     def test_update_unauthorized_bad(self, client, test_customer):
         """Test update fails without authentication."""

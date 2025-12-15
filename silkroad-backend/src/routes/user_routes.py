@@ -1,58 +1,101 @@
 from flask import Blueprint
 from controllers.user_controller import (
-    register_user, 
     login_user, 
     logout_user, 
     update_user, 
     update_password, 
     delete_user,
-    get_current_user,
-    check_login_status
+    register_step1, 
+    register_step2
 )
 
 user_routes = Blueprint('user', __name__)
 
-user_routes.route('/register', methods=['POST'])(register_user)
+user_routes.route('/register/step1', methods=['POST'])(register_step1)
 """
-User registration
+Step 1 Registration: Validate common info & cache in session
 expect:
-if role == 'vendor' :
 {
-    "role": string,
-    "name": string,
-    "email": string,
-    "password": string,
-    "phone_number": string
-    "address"" string
-    "is_active": bool, (default = true)
+    "role" = string ("vendor", "customer"),
+    "name" = string,
+    "email" = string,
+    "password" = string,
+    "phone_number" = string
+}
+
+return 
+if success:
+{
+    "message": "Step 1 passed. Please proceed to Step 2...",
+    "success": True,
+}
+else:
+{
+    "message": "...",
+    "success": False
+}
+"""
+user_routes.route('/register/step2', methods=['POST'])(register_step2)
+"""
+Step 2 Registration: Role-specific info & DB commit
+** Requires Session Cookie from Step 1 **
+
+expect (If Role is Vendor):
+{
+    "address": string,
     "manager": {
         "name": string,
         "email": string,
         "phone_number": string
     }
 }
-elif role == 'customer' :
+
+expect (If Role is Customer):
 {
-    "role" = string,
-    "name" = string,
-    "email" = string,
-    "password" = string,
-    "phone_number" = string
-    "address"=string
+    "address": string
 }
-elif role == 'admin' :
-{
-    "role" = string,
-    "name" = string,
-    "email" = string,
-    "password" = string,
-    "phone_number" = string
 
 return 
+if success (Customer):
+{
+    "success": True,
+    "message": "Registration successful",
+    "data": [{
+        "id": int,
+        "role": "customer",
+        "name": string,
+        "email": string,
+        "phone_number": string,
+        "address": string,
+        "membership_level": int,
+        "is_active": boolean
+    }]
+}
+
+if success (Vendor):
+{
+    "success": True,
+    "message": "Registration successful",
+    "data": [{
+        "id": int,
+        "role": "vendor",
+        "name": string,
+        "email": string,
+        "phone_number": string,
+        "address": string,
+        "is_active": boolean,
+        "manager": {
+            "id": int,
+            "name": string,
+            "email": string,
+            "phone_number": string
+        }
+    }]
+}
+else:
 {
     "message": "...",
-    "success": bool,
-    "user_id": int (if successful)
+    "success": False
 }
 """
 user_routes.route('/login', methods=['POST'])(login_user)
@@ -164,52 +207,5 @@ else:
 {
     "message": "...",
     "success": False
-}
-"""
-
-user_routes.route('/profile', methods=['GET'])(get_current_user)
-"""
-Get Current User Profile
-Header: Cookie (session) required
-Return:
-{
-    "data": [{        
-        "id": int,
-        "name": string,
-        "email": string,
-        "phone_number": string,
-        "role": string,
-        "created_at": datetime,
-        if have: else null
-        "address": string,
-        "is_active": bool,
-        "vendor_manager_id": int,
-        "membership_level": int,
-        "stored_balance": int
-    }],
-    "message": "...",
-    "success": True
-}
-else:
-{
-    "message": "...",
-    "success": False
-}
-"""
-
-user_routes.route('/status', methods=['GET'])(check_login_status)
-"""
-Check Login Status (Lightweight)
-Header: Cookie (optional)
-Return:
-{
-    "success": True,
-    "message": "...",
-    "data": [{ 
-        "is_login": Boolean, 
-        "id": int (optional), 
-        "role": string (optional), 
-        "name": string (optional) 
-    }]
 }
 """

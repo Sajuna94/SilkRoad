@@ -42,9 +42,6 @@ class User(db.Model):
     # **kwargs 會把剩下的參數 (如 address, vendor_manager_id) 傳進去
     @classmethod
     def register(cls, name, email, password, phone_number, **kwargs):
-        """
-        基礎註冊方法：包含重複檢查
-        """
         # 1. 檢查 Email 是否重複
         # 注意：使用 cls.query 或 User.query 都可以
         if cls.query.filter_by(email=email).first():
