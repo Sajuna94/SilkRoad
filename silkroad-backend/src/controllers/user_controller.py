@@ -53,12 +53,12 @@ def register_step1():
         "success": True,
     }), 201
 
-
-def register_step2():
+def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
     """
     第二步：接收角色特定欄位，合併 Session 資料，寫入 DB
+    URL: /api/user/register/<role>
     """
-    # 1. 檢查是否有第一步的暫存資料
+    # 2. 檢查是否有第一步的暫存資料
     temp_data = session.get('reg_temp')
     if not temp_data:
         return jsonify({
@@ -66,15 +66,28 @@ def register_step2():
             "success": False
         }), 400
 
+    # 3. [安全性檢查] 驗證 URL 傳來的 role 是否等於 Step 1 存下的 role
+    # 避免 Step 1 選 Vendor，Step 2 卻故意打 /register/customer 的 API
+    session_role = temp_data['role'] # session 裡原本存的就是小寫 (在 step1 處理過)
+    url_role = role.lower()
+
+    if url_role != session_role:
+        return jsonify({
+            "message": f"Role mismatch. Step 1 was '{session_role}', but URL is '{url_role}'",
+            "success": False
+        }), 400
+
     data = request.get_json()
-    target_role = temp_data['role']
+    target_role = session_role # 使用驗證過的角色
     new_user = None
     
     # 用來暫存 manager 物件以便最後回傳使用 (僅 Vendor 用)
     created_manager = None 
 
     try:
+        # ==========================================
         #  Vendor 邏輯
+        # ==========================================
         if target_role == 'vendor':
             address = data.get('address')
             mgr = data.get('manager')
@@ -111,7 +124,9 @@ def register_step2():
                 is_active=True
             )
             
+        # ==========================================
         #  Customer 邏輯
+        # ==========================================
         elif target_role == 'customer':
             address = data.get('address')
             if not address:
@@ -158,7 +173,6 @@ def register_step2():
                 session.pop('cart', None)
 
         # 4. 最終提交
-        # 確保 new_user 被加入 session (Customer 上面加過了，Vendor/Admin 在這裡加)
         if target_role != 'customer':
             db.session.add(new_user)
             
@@ -185,7 +199,6 @@ def register_step2():
             }
         
         elif target_role == 'vendor':
-            # Vendor 需要額外回傳 Manager 資訊
             response_data = {
                 "id": new_user.id,
                 "role": "vendor",
@@ -235,27 +248,74 @@ def login_user():
         }), 400
 
     # 2. 透過 email 尋找使用者
+    # 由於 SQLAlchemy 的多型特性，這裡取出的 user 會自動是 Customer, Vendor 或 Admin 的實例
     user = User.query.filter_by(email=email).first()
 
     # 3. 檢查使用者是否存在，並驗證密碼
-    # user.check_password() 會自動調用 check_password_hash
     if not user or not user.check_password(password):
         return jsonify({
             "message": "Email or password is incorrect",            
             "success": False
         }), 401
 
-    # 4. 登入成功
+    # 4. 登入成功：設定 Session
     session["user_id"] = user.id
     session["role"] = user.role
+
+    # 5. [關鍵修改] 根據角色組裝回傳資料
+    response_data = {}
+
+    # 5-1. 基礎資料 (所有角色都有)
+    base_info = {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role,
+        "phone_number": user.phone_number,
+        "created_at": user.created_at
+    }
+    
+    # 5-2. Customer 特有資料
+    if user.role == 'customer':
+        # 使用 getattr 避免萬一欄位不存在報錯 (雖然理論上 Model 有定義)
+        response_data = {
+            **base_info,
+            "address": getattr(user, 'address', None),
+            "membership_level": getattr(user, 'membership_level', 0),
+            "is_active": getattr(user, 'is_active', True)
+        }
+
+    # 5-3. Vendor 特有資料 (包含 Manager)
+    elif user.role == 'vendor':
+        manager_info = None
+        
+        # 嘗試獲取經理資料
+        # 假設 Vendor Model 有 vendor_manager_id 欄位
+        mgr_id = getattr(user, 'vendor_manager_id', None)
+        if mgr_id:
+            manager = Vendor_Manager.query.get(mgr_id)
+            if manager:
+                manager_info = {
+                    "id": manager.id,
+                    "name": manager.name,
+                    "email": manager.email,
+                    "phone_number": manager.phone_number
+                }
+
+        response_data = {
+            **base_info,
+            "address": getattr(user, 'address', None),
+            "is_active": getattr(user, 'is_active', True),
+            "manager": manager_info
+        }
+
+    # 5-4. Admin 或其他角色
+    else:
+        # Admin 只需要基礎資料
+        response_data = base_info
+
     return jsonify({
-        "data": [{
-            "id": user.id,          # 用於後續 API 請求 (例如 /cart/<user_id>)
-            "name": user.name,      # 用於顯示
-            "email": user.email,    # 用於顯示
-            "role": user.role,      # 關鍵！用於前端路由判斷 (Router)
-            "phone_number": user.phone_number
-        }],
+        "data": [response_data],
         "message": "Login successful",
         "success": True
     }), 200
