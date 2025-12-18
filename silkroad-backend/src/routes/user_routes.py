@@ -17,7 +17,6 @@ Step 1 Registration: Validate common info & cache in session
 expect:
 {
     "role" = string ("vendor", "customer"),
-    "name" = string,
     "email" = string,
     "password" = string,
     "phone_number" = string
@@ -42,6 +41,7 @@ Step 2 Registration: Role-specific info & DB commit
 
 expect (If Role is Vendor):
 {
+    "name": string,
     "address": string,
     "manager": {
         "name": string,
@@ -52,6 +52,7 @@ expect (If Role is Vendor):
 
 expect (If Role is Customer):
 {
+    "name": string,
     "address": string
 }
 
