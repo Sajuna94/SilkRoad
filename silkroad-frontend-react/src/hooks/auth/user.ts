@@ -3,7 +3,6 @@ import type { User } from "@/types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
-
 export type LoginReq = { email: string; password: string };
 export type RegisterReq = { email: string; password: string; phone_number: string, role: string; };
 
@@ -31,8 +30,7 @@ export const useRegister = (role: string) => {
 			return res.data.data[0];
 		},
 		onSuccess: (res) => {
-			if (role !== "guest")
-				qc.setQueryData(["user"], res);
+			qc.setQueryData(["user"], res);
 		},
 	});
 };

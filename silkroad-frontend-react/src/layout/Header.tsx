@@ -1,22 +1,33 @@
 import { Link } from "react-router-dom";
 import styles from "./Header.module.scss";
 import { type User } from "@/types/user"
+import { useQueryClient } from "@tanstack/react-query";
 
 
 
 export default function Header() {
 
-    const user: User = {
-        id: 2,
-        name: "test",
-        email: "test@gmail.com",
-        phone_number: "2222",
-        role: "admin",
-        created_at: "22020/22/22"
-    };
+    // const user: User = {
+    //     id: 2,
+    //     name: "test",
+    //     email: "test@gmail.com",
+    //     phone_number: "2222",
+    //     role: "admin",
+    //     created_at: "22020/22/22"
+    // };
 
+    const qc = useQueryClient();
+    const user = qc.getQueryData<User>(["user"]);
+
+    if (!user) {
+        
+    }
+    
 
     return (
+
+
+        
         <header className={styles['header-warp']}>
             <h1>
                 <Link to="/home">SilkRoad</Link>
@@ -27,9 +38,9 @@ export default function Header() {
                     <li><Link to="/vendor">Vendor</Link></li>
                 </ul>
                 <ul>
-                    {user.role === "admin" && (
+                    {/* {user.role === "admin" && (
                         <li><Link to="/admin">Admin</Link></li>
-                    )}
+                    )} */}
                     <li><Link to="/user/orders">訂單紀錄</Link></li>
                     <li><Link to="/cart">查看購物車</Link></li>
                     <li><Link to="/login">登入</Link></li>

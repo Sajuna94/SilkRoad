@@ -6,24 +6,25 @@ import Router from "./router";
 
 import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";
+import { useQueryClient } from "@tanstack/react-query";
 
 // import { usePing } from "@/hooks/test/usePing";
 
 function App() {
-  // const ping = usePing();
-  // if (ping.isSuccess) console.log("Backend response:", ping.data);
+    // const ping = usePing();
+    // if (ping.isSuccess) console.log("Backend response:", ping.data);
 
-  return (
-    <BrowserRouter basename="/SilkRoad">
-      {/* <CartProvider> */}
-      <Header />
-      {/* <ToastProvider> */}
-      <Router />
-      {/* </ToastProvider> */}
-      <Footer />
-      {/* </CartProvider> */}
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter basename="/SilkRoad">
+            {/* <CartProvider> */}
+            <Header />
+            {/* <ToastProvider> */}
+            <Router />
+            {/* </ToastProvider> */}
+            <Footer />
+            {/* </CartProvider> */}
+        </BrowserRouter>
+    );
 }
 
 export default App;
