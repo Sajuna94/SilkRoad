@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import styles from "./Header.module.scss";
 import { type User } from "@/types/user"
 import { useQueryClient } from "@tanstack/react-query";
+import { useLogout } from "@/hooks/auth/user";
 
 
 
@@ -19,15 +20,15 @@ export default function Header() {
     const qc = useQueryClient();
     const user = qc.getQueryData<User>(["user"]);
 
-    if (!user) {
-        
-    }
-    
+    const logout= useLogout();
+    // if (!user) {
+    // logout
+    // }   
 
     return (
 
 
-        
+
         <header className={styles['header-warp']}>
             <h1>
                 <Link to="/home">SilkRoad</Link>
@@ -43,7 +44,13 @@ export default function Header() {
                     )} */}
                     <li><Link to="/user/orders">訂單紀錄</Link></li>
                     <li><Link to="/cart">查看購物車</Link></li>
-                    <li><Link to="/login">登入</Link></li>
+                    {
+                        user ? (
+                            <li onClick={() => {logout.mutate();}}>登出</li>
+                        ) : (
+                            <li><Link to="/login">登入</Link></li>
+                        )
+                    }
                 </ul>
             </nav>
             {/* <div className={styles['left']}>

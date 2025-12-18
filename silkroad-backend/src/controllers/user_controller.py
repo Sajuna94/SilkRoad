@@ -197,6 +197,7 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
         session.pop('reg_temp', None)
         session['user_id'] = new_user.id
         session['role'] = target_role
+        session.modified = True # 確保 session 被更新
 
         # 回傳資料 (Response Data Construction)
         response_data = {}
@@ -242,6 +243,9 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
             "message": f"Database error: {str(e)}", 
             "success": False
         }), 500
+    
+    session['user'] = response_data
+    session.modified = True # 確保 session 被更新
 
     # 6. 回傳最終結果
     return jsonify({
@@ -276,6 +280,8 @@ def login_user():
     # 4. 登入成功：設定 Session
     session["user_id"] = user.id
     session["role"] = user.role
+    session.modified = True # 確保 session 被更新
+    print('session', session)
 
     # 5. [關鍵修改] 根據角色組裝回傳資料
     response_data = {}
@@ -329,11 +335,15 @@ def login_user():
         # Admin 只需要基礎資料
         response_data = base_info
 
+    session['user'] = response_data
+    session.modified = True # 確保 session 被更新
+
     return jsonify({
         "data": [response_data],
         "message": "Login successful",
         "success": True
     }), 200
+
 
 @require_login(role=["admin", "vendor", "customer"])
 def logout_user():
@@ -342,8 +352,7 @@ def logout_user():
     目前為無狀態 API，主要由前端清除資訊，後端回傳成功訊息即可。
     若未來有使用 Session 或 Redis 黑名單，在此處處理。
     """
-    session.pop('user_id', None)
-    session.pop('role', None)
+    session.clear()
     return jsonify({
         "message": "Logout successful",
         "success": True
@@ -504,3 +513,7 @@ def delete_user(user_id):
             "success": False
         }), 500
     
+def current_user():
+    if not session.get('user'):
+        return jsonify({"success": False, "message": "Not logged in"}), 401
+    return jsonify({"success": True, "data": session.get('user')}), 200
