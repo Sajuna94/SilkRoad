@@ -35,7 +35,7 @@ else:
     "success": False
 }
 """
-user_routes.route('/register/step2', methods=['POST'])(register_step2)
+user_routes.route('/register/<string:role>', methods=['POST'])(register_step2)
 """
 Step 2 Registration: Role-specific info & DB commit
 ** Requires Session Cookie from Step 1 **
@@ -100,29 +100,54 @@ else:
 """
 user_routes.route('/login', methods=['POST'])(login_user)
 """
-User login
+User login with role-specific data response
 expect:
 {
-    "email" = string,
-    "password" = string
+    "email": string,
+    "password": string
 }
 
-return 
-if success:
+return:
+if success (Customer):
 {
-    "data": {
-        "id": user.id,
-        "name": user.name,
-        "email": user.email,
-        "role": user.role,
-        "phone_number": user.phone_number
-    },
+    "success": True,
     "message": "Login successful",
-    "success": True
+    "data": [{
+        "id": int,
+        "role": "customer",
+        "name": string,
+        "email": string,
+        "phone_number": string,
+        "address": string,
+        "membership_level": int,
+        "is_active": boolean
+    }]
 }
+
+if success (Vendor):
+{
+    "success": True,
+    "message": "Login successful",
+    "data": [{
+        "id": int,
+        "role": "vendor",
+        "name": string,
+        "email": string,
+        "phone_number": string,
+        "address": string,
+        "is_active": boolean,
+        "manager": {
+            "id": int,
+            "name": string,
+            "email": string,
+            "phone_number": string
+        }
+    }]
+}
+
 else:
 {
-    "message": "...",
+    "message": "Email or password is incorrect",
     "success": False
 }
 """

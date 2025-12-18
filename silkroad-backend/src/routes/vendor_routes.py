@@ -1,6 +1,13 @@
 from flask import Blueprint
-from controllers import update_products, add_product, add_discount_policy, view_vendor_products, view_discount_policy, invalid_discount_policy
-
+from controllers import (
+    update_products,
+    add_product,
+    add_discount_policy,
+    view_vendor_products,
+    view_vendor_product_detail,
+    view_discount_policy,
+    invalid_discount_policy
+)
 vendor_routes = Blueprint('vendor', __name__)
 
 vendor_routes.route("/Add_Product", methods=["POST"])(add_product)
@@ -114,6 +121,35 @@ return:
         },
         ...
     ]
+}
+
+"""
+
+vendor_routes.route("/<int:vendor_id>/view_product_detail/<int:product_id>", methods=["GET"])(view_vendor_product_detail)
+"""
+function:
+    獲得vendor中特定product的詳細資訊狀態
+    詳細資訊包括 name, price, image_url, description, sugar_options, ice_options, size_options
+    用於當 customer 點擊某特定product後顯示改product詳細資訊
+    供客人選擇糖冰大小與數量以便加入cart
+    
+expected get:
+    No expected get
+
+return:
+{
+    "message": String,
+    "success": bool,
+    "product": (if successful)
+        {
+            "name": string,
+            "price": int,
+            "image_url": string,
+            "description": string,
+            "sugar_options": list[string],
+            "ice_options": list[string],
+            "size_options": list[string]
+        }
 }
 
 """

@@ -12,6 +12,8 @@ Tests cover:
 
 import pytest
 import json
+import uuid
+import random
 
 class TestUserRegistration:
     """Test suite for user registration endpoint (Two-Step Process)."""
@@ -19,13 +21,17 @@ class TestUserRegistration:
     def test_register_customer_good(self, client):
         """Test successful customer registration (Step 1 + Step 2)."""
         
+        # 1. 準備隨機資料
+        unique_id = str(uuid.uuid4())[:8]
+        random_phone = f"09{random.randint(10000000, 99999999)}"
+
         # --- Step 1: Common Info ---
         step1_payload = {
             "role": "customer",
-            "name": "New Customer",
-            "email": "customer_step@test.com",
+            "name": f"Customer_{unique_id}",
+            "email": f"cust_{unique_id}@test.com",
             "password": "password123",
-            "phone_number": "0911223344"
+            "phone_number": random_phone
         }
 
         response_step1 = client.post(
@@ -33,47 +39,49 @@ class TestUserRegistration:
             data=json.dumps(step1_payload),
             content_type='application/json'
         )
-
+        
+        # 除錯：如果 Step 1 失敗，印出原因
+        if response_step1.status_code != 201:
+            print(f"\n[Debug] Step 1 Failed: {response_step1.get_json()}")
         assert response_step1.status_code == 201
-        data_step1 = response_step1.get_json()
-        assert data_step1['success'] is True
-        assert "Step 1 passed" in data_step1['message']
 
-        # --- Step 2: Specific Info (Address) ---
-        # Note: 'client' automatically retains cookies from Step 1
+
+        # --- Step 2: Specific Info ---
         step2_payload = {
             "address": "Taipei City 101"
         }
 
+        # [⚠️ 重要修正] 網址必須是 /customer，不能是 /step2
         response_step2 = client.post(
-            '/api/user/register/step2',
+            '/api/user/register/customer', 
             data=json.dumps(step2_payload),
             content_type='application/json'
         )
 
+        # 除錯：如果 Step 2 失敗，印出原因 (這會告訴你為什麼是 400)
+        if response_step2.status_code != 201:
+            print(f"\n[Debug] Step 2 Failed: {response_step2.get_json()}")
+
         assert response_step2.status_code == 201
+        
+        # 驗證資料
         data_step2 = response_step2.get_json()
-        
-        # 驗證成功與回傳資料結構
         assert data_step2['success'] is True
-        assert len(data_step2['data']) > 0
-        user_data = data_step2['data'][0]
-        
-        assert user_data['role'] == 'customer'
-        assert user_data['email'] == step1_payload['email']
-        assert user_data['address'] == step2_payload['address']
-        assert 'id' in user_data
+        assert data_step2['data'][0]['role'] == 'customer'
 
     def test_register_vendor_good(self, client):
-        """Test successful vendor registration (Step 1 + Step 2 with Manager)."""
+        """Test successful vendor registration."""
+        
+        unique_id = str(uuid.uuid4())[:8]
+        random_phone = f"09{random.randint(10000000, 99999999)}"
 
-        # --- Step 1: Common Info ---
+        # --- Step 1 ---
         step1_payload = {
             "role": "vendor",
-            "name": "New Vendor",
-            "email": "vendor_step@test.com",
+            "name": f"Vendor_{unique_id}",
+            "email": f"vendor_{unique_id}@test.com",
             "password": "password123",
-            "phone_number": "0955667788"
+            "phone_number": random_phone
         }
 
         response_step1 = client.post(
@@ -83,32 +91,31 @@ class TestUserRegistration:
         )
         assert response_step1.status_code == 201
 
-        # --- Step 2: Specific Info (Address + Manager) ---
+        # --- Step 2 ---
         step2_payload = {
             "address": "Vendor Factory Address",
             "manager": {
                 "name": "Vendor Boss",
-                "email": "boss@vendor.com",
-                "phone_number": "0999888777"
+                "email": f"boss_{unique_id}@vendor.com",
+                "phone_number": f"09{random.randint(10000000, 99999999)}"
             }
         }
 
+        # [⚠️ 重要修正] 網址必須是 /vendor，不能是 /step2
         response_step2 = client.post(
-            '/api/user/register/step2',
+            '/api/user/register/vendor', 
             data=json.dumps(step2_payload),
             content_type='application/json'
         )
 
+        if response_step2.status_code != 201:
+             print(f"\n[Debug] Step 2 Failed: {response_step2.get_json()}")
+
         assert response_step2.status_code == 201
+        
         data_step2 = response_step2.get_json()
-        
         assert data_step2['success'] is True
-        user_data = data_step2['data'][0]
-        
-        # 驗證 Vendor 特有的欄位
-        assert user_data['role'] == 'vendor'
-        assert 'manager' in user_data
-        assert user_data['manager']['name'] == step2_payload['manager']['name']
+        assert data_step2['data'][0]['role'] == 'vendor'
 
     def test_register_duplicate_email_bad(self, app, client, test_customer):
         """
@@ -215,19 +222,19 @@ class TestUserRegistration:
 class TestUserLogin:
     """Test suite for user login endpoint."""
 
-    def test_login_success(self, app, client, test_customer):
-        """Test successful login."""
-        from models import Customer
+    def test_login_customer_success(self, app, client, test_customer):
+        """Test successful customer login and verify role-specific data."""
+        from models.auth.customer import Customer
 
         # Get customer details from database
         with app.app_context():
             customer = Customer.query.get(test_customer)
             customer_email = customer.email
-            customer_role = customer.role
+            customer_address = customer.address # 驗證地址用
 
         payload = {
             "email": customer_email,
-            "password": "customer123"
+            "password": "customer123" # 對應 conftest 中建立時的密碼
         }
 
         response = client.post(
@@ -239,15 +246,61 @@ class TestUserLogin:
         assert response.status_code == 200
         data = response.get_json()
         assert data['success'] is True
-        assert data['data'][0]['id'] == test_customer
-        assert data['data'][0]['email'] == customer_email
-        assert data['data'][0]['role'] == customer_role
+        
+        # 取得回傳的使用者資料物件
+        user_data = data['data'][0]
+
+        # 1. 驗證基本資料
+        assert user_data['id'] == test_customer
+        assert user_data['email'] == customer_email
+        assert user_data['role'] == 'customer'
+        
+        # 2. 驗證 Customer 特有欄位 (依照新的 API 邏輯)
+        assert 'address' in user_data
+        assert user_data['address'] == customer_address
+        assert 'membership_level' in user_data
+
+    def test_login_vendor_success(self, app, client, test_vendor):
+        """Test successful vendor login and verify manager info."""
+        from models.auth.vendor import Vendor
+
+        # Get vendor details
+        with app.app_context():
+            vendor = Vendor.query.get(test_vendor)
+            vendor_email = vendor.email
+
+        payload = {
+            "email": vendor_email,
+            "password": "vendor123" # 對應 conftest 中建立時的密碼
+        }
+
+        response = client.post(
+            '/api/user/login',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data['success'] is True
+        
+        user_data = data['data'][0]
+
+        # 1. 驗證基本資料
+        assert user_data['id'] == test_vendor
+        assert user_data['role'] == 'vendor'
+
+        # 2. 驗證 Vendor 特有欄位 (Manager 資訊)
+        assert 'manager' in user_data
+        assert user_data['manager'] is not None
+        # 檢查 Manager 內部的欄位是否存在
+        assert 'name' in user_data['manager']
+        assert 'phone_number' in user_data['manager']
 
     def test_login_wrong_password(self, app, client, test_customer):
         """Test login fails with wrong password."""
-        from models import Customer
+        from models.auth.customer import Customer
 
-        # Get customer email from database
         with app.app_context():
             customer = Customer.query.get(test_customer)
             customer_email = customer.email

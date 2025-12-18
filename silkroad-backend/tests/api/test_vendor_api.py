@@ -132,7 +132,7 @@ class TestViewVendorProducts:
         assert 'price' in product
         assert 'image_url' in product
         assert 'is_listed' in product
-        
+ 
     def test_view_products_nonexistent_vendor(self, client):
         """Test getting products for non-existent vendor."""
         response = client.get('/api/vendor/99999/view_products')
@@ -140,6 +140,35 @@ class TestViewVendorProducts:
         assert response.status_code == 404
         data = response.get_json()
         assert data['success'] is False
+
+    def test_view_product_detail_good(self, client, test_vendor, test_product):
+        rsp = client.get(f'/api/vendor/{test_vendor}/view_product_detail/{test_product}')
+
+        print(rsp.get_json()["message"])
+        assert rsp.status_code == 200
+        data = rsp.get_json()
+        assert "name" in data["product"]
+        assert "price" in data["product"]
+        assert "image_url" in data["product"]
+        assert "description" in data["product"]
+        assert "sugar_option" in data["product"]
+        assert "ice_option" in data["product"]
+        assert "size_option" in data["product"]
+
+    def test_view_product_detail_with_invaild_vendor_and_product(self, client, test_vendor, test_product):
+        """test with a invalid vendot_id"""
+        rsp = client.get(f'/api/vendor/{test_vendor + 1}/view_product_detail/{test_product}')
+        
+        assert rsp.status_code == 404
+        data = rsp.get_json()
+        assert data["message"] == "Vendor not found"
+
+
+
+        rsp = client.get(f'/api/vendor/{test_vendor}/view_product_detail/{test_product+1}')
+        
+        assert rsp.status_code == 404
+        assert rsp.get_json()["message"] == "Product not found"
 
 
 class TestUpdateProducts:
@@ -267,8 +296,8 @@ class TestUpdateProducts:
         assert response.status_code == 404
         data = response.get_json()
         assert data['success'] is False
-        
-        
+
+
 class TestDiscountPolicy:
     """Test suite for discount policy management."""
 

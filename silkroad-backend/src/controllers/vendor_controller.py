@@ -325,6 +325,46 @@ def view_vendor_products(vendor_id):
             }
         ), 500
 
+def view_vendor_product_detail(vendor_id, product_id):
+    try:
+        vendor = Vendor.query.get(vendor_id)
+        if not vendor:
+            return jsonify({"message": "Vendor not found", "success": False}), 404
+
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify(
+                {
+                    "message": "Product not found",
+                    "success": True,
+                    "products": [],
+                }
+            ), 404
+        return jsonify(
+            {
+                "message": "find product success",
+                "success": True,
+                "product": {
+                    "name": product.name,
+                    "price": product.price,
+                    "image_url": product.image_url,
+                    "description": product.description,
+                    "sugar_option": product.sugar_option.get_options_list(),
+                    "ice_option": product.ice_option.get_options_list(),
+                    "size_option": product.sizes_option.get_options_list()
+                }
+            }
+        ), 404
+
+    except Exception as e:
+        return jsonify(
+            {
+                "message": f"Fail with {str(e)}",
+                "success": False
+            }
+        ), 500
+
+
 
 @require_login(role=["vendor"])
 def add_discount_policy():
