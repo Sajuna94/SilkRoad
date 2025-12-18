@@ -6,7 +6,8 @@ from controllers.user_controller import (
     update_password, 
     delete_user,
     register_step1, 
-    register_step2
+    register_step2,
+    current_user,
 )
 
 user_routes = Blueprint('user', __name__)
@@ -234,3 +235,5 @@ else:
     "success": False
 }
 """
+
+user_routes.route('/current_user', methods=['GET'])(current_user)

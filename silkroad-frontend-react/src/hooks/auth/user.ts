@@ -75,9 +75,19 @@ export const useLogout = () => {
 			await api.post("/user/logout");
 		},
 		onSuccess: () => {
-			// Clear user data from React Query cache upon logout
-			qc.removeQueries({ queryKey: ["user"] });
+			qc.clear();
 		},
 	});
 }
 
+export const useCurrentUser = () => {
+	return useQuery<User, ApiErrorBody>({
+		queryKey: ["current_user"],
+		queryFn: async () => {
+			const res = await api.get("/user/current_user");
+			return res.data.data;
+		},
+		retry: false,
+		refetchOnWindowFocus: false,
+	});
+}
