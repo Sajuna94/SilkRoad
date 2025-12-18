@@ -23,7 +23,6 @@ export const LoginForm = () => {
             { email: form.email, password: form.password },
             {
                 onSuccess: (data) => {
-                    console.log("Login successful:", data);
                     navigate("/home");
                 },
                 onError: (error) => {

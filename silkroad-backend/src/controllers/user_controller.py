@@ -13,15 +13,15 @@ def register_step1():
     
     # 1. 提取參數
     role = data.get('role')
-    name = data.get('name')
+    # name = data.get('name')
     email = data.get('email')
     password = data.get('password')
     phone_number = data.get('phone_number')
 
     # 2. 基礎欄位檢查
-    if not all([role, name, email, password, phone_number]):
+    if not all([role, email, password, phone_number]):
         return jsonify({
-            "message": "Columns are needed(role, name, email, password, phone_number)", 
+            "message": "Columns are needed(role, email, password, phone_number)", 
             "success": False
         }), 400
 
@@ -41,7 +41,7 @@ def register_step1():
     # 或者在這裡先 hash 過再存 (但你的 User.register 有做 hash，所以這裡維持原樣)
     session['reg_temp'] = {
         'role': target_role,
-        'name': name,
+        # 'name': name,
         'email': email,
         'password': password,
         'phone_number': phone_number
@@ -77,7 +77,7 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
             "success": False
         }), 400
 
-    data = request.get_json()
+    data: dict = request.get_json()
     target_role = session_role # 使用驗證過的角色
     new_user = None
     
@@ -89,11 +89,11 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
         #  Vendor 邏輯
         # ==========================================
         if target_role == 'vendor':
-            address = data.get('address')
-            mgr = data.get('manager')
+            vendor: dict = data.get('vendor')
+            mgr: dict = data.get('manager')
 
-            if not address or not mgr:
-                return jsonify({"message": "Vendor address and manager info are needed", "success": False}), 400
+            if not vendor or not mgr:
+                return jsonify({"message": "Vendor and Manager info are needed", "success": False}), 400
 
             # check manager fields
             mgr_necessary = ["name", "email", "phone_number"]
@@ -115,11 +115,11 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
 
             # 呼叫 Vendor.register
             new_user = Vendor.register(
-                name=temp_data['name'], 
+                name=vendor.get('name'), 
                 email=temp_data['email'], 
                 password=temp_data['password'], 
                 phone_number=temp_data['phone_number'],
-                address=address,
+                address=vendor.get('address'),
                 vendor_manager_id=created_manager.id,
                 is_active=True
             )

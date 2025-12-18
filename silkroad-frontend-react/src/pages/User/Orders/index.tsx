@@ -101,22 +101,22 @@ export default function History() {
                             >
                                 <div className={styles.orderInfo}>
                                     <h3>訂單 {order.id}</h3>
-                                    <p>{order.createdAt}</p>
+                                    <p>{order.created_at}</p>
                                     <div className={styles.orderTotal}>NT$ {order.total}</div>
                                 </div>
 
                                 <div className={styles.detailWrapper}>
                                     {order?.items.map((item) => {
                                         const product = products.find(
-                                            (p) => p.id === item.productId
+                                            (p) => p.id === item.product_id
                                         );
                                         return (
-                                            <div key={item.productId} className={styles.item}>
+                                            <div key={item.product_id} className={styles.item}>
                                                 <div className={styles.area}>
-                                                    <FadeInImage fullSrc={product?.url ?? ""} />
+                                                    <FadeInImage fullSrc={product?.image_url ?? ""} />
                                                 </div>
                                                 <div className={styles.options}>
-                                                    <h3>{product?.name ?? `商品 ${item.productId}`}</h3>
+                                                    <h3>{product?.name ?? `商品 ${item.product_id}`}</h3>
                                                     <div>{item.options?.size}</div>
                                                     <div>{item.options?.ice}</div>
                                                     <div>{item.options?.sugar}</div>

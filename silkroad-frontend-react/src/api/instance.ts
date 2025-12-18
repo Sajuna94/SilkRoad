@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 
 const apiBaseURL =
@@ -12,10 +12,10 @@ export const api = axios.create({
 	timeout: 10000,
 });
 
-export type ApiErrorBody = {
+export type ApiErrorBody = AxiosError<{
 	success: false;
 	message: string;
-};
+}>;
 
 api.interceptors.response.use(
 	res => res,

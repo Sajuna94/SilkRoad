@@ -6,11 +6,8 @@ import { useRegister } from "@/hooks/auth/user";
 import LabeledInput from "@/components/molecules/LabeledInput";
 import { VendorForm } from "./Vendor";
 import { CustomerForm } from "./Customer";
-import { UserRole } from "@/types/user";
 
 export const RegisterForm = () => {
-    const registerMutation = useRegister(UserRole.GUEST);
-
     const [hash, setHash] = React.useState(window.location.hash.replace("#", ""));
     const [form, setForm] = React.useState({
         email: "vendor@example.com",
@@ -19,29 +16,25 @@ export const RegisterForm = () => {
         role: "vendor",
     })
 
+    const registerMutation = useRegister();
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log(form);
-
-        window.location.hash = form.role;
-        setHash(form.role.replace("#", ""));
+        console.log("Form Info:", form);
 
         registerMutation.mutate({
             email: form.email,
             password: form.password,
             phone_number: form.phone,
             role: form.role,
-        },
-            {
-                onSuccess: (user) => {
-                    console.log("註冊成功:", user);
-                    // navigate("/login", { state: { email: form.email, password: form.password } });
-                },
-                onError: (error) => {
-                    console.error("註冊失敗:", error.response?.data);
-                }
+        }, {
+            onSuccess: () => {
+                window.location.hash = form.role;
+                setHash(form.role.replace("#", ""));
+            },
+            onError: (error) => {
+                console.error("註冊失敗:", error.response?.data);
             }
-        )
+        });
     };
 
     if (hash === "vendor") return <VendorForm />;

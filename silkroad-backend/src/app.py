@@ -22,8 +22,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)  # Session 有效
 CORS(app, 
     origins=[
     "https://sajuna94.github.io", 
-    "http://localhost:5173",
-    "http://localhost:5000"],
+    "http://localhost:5173"],
     supports_credentials=True,  # 允許傳送 cookie(最重要!)
     allow_headers=['Content-Type', 'Authorization'],
     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])

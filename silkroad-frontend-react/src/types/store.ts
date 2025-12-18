@@ -9,6 +9,6 @@ export interface Product {
 		sugar: string[];
 		ice: string[];
 	};
-	url: string;
-	isListed: boolean;
+	image_url: string;
+	is_listed: boolean;
 }

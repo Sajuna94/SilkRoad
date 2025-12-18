@@ -1,30 +1,47 @@
 import { api, type ApiErrorBody } from "@/api/instance";
-import type { User } from "@/types/user";
+import type { User, UserRole } from "@/types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
 
-export type LoginReq = { email: string; password: string };
-export type RegisterReq = { email: string; password: string; phone_number: string, role: string; };
+type LoginReq = { email: string; password: string };
+
+type RegisterReq = { email: string; password: string; phone_number: string, role: string; };
+type RegisterVendorReq = {
+	manager: { name: string; email: string; phone_number: string; };
+	vendor: { name: string; address: string; };
+};
+type RegisterCustomerReq = {
+	name: string; address: string;
+}
+type RegisterRoleReq = RegisterVendorReq | RegisterCustomerReq;
 
 export const useLogin = () => {
 	const qc = useQueryClient();
 
-	return useMutation<User, AxiosError<ApiErrorBody>, LoginReq>({
+	return useMutation<User, ApiErrorBody, LoginReq>({
 		mutationFn: async (payload) => {
 			const res = await api.post("/user/login", payload);
 			return res.data.data[0];
 		},
 		onSuccess: (res) => {
-			console.log("Login successful, setting user in query cache:", res);
+			console.log(`[${res.role}] Login successful:`, res);
 			qc.setQueryData(["user"], res);
 		},
 	});
 };
 
-export const useRegister = (role: string) => {
+export const useRegister = () => {
+	return useMutation<any, ApiErrorBody, RegisterReq>({
+		mutationFn: async (payload) => {
+			const res = await api.post("/user/register/guest", payload);
+			return res.data;
+		},
+	});
+};
+
+export const useRegisterRole = (role: UserRole) => {
 	const qc = useQueryClient();
 
-	return useMutation<User, AxiosError<ApiErrorBody>, RegisterReq>({
+	return useMutation<User, ApiErrorBody, RegisterRoleReq>({
 		mutationFn: async (payload) => {
 			const res = await api.post(`/user/register/${role}`, payload);
 			return res.data.data[0];
@@ -32,11 +49,14 @@ export const useRegister = (role: string) => {
 		onSuccess: (res) => {
 			qc.setQueryData(["user"], res);
 		},
+		onError: (error) => {
+			console.error("註冊失敗:", error.response?.data);
+		}
 	});
 };
 
 export const useUser = () => {
-	return useQuery<User, AxiosError<ApiErrorBody>>({
+	return useQuery<User, ApiErrorBody>({
 		queryKey: ["user"],
 		queryFn: async () => {
 			const res = await api.get("/user/me");
@@ -50,7 +70,7 @@ export const useUser = () => {
 export const useLogout = () => {
 	const qc = useQueryClient();
 
-	return useMutation<void, AxiosError>({
+	return useMutation<void, ApiErrorBody>({
 		mutationFn: async () => {
 			await api.post("/user/logout");
 		},

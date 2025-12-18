@@ -11,7 +11,7 @@ from controllers.user_controller import (
 
 user_routes = Blueprint('user', __name__)
 
-user_routes.route('/register/step1', methods=['POST'])(register_step1)
+user_routes.route('/register/guest', methods=['POST'])(register_step1)
 """
 Step 1 Registration: Validate common info & cache in session
 expect:

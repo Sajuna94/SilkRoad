@@ -1,18 +1,18 @@
-import { addOrder, getOrders } from "@/api/order";
-import type { InsertOrderInput, Order } from "@/types/order";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { api, type ApiErrorBody } from "@/api/instance";
+import type { Order } from "@/types/order";
+import { useQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
-export const useOrders = (customerId: number) => {
-  return useQuery<Order[], AxiosError>({
-    queryKey: ["orders", customerId],
-    queryFn: () => getOrders(customerId),
-    enabled: !!customerId,
-  });
-};
 
-export const useInsertOrder = () => {
-  return useMutation<Order, AxiosError, InsertOrderInput>({
-    mutationFn: addOrder,
-  });
-};
+export const useOrders = (customerId?: number) => {
+	return useQuery<Order[], AxiosError<ApiErrorBody>>({
+		queryKey: ["orders", customerId],
+		queryFn: async () => {
+			const res = await api.get("/order", {
+				params: { customer_id: customerId },
+			});
+			return res.data.data;
+		},
+	});
+
+}

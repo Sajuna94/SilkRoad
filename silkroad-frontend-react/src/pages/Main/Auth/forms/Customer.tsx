@@ -9,8 +9,6 @@ export const CustomerForm = () => {
         address: "123 Street",
     });
 
-
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("Customer Info:", customerForm);

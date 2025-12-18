@@ -2,23 +2,41 @@
 import LabeledInput from "@/components/molecules/LabeledInput";
 import styles from "./Form.module.scss"
 import { useState } from "react";
+import { useRegisterRole } from "@/hooks/auth/user";
+import { UserRole } from "@/types/user";
 
 export const VendorForm = () => {
-    const [vendorForm, setVendorForm] = useState({
-        name: "Vendor",
-        address: "123 Street",
-    });
-
     const [managerForm, setManagerForm] = useState({
         name: "Manager",
         email: "manager@example.com",
         phone: "123",
     });
+    const [vendorForm, setVendorForm] = useState({
+        name: "Vendor",
+        address: "123 Street",
+    });
 
+    const registerMutation = useRegisterRole(UserRole.VENDOR);
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("Vendor Info:", vendorForm);
         console.log("Manager Info:", managerForm);
+
+        registerMutation.mutate({
+            manager: {
+                name: managerForm.name,
+                email: managerForm.email,
+                phone_number: managerForm.phone,
+            },
+            vendor: {
+                name: vendorForm.name,
+                address: vendorForm.address,
+            },
+        }, {
+            onSuccess: (user) => {
+                console.log("註冊成功:", user);
+            },
+        });
     }
 
     return (
@@ -58,10 +76,9 @@ export const VendorForm = () => {
                     <button
                         type="submit"
                         className={styles['button']}
-                    // disabled={registerMutation.isPending}
+                        disabled={registerMutation.isPending}
                     >
-                        確認
-                        {/* {registerMutation.isPending ? "處理中" : "註冊"} */}
+                        {registerMutation.isPending ? "處理中" : "註冊"}
                     </button>
                 </div>
             </div>
