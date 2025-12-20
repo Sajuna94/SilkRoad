@@ -1,6 +1,14 @@
 import styles from "./About.module.scss";
+import { useNavigate } from "react-router-dom";
 
 export default function About() {
+	const navigate = useNavigate();
+	//const vendorIds = [1, 2, 3, 4, 5]; // 新增完vendor後把comment拿掉
+    const goRandomVendor = () => {
+        //const randomId =
+        //    vendorIds[Math.floor(Math.random() * vendorIds.length)];
+        navigate(`/vendor`); // /${randomId}
+    };
     return (
         <div className={styles.page}>
             <section className={styles.banner}>
@@ -43,6 +51,9 @@ export default function About() {
                 <section className={styles.features}>
                     <div
                         className={`${styles.featureBox} ${styles.animateSlideUp} ${styles.delay75}`}
+						onClick={goRandomVendor}
+        				role="button"
+        				tabIndex={0}
                     >
                         <h3>輕鬆訂購</h3>
                         <p>瀏覽飲品、客製化你的飲料，幾秒內即可完成結帳。</p>
@@ -50,6 +61,9 @@ export default function About() {
 
                     <div
                         className={`${styles.featureBox} ${styles.animateSlideUp} ${styles.delay150}`}
+						onClick={() => navigate("/home")}
+						role="button"
+						tabIndex={0}
                     >
                         <h3>多種品項，任君挑選</h3>
                         <p>探索熱門店家，或發掘你附近的新品牌。</p>
@@ -57,6 +71,9 @@ export default function About() {
 
                     <div
                         className={`${styles.featureBox} ${styles.animateSlideUp} ${styles.delay300}`}
+						onClick={() => navigate("/User/Orders")}
+        				role="button"
+        				tabIndex={0}
                     >
                         <h3>可靠的外送</h3>
                         <p>從結帳到送達家門，全程即時追蹤你的訂單。</p>
