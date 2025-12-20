@@ -1,6 +1,41 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.scss";
+<<<<<<< HEAD
+import { useCurrentUser, useLogout } from "@/hooks/auth/user";
+
+export default function Header() {
+    const logout = useLogout();
+
+    const { data: user } = useCurrentUser();
+
+    return (
+        <header className={styles['header-warp']}>
+            <h1>
+                <Link to="/home">SilkRoad</Link>
+            </h1>
+            <nav>
+                <ul>
+                    <li><Link to="/about">關於我們</Link></li>
+                    <li><Link to="/vendor">Vendor</Link></li>
+                </ul>
+                <ul>
+                    {/* {user.role === "admin" && (
+                        <li><Link to="/admin">Admin</Link></li>
+                    )} */}
+                    <li><Link to="/user/orders">訂單紀錄</Link></li>
+                    <li><Link to="/cart">查看購物車</Link></li>
+
+                    {user ? (
+                        <li onClick={() => { logout.mutate(); }}><a>登出</a></li>
+                    ) : (
+                        <li><Link to="/login">登入</Link></li>
+                    )}
+                </ul>
+            </nav>
+        </header>
+    );
+=======
 // import { type User } from "@/types/user";
 // import { useQueryClient } from "@tanstack/react-query";
 import { useLogout, useCurrentUser } from "@/hooks/auth/user";
@@ -134,4 +169,5 @@ export default function Header() {
       </nav>
     </header>
   );
+>>>>>>> fe22923c930ec5818186d190b396f82a0290e0e3
 }

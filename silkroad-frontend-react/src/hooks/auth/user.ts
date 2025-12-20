@@ -23,6 +23,19 @@ type RegisterRoleReq = RegisterVendorReq | RegisterCustomerReq;
 export const useLogin = () => {
   const qc = useQueryClient();
 
+<<<<<<< HEAD
+	return useMutation<User, ApiErrorBody, LoginReq>({
+		mutationFn: async (payload) => {
+			const res = await api.post("/user/login", payload);
+			return res.data.data[0];
+		},
+		onSuccess: (res) => {
+			console.log(`[${res.role}] Login successful:`, res);
+			qc.setQueryData(["user"], res);
+			qc.invalidateQueries({ queryKey: ['user'] });
+		},
+	});
+=======
   return useMutation<User, ApiErrorBody, LoginReq>({
     mutationFn: async (payload) => {
       const res = await api.post("/user/login", payload);
@@ -33,6 +46,7 @@ export const useLogin = () => {
       qc.setQueryData(["current_user"], res);
     },
   });
+>>>>>>> fe22923c930ec5818186d190b396f82a0290e0e3
 };
 
 export const useRegister = () => {
@@ -47,6 +61,21 @@ export const useRegister = () => {
 export const useRegisterRole = (role: UserRole) => {
   const qc = useQueryClient();
 
+<<<<<<< HEAD
+	return useMutation<User, ApiErrorBody, RegisterRoleReq>({
+		mutationFn: async (payload) => {
+			const res = await api.post(`/user/register/${role}`, payload);
+			return res.data.data[0];
+		},
+		onSuccess: (res) => {
+			qc.setQueryData(["user"], res);
+			qc.invalidateQueries({ queryKey: ['user'] });
+		},
+		onError: (error) => {
+			console.error("註冊失敗:", error.response?.data);
+		}
+	});
+=======
   return useMutation<User, ApiErrorBody, RegisterRoleReq>({
     mutationFn: async (payload) => {
       const res = await api.post(`/user/register/${role}`, payload);
@@ -59,6 +88,7 @@ export const useRegisterRole = (role: UserRole) => {
       console.error("註冊失敗:", error.response?.data);
     },
   });
+>>>>>>> fe22923c930ec5818186d190b396f82a0290e0e3
 };
 
 export const useUser = () => {
@@ -76,6 +106,30 @@ export const useUser = () => {
 export const useLogout = () => {
   const qc = useQueryClient();
 
+<<<<<<< HEAD
+	return useMutation<void, ApiErrorBody>({
+		mutationFn: async () => {
+			await api.post("/user/logout");
+		},
+		onSuccess: () => {
+			qc.clear();
+			qc.invalidateQueries();
+		},
+	});
+}
+
+export const useCurrentUser = () => {
+	return useQuery<User, ApiErrorBody>({
+		queryKey: ["user"],
+		queryFn: async () => {
+			const res = await api.get("/user/current_user");
+			return res.data.data;
+		},
+		retry: false,
+		refetchOnWindowFocus: false,
+	});
+}
+=======
   return useMutation<void, ApiErrorBody>({
     mutationFn: async () => {
       await api.post("/user/logout");
@@ -97,3 +151,4 @@ export const useCurrentUser = () => {
     refetchOnWindowFocus: false,
   });
 };
+>>>>>>> fe22923c930ec5818186d190b396f82a0290e0e3
