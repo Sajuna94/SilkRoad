@@ -152,7 +152,7 @@ def init_data():
             vendor = Vendor(
                 name="Bad Vendor",
                 email=vendor_email,
-                password=generate_password_hash("password123"),
+                password=generate_password_hash("123"),
                 phone_number="0911111111",
                 address="Taipei City",
                 vendor_manager_id=manager.id,
