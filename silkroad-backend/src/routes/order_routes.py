@@ -75,11 +75,11 @@ order_routes.route('/view', methods=['POST'])(view_order)
 order_routes.route('/update', methods=['POST'])(update_orderinfo)
 
     #     需要{
-    #     "order_id": XXX,
-    #     "refund_status":XXX,
-    #     "refund_at":XXX,
-    #     "is_completed":XXX,
-    #     "is_delivered":XXX
+    #     "order_id": int,
+    #     "refund_status": ENUM(str),
+    #     "refund_at": timestamp(str),
+    #     "is_completed": boolean ,
+    #     "is_delivered": boolean
     #     }
 
 
