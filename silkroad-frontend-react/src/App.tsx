@@ -29,7 +29,9 @@ function App() {
       {/* <CartProvider> */}
       <Header />
       {/* <ToastProvider> */}
-      <Router />
+      <main>
+        <Router />
+      </main>
       {/* </ToastProvider> */}
       <Footer />
       {/* </CartProvider> */}
