@@ -25,9 +25,11 @@ export default function SystemDashboard() {
   const [selectedDate, setSelectedDate] = useState("");
   const [newSummary, setNewSummary] = useState("");
 
-  // ★ 新增：編輯模式的狀態
+  // ★ 新增：編輯/刪除模式的狀態
   const [editingId, setEditingId] = useState<number | null>(null); // 目前正在編輯哪一個 ID
-  const [editMessage, setEditMessage] = useState(""); // 編輯中的文字內容
+const [editMessages, setEditMessages] = useState<Record<number, string>>({}); // 編輯中的文字內容
+  const [deletingId, setDeletingId] = useState<number | null>(null); // 要刪除的公告
+
 
   // --- 功能 1: 發布公告 ---
   const handlePost = () => {
@@ -46,49 +48,64 @@ export default function SystemDashboard() {
   };
 
   // --- 功能 2: 開始編輯 ---
+
   const startEdit = (id: number, currentMessage: string) => {
-    setEditingId(id); // 設定當前編輯的 ID
-    setEditMessage(currentMessage); // 把原本的文字帶入輸入框
-  };
+  setEditingId(id); // 設定當前編輯的 ID
+  setEditMessages((prev) => ({ // 把原本的文字帶入輸入框
+    ...prev,
+    [id]: currentMessage,
+  }));
+};
 
   // --- 功能 3: 取消編輯 ---
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditMessage("");
-  };
+const cancelEdit = () => {
+  setEditingId(null);
+};
 
   // --- 功能 4: 儲存編輯 (Update) ---
-  const saveEdit = (id: number) => {
-    if (!editMessage.trim()) return alert("公告內容不能為空");
+const saveEdit = (id: number) => {
+  const message = editMessages[id];
+  if (!message?.trim()) return alert("公告內容不能為空");
 
-    updateMutation.mutate(
-      { announcement_id: id, admin_id: adminId, message: editMessage },
-      {
-        onSuccess: () => {
-          alert("修改成功！");
-          setEditingId(null); // 退出編輯模式
-          qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
-        },
-        onError: (err) => alert("修改失敗：" + err.message),
-      }
-    );
-  };
+  updateMutation.mutate(
+    {
+      announcement_id: id,
+      admin_id: adminId,
+      message,
+    },
+    {
+      onSuccess: () => {
+        setEditingId(null);
+        qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
+      },
+      onError: () => alert("修改失敗"),
+    }
+  );
+};
+
+
 
   // --- 功能 5: 刪除公告 (Delete) ---
-  const handleDelete = (id: number) => {
-    if (!confirm("確定要刪除這則公告嗎？此動作無法復原。")) return;
+const handleDelete = (id: number) => {
+  if (!confirm("確定要刪除這則公告嗎？此動作無法復原。")) return;
 
-    deleteMutation.mutate(
-      { announcement_id: id, admin_id: adminId },
-      {
-        onSuccess: () => {
-          // alert("刪除成功"); // 刪除通常不一定要 alert，看需求
-          qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
-        },
-        onError: (err) => alert("刪除失敗：" + err.message),
-      }
-    );
-  };
+  setDeletingId(id);
+
+  deleteMutation.mutate(
+    { announcement_id: id, admin_id: adminId },
+    {
+      onSuccess: () => {
+        setDeletingId(null);
+        qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
+      },
+      onError: () => {
+        setDeletingId(null);
+        alert("刪除失敗");
+      },
+    }
+  );
+};
+
 
   // --- 資料篩選 ---
   const displayAnnouncements = (apiData || []).filter((item) => {
@@ -176,11 +193,19 @@ export default function SystemDashboard() {
                 <tr key={item.announcement_id} className={styles.tr}>
                   {/* --- 欄位 1: 訊息內容 (根據模式切換顯示) --- */}
                   <td className={styles.td}>
+					<div style={{ fontSize: "12px", color: "#888" }}>
+    					#{item.announcement_id}
+  					</div>
                     {isEditing ? (
                       <input
                         type="text"
-                        value={editMessage}
-                        onChange={(e) => setEditMessage(e.target.value)}
+                        value={editMessages[item.announcement_id] || ""}
+                        onChange={(e) =>
+        					setEditMessages((prev) => ({
+          						...prev,
+          						[item.announcement_id]: e.target.value,
+        					}))
+      					}
                         className={styles.input}
                         style={{ width: "100%" }}
                         autoFocus // 自動聚焦
@@ -241,7 +266,7 @@ export default function SystemDashboard() {
                           </button>
                           <button
                             onClick={() => handleDelete(item.announcement_id)}
-                            disabled={deleteMutation.isPending}
+                            disabled={deletingId === item.announcement_id}
                             style={{
                               color: "red",
                               cursor: "pointer",
@@ -249,11 +274,7 @@ export default function SystemDashboard() {
                               background: "none",
                             }}
                           >
-                            {deleteMutation.isPending &&
-                            deleteMutation.variables?.announcement_id ===
-                              item.announcement_id
-                              ? "..."
-                              : "刪除"}
+                            {deletingId === item.announcement_id ? "..." : "刪除"}
                           </button>
                         </>
                       )}
