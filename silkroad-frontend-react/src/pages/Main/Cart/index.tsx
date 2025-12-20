@@ -6,13 +6,19 @@ import {
 } from "@/components/molecules/ProductModal";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import { Link } from "react-router-dom";
-import { getCartData, createOrder, removeFromCart } from "@/api/instance";
 
-// 1. 定義後端回傳的資料型別
+import {
+  getCartData,
+  createOrder,
+  removeFromCart,
+  getAvailablePolicies,
+} from "@/api/instance";
+
+// 1. 定義商品型別，對齊後端 cart/view 輸出
 interface CartItemFromBackend {
   cart_item_id: number;
   product_id: number;
-  product_vendor_id: number; // 修正：確保 Interface 包含此欄位以消除紅線
+  product_vendor_id: number;
   product_name: string;
   product_image: string;
   price: number;
@@ -23,6 +29,7 @@ interface CartItemFromBackend {
   selected_size: string;
 }
 
+// 2. 定義折價券型別，對齊後端 vendor/view_discount 輸出
 interface PolicyFromBackend {
   id: number;
   code: string;

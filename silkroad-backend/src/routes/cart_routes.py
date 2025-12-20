@@ -19,9 +19,9 @@ cart_routes.route('/add', methods=['POST'])(switcher(add_to_cart, add_to_cart_gu
 "vendor_id":int,
 "product_id":int,
 "quantity": int,
-"selected_sugar":,
-"selected_ice":XXX,
-"selected_sizece":XXX
+"selected_sugar": str,
+"selected_ice": str,
+"selected_sizece": str
 }
 
 可能會回傳:
@@ -33,7 +33,7 @@ cart_routes.route('/add', methods=['POST'])(switcher(add_to_cart, add_to_cart_gu
 cart_routes.route('/remove', methods=['POST'])(switcher(remove_from_cart, remove_from_cart_guest))
 '''
 需要{
-" cart_item_id":XXX
+" cart_item_id": int
 }
 
 可能會回傳:
@@ -45,7 +45,7 @@ cart_routes.route('/remove', methods=['POST'])(switcher(remove_from_cart, remove
 cart_routes.route('/view/<int:cart_id>', methods=['GET'])(switcher(view_cart, view_cart_guest))
 '''
 需要{
-"customer_id":XXX
+"customer_id": int
 }
 
 可能會回傳:
