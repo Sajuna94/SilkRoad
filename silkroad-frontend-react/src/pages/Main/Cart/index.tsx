@@ -3,14 +3,14 @@ import styles from "./Cart.module.scss";
 import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import { Link } from "react-router-dom";
-// 確保 api.ts 有匯出這三個函式
-import { getCartData, createOrder, removeFromCart } from "@/api"; 
+// 確保 api.ts 包含 getCartData, createOrder, removeFromCart, getAvailablePolicies
+import { getCartData, createOrder, removeFromCart, getAvailablePolicies } from "@/api"; 
 
-// 1. 定義後端回傳的資料型別，確保包含移除與結帳所需的 ID
+// 1. 定義後端回傳的資料型別
 interface CartItemFromBackend {
     cart_item_id: number;
     product_id: number;
-    product_vendor_id: number; // 修正：確保 Interface 包含此欄位以消除紅線
+    product_vendor_id: number; // 用於結帳 payload
     product_name: string;
     product_image: string;
     price: number;
@@ -21,95 +21,106 @@ interface CartItemFromBackend {
     selected_size: string;
 }
 
+interface PolicyFromBackend {
+    id: number;
+    code: string;
+    discount_amount: number;
+}
+
 export default function Cart() {
     // A. 狀態管理
     const [items, setItems] = useState<CartItemFromBackend[]>([]);
+    const [coupons, setCoupons] = useState<PolicyFromBackend[]>([]); 
     const [totalAmount, setTotalAmount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [note, setNote] = useState(""); 
-    const [selectedCoupon, setSelectedCoupon] = useState("");
+    const [selectedCouponId, setSelectedCouponId] = useState<number | null>(null);
 
     // 暫代 ID，實作中應由登入狀態獲取
     const currentCustomerId = 1; 
 
-    // B. 資料抓取邏輯：封裝成獨立函式，以便在刪除後重複呼叫
-    const fetchCart = async () => {
+    // B. 資料抓取邏輯
+    const fetchData = async () => {
         try {
-            const res = await getCartData(currentCustomerId);
-            if (res.data.success) {
-                setItems(res.data.data); // 對應後端的 result_list
-                setTotalAmount(res.data.total_amount); // 對應後端的 total_price
+            // 同時抓取購物車與後端折價券資料
+            const [cartRes, policyRes] = await Promise.all([
+                getCartData(currentCustomerId), // GET /cart/view/<id>
+                getAvailablePolicies()         // GET /order/policies
+            ]);
+
+            if (cartRes.data.success) {
+                setItems(cartRes.data.data); // 對應 result_list
+                setTotalAmount(cartRes.data.total_amount); // 對應 total_price
+            }
+
+            if (policyRes.data.success) {
+                setCoupons(policyRes.data.policies); 
             }
         } catch (err) {
-            console.error("購物車對接失敗", err);
+            console.error("資料載入失敗", err);
         } finally {
             setLoading(false);
         }
     };
 
-    // 初次掛載時執行
     useEffect(() => {
-        fetchCart();
+        fetchData();
     }, []);
 
     // C. 移除商品邏輯
     const handleRemoveItem = async (cartItemId: number) => {
-        if (!confirm("確定要從購物車移除這項商品嗎？")) return;
-
+        if (!confirm("確定要移除此商品嗎？")) return;
         try {
+            // POST /cart/remove
             const res = await removeFromCart(cartItemId);
             if (res.data.success) {
-                alert("已移除商品");
-                fetchCart(); // 重新抓取資料，實現自動重新整理清單
-            } else {
-                alert("移除失敗：" + res.data.message);
+                fetchData(); // 成功後重新整理
             }
         } catch (err) {
-            console.error("移除失敗", err);
-            alert("移除發生錯誤");
+            alert("刪除失敗");
         }
     };
 
-    // D. 結帳處理邏輯
+    // D. 結帳邏輯 (對應後端 /order/trans)
     const handleCheckout = async () => {
         if (items.length === 0) return alert("購物車是空的！");
 
         try {
+            // 準備 JSON payload，包含 policy_id 以修正 ts(2345)
             const payload = {
                 customer_id: currentCustomerId,
-                vendor_id: items[0].product_vendor_id || 1, // 從購物車項目動態獲取商店 ID
+                vendor_id: items[0].product_vendor_id || 1,
+                policy_id: selectedCouponId, // 若未選則為 null
                 note: note,
                 payment_methods: "cash",
-                // policy_id: selectedCoupon ? 某個ID : undefined
             };
 
-            const res = await createOrder(payload);
+            const res = await createOrder(payload); // POST /order/trans
             if (res.data.success) {
-                alert("訂單建立成功！單號：" + res.data.order_id);
-                fetchCart(); // 結帳完後清空/更新狀態
-                setNote("");
+                alert("結帳成功！");
+                window.location.reload(); 
             }
         } catch (err) {
-            console.error("結帳失敗", err);
-            alert("結帳失敗，請稍後再試");
+            alert("結帳發生錯誤");
         }
     };
 
-    if (loading) return <div className={styles["container"]}>正在同步後端資料...</div>;
+    if (loading) return <div className={styles["container"]}>正在從伺服器同步資料...</div>;
 
     return (
         <section className={styles["container"]}>
             <header>購物車</header>
 
             <main>
-                {/* 將 items 與 handleRemoveItem 傳入 */}
                 <CartList items={items} onRemove={handleRemoveItem} />
                 
+                {/* 傳入後端抓取的真 coupons */}
                 <Sidebar 
+                    couponList={coupons} 
+                    selectedId={selectedCouponId} 
+                    setSelectedId={setSelectedCouponId} 
                     note={note} 
                     setNote={setNote} 
-                    selected={selectedCoupon} 
-                    setSelected={setSelectedCoupon} 
                 />
             </main>
 
@@ -121,7 +132,8 @@ export default function Cart() {
                 </div>
 
                 <div className={styles["totalArea"]}>
-                    <div className={styles["total"]}>${totalAmount}</div>
+                    {/* SCSS 會自動處理「總共」與「元」的文字 */}
+                    <div className={styles["total"]}>{totalAmount}</div>
                     <button 
                         onClick={handleCheckout} 
                         disabled={items.length === 0}
@@ -134,84 +146,56 @@ export default function Cart() {
     );
 }
 
-// 🛒 購物清單子組件 (接收 onRemove)
-function CartList({ 
-    items, 
-    onRemove 
-}: { 
-    items: CartItemFromBackend[]; 
-    onRemove: (id: number) => void 
-}) {
-    const modalRef = useRef<ProductModalRef>(null);
-
-    if (items.length === 0)
-        return <p className={styles["empty"]}>您的購物車目前空空如也。</p>;
-
+// 🛒 購物清單組件
+function CartList({ items, onRemove }: { items: CartItemFromBackend[]; onRemove: (id: number) => void }) {
     return (
-        <>
-            <ul className={styles["list"]}>
-                {items.map((item) => (
-                    <li key={item.cart_item_id} className={styles["item"]}>
-                        <div className={styles["area"]}>
-                            <FadeInImage fullSrc={item.product_image} />
+        <ul className={styles["list"]}>
+            {items.map((item) => (
+                <li key={item.cart_item_id} className={styles["item"]}>
+                    <div className={styles["area"]}>
+                        <FadeInImage fullSrc={item.product_image} />
+                    </div>
+                    <div className={styles["options"]}>
+                        <h3>{item.product_name}</h3>
+                        <div className="flex">
+                            <div>規格: {item.selected_size}</div>
+                            <div>冰塊: {item.selected_ice}</div>
+                            <div>糖度: {item.selected_sugar}</div>
                         </div>
-                        <div className={styles["options"]}>
-                            <h3>{item.product_name}</h3>
-                            <div className="flex">
-                                <div>規格: {item.selected_size}</div>
-                                <div>冰塊: {item.selected_ice}</div>
-                                <div>糖度: {item.selected_sugar}</div>
-                            </div>
-                        </div>
-                        <div className={styles["price"]}>
-                            <h3>${item.subtotal}</h3>
-                            <div className={styles["quantity"]}>數量: {item.quantity}</div>
-                            
-                            {/* 移除按鈕 */}
-                            <button 
-                                className={styles["btnRemove"]}
-                                style={{ 
-                                    color: 'red', 
-                                    border: 'none', 
-                                    background: 'none', 
-                                    cursor: 'pointer',
-                                    fontSize: '0.8rem',
-                                    marginTop: '5px' 
-                                }}
-                                onClick={(e) => {
-                                    e.stopPropagation(); // 防止點擊觸發編輯彈窗
-                                    onRemove(item.cart_item_id);
-                                }}
-                            >
-                                移除項目
-                            </button>
-                        </div>
-                    </li>
-                ))}
-            </ul>
-            <ProductModal ref={modalRef} submitText="確認修改" />
-        </>
+                    </div>
+                    <div className={styles["price"]}>
+                        <h3>${item.subtotal}</h3>
+                        <div className={styles["quantity"]}>{item.quantity}</div>
+                        <button 
+                            onClick={() => onRemove(item.cart_item_id)} 
+                            className={styles["btnRemove"]}
+                            style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', marginTop: '5px' }}
+                        >
+                            移除
+                        </button>
+                    </div>
+                </li>
+            ))}
+        </ul>
     );
 }
 
-// 📑 側邊欄子組件
-function Sidebar({ note, setNote, selected, setSelected }: any) {
-    const coupons = ["VIP666", "VIP888", "VIP999", "NTUT"];
-
+// 📑 側邊欄組件 (渲染後端折價券)
+function Sidebar({ couponList, selectedId, setSelectedId, note, setNote }: any) {
     return (
         <section className={styles["sidebar"]}>
             <div className={styles["list"]}>
                 <div>可用折價券</div>
                 <hr />
                 <ul>
-                    {coupons.map((code) => (
+                    {couponList && couponList.map((coupon: any) => (
                         <li
-                            key={code}
-                            className={selected === code ? styles.selected : ""}
-                            onClick={() => setSelected(selected === code ? "" : code)}
+                            key={coupon.id}
+                            className={selectedId === coupon.id ? styles.selected : ""}
+                            onClick={() => setSelectedId(selectedId === coupon.id ? null : coupon.id)}
                         >
-                            <span>{code}</span>
-                            <div className={styles["discount"]}>100</div>
+                            <span>{coupon.code}</span>
+                            <div className={styles["discount"]}>{coupon.discount_amount}</div>
                         </li>
                     ))}
                 </ul>
@@ -221,7 +205,7 @@ function Sidebar({ note, setNote, selected, setSelected }: any) {
                 <textarea
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="例如：珍珠多一點、不要塑膠袋..."
+                    placeholder="備註需求..."
                 />
             </div>
         </section>

@@ -15,11 +15,11 @@ cart_routes = Blueprint("cart", __name__)
 cart_routes.route('/add', methods=['POST'])(switcher(add_to_cart, add_to_cart_guest))
 '''
 需要{
-"customer_id":XXX,  (if login)
-"vendor_id":XXX,
-"product_id":XXX,
-"quantity":XXX,
-"selected_sugar":XXX,
+"customer_id":int,  (if login)
+"vendor_id":int,
+"product_id":int,
+"quantity": int,
+"selected_sugar":,
 "selected_ice":XXX,
 "selected_sizece":XXX
 }
