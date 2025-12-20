@@ -48,7 +48,7 @@ order_routes.route('/view', methods=['POST'])(view_order)
     #        "note": order.note,
     #        "payment_methods": order.payment_methods,
     #        "refund_status": order.refund_status,
-    #        "refund_at": order.refund_at,
+    #        "refund_at": order.refund_at, 格式： YYYY-MM-DD HH:mm:ss
     #        "is_completed": order.is_completed,
     #        "is_delivered": order.is_delivered,
     #        "total_price": order.total_price
@@ -88,7 +88,7 @@ order_routes.route('/update', methods=['POST'])(update_orderinfo)
     #        "note": order.note,
     #        "payment_methods": order.payment_methods,
     #        "refund_status": order.refund_status,
-    #        "refund_at": order.refund_at,
+    #        "refund_at": order.refund_at, 格式： YYYY-MM-DD HH:mm:ss
     #        "is_completed": order.is_completed,
     #        "is_delivered": order.is_delivered,
     #        "total_price": order.total_price

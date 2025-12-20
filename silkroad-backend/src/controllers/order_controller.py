@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from config import db
 from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy, Customer
-from datetime import date
+from datetime import date, datetime
 
 def do_discount(total_price_accumulated, policy_id, user_id):
 
@@ -36,10 +36,11 @@ def do_discount(total_price_accumulated, policy_id, user_id):
         raise ValueError(f"未達折價券低消限制 (${discount.min_purchase})")
     
     discount_amount = 0
+    discount_type = str(discount.type).lower()
     
-    if str(discount.type) == 'percent':
+    if str(discount_type) == 'percent':
         discount_amount = total_price_accumulated - (total_price_accumulated * discount.value)
-    elif str(discount.type) == 'fixed':
+    elif str(discount_type) == 'fixed':
         discount_amount = discount.value
     
     if discount.max_discount is not None:
@@ -228,7 +229,7 @@ def view_order():
             "note": order.note,
             "payment_methods": str(order.payment_methods),
             "refund_status": str(order.refund_status) if order.refund_status else None,
-            "refund_at": order.refund_at.isoformat() if order.refund_at else None,
+            "refund_at": order.refund_at.strftime('%Y-%m-%d %H:%M:%S') if order.refund_at else None,
             "is_completed": order.is_completed,
             "is_delivered": order.is_delivered,
             "total_price": order.total_price
@@ -268,7 +269,7 @@ def update_orderinfo():
                         "success": False}), 404
     
     refund_status = data.get("refund_status")
-    refund_at = data.get("refund_at")
+    refund_at = data.get("refund_at") #格式： YYYY-MM-DD HH:mm:ss
     is_completed = data.get("is_completed")
     is_delivered = data.get("is_delivered")
 
@@ -285,7 +286,8 @@ def update_orderinfo():
             if refund_at is None:
                 return jsonify({"message": "refund_at 傳值錯誤",
                                 "success": False}), 400
-            order.refund_at = refund_at
+            order.refund_at = datetime.strptime(refund_at, '%Y-%m-%d %H:%M:%S')
+
         elif refund_status != 'refunded' and refund_at is not None:
              return jsonify({"message": "refund_status 不為 'refunded'",
                              "success": False}), 400
@@ -330,7 +332,7 @@ def update_orderinfo():
             "note": order.note,
             "payment_methods": str(order.payment_methods),
             "refund_status": str(order.refund_status) if order.refund_status else None,
-            "refund_at": order.refund_at.isoformat() if order.refund_at else None,
+            "refund_at": order.refund_at.strftime('%Y-%m-%d %H:%M:%S') if order.refund_at else None,
             "is_completed": order.is_completed,
             "is_delivered": order.is_delivered,
             "total_price": order.total_price
