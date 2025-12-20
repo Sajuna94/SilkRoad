@@ -54,22 +54,6 @@ export type Announcement = {
   created_at: string;
 };
 
-export type UpdateVendorStatusReq = {
-  admin_id: number;
-  status: "active" | "suspended";
-};
-
-export const useUpdateVendorStatus = (vendorId: number) => {
-  return useMutation<any, ApiErrorBody, UpdateVendorStatusReq>({
-    mutationFn: async (payload) => {
-      const res = await api.post(
-        `/admin/vendors/${vendorId}/status`,
-        payload
-      );
-      return res.data;
-    },
-  });
-};
 
 export const useBlockUser = () => {
   return useMutation<any, ApiErrorBody, BlockUserReq>({
