@@ -53,16 +53,15 @@ api.interceptors.response.use(
 	}
 )
 
+// 1. 取得購物車：對應 GET /cart/view/<id>
 export const getCartData = (cartId: number) => 
     api.get(`/cart/view/${cartId}`);
 
-// 2. 移除商品 (POST /api/cart/remove)
-// 後端需要 JSON 包含 { "cart_item_id": XXX }
+// 2. 移除商品：對應 POST /cart/remove
 export const removeFromCart = (cartItemId: number) => 
     api.post('/cart/remove', { cart_item_id: cartItemId });
 
-// 3. 加入購物車 (POST /api/cart/add)
-// 傳入商品 ID、數量及規格 (sugar, ice, size)
+// 3. 加入購物車：對應 POST /cart/add
 export const addToCart = (data: {
     customer_id?: number;
     vendor_id: number;
@@ -73,14 +72,18 @@ export const addToCart = (data: {
     selected_size: string;
 }) => api.post('/cart/add', data);
 
-/** --- 訂單 API 對接 --- **/
+/** --- 訂單 API (order_routes) --- **/
 
-// 執行結帳 (POST /api/order/checkout)
-// 這會觸發後端的 generate_new_order 邏輯
+// 4. 取得可用折價券：確保 Sidebar 抓取真資料而非假資料
+export const getAvailablePolicies = (vendorId: number) => 
+    api.post('/vendor/view_discount', { vendor_id: vendorId });
+
+// 5. 付款結帳：對應 POST /order/trans (觸發 trans_to_order)
+// 包含所有必備欄位：customer_id, vendor_id, policy_id, note, payment_methods
 export const createOrder = (data: {
     customer_id: number;
     vendor_id: number;
-    policy_id: number | null; // 必須提供，若無則傳 null
+    policy_id: number | null; // 必須提供，若無折價券則傳 null
     note: string;
     payment_methods: string;
 }) => api.post('/order/trans', data);

@@ -3,14 +3,14 @@ import styles from "./Cart.module.scss";
 import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import { Link } from "react-router-dom";
-// 確保 api.ts 包含 getCartData, createOrder, removeFromCart, getAvailablePolicies
+// 確保 api.ts 已定義這些函數
 import { getCartData, createOrder, removeFromCart, getAvailablePolicies } from "@/api"; 
 
-// 1. 定義後端回傳的資料型別
+// 1. 定義商品型別，對齊後端 cart/view 輸出
 interface CartItemFromBackend {
     cart_item_id: number;
     product_id: number;
-    product_vendor_id: number; // 用於結帳 payload
+    product_vendor_id: number; 
     product_name: string;
     product_image: string;
     price: number;
@@ -21,43 +21,52 @@ interface CartItemFromBackend {
     selected_size: string;
 }
 
+// 2. 定義折價券型別，對齊後端 vendor/view_discount 輸出
 interface PolicyFromBackend {
-    id: number;
-    code: string;
-    discount_amount: number;
+    policy_id: number;
+    vendor_id: number;
+    is_available: boolean;
+    type: string;
+    value: number;
+    min_purchase: number;
+    max_discount: number;
+    expiry_date: string;
 }
 
 export default function Cart() {
-    // A. 狀態管理
     const [items, setItems] = useState<CartItemFromBackend[]>([]);
     const [coupons, setCoupons] = useState<PolicyFromBackend[]>([]); 
     const [totalAmount, setTotalAmount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [note, setNote] = useState(""); 
-    const [selectedCouponId, setSelectedCouponId] = useState<number | null>(null);
+    const [selectedPolicyId, setSelectedPolicyId] = useState<number | null>(null);
 
-    // 暫代 ID，實作中應由登入狀態獲取
+    // 暫代 ID，實務上由登入狀態取得
     const currentCustomerId = 1; 
 
-    // B. 資料抓取邏輯
+    // B. 核心資料抓取邏輯
     const fetchData = async () => {
         try {
-            // 同時抓取購物車與後端折價券資料
-            const [cartRes, policyRes] = await Promise.all([
-                getCartData(currentCustomerId), // GET /cart/view/<id>
-                getAvailablePolicies()         // GET /order/policies
-            ]);
-
+            // 第一步：取得購物車內容 (GET /cart/view/<id>)
+            const cartRes = await getCartData(currentCustomerId);
+            
             if (cartRes.data.success) {
-                setItems(cartRes.data.data); // 對應 result_list
-                setTotalAmount(cartRes.data.total_amount); // 對應 total_price
-            }
+                const cartList: CartItemFromBackend[] = cartRes.data.data;
+                setItems(cartList);
+                setTotalAmount(cartRes.data.total_amount);
 
-            if (policyRes.data.success) {
-                setCoupons(policyRes.data.policies); 
+                // 第二步：利用商品清單中的商店 ID 抓取該店專屬折價券 (POST /vendor/view_discount)
+                if (cartList.length > 0) {
+                    const targetVendorId = cartList[0].product_vendor_id;
+                    const policyRes = await getAvailablePolicies(targetVendorId);
+                    
+                    if (policyRes.data.success) {
+                        setCoupons(policyRes.data.data); // 後端回傳的 result_list
+                    }
+                }
             }
         } catch (err) {
-            console.error("資料載入失敗", err);
+            console.error("載入失敗", err);
         } finally {
             setLoading(false);
         }
@@ -67,45 +76,46 @@ export default function Cart() {
         fetchData();
     }, []);
 
-    // C. 移除商品邏輯
+    // C. 移除商品處理 (POST /cart/remove)
     const handleRemoveItem = async (cartItemId: number) => {
-        if (!confirm("確定要移除此商品嗎？")) return;
+        if (!confirm("確定要移除商品嗎？")) return;
         try {
-            // POST /cart/remove
             const res = await removeFromCart(cartItemId);
             if (res.data.success) {
-                fetchData(); // 成功後重新整理
+                fetchData(); // 成功後自動更新列表
             }
         } catch (err) {
-            alert("刪除失敗");
+            alert("移除操作失敗");
         }
     };
 
-    // D. 結帳邏輯 (對應後端 /order/trans)
+    // D. 結帳付款邏輯 (POST /order/trans)
     const handleCheckout = async () => {
-        if (items.length === 0) return alert("購物車是空的！");
+        if (items.length === 0) return alert("您的購物車目前是空的！");
 
         try {
-            // 準備 JSON payload，包含 policy_id 以修正 ts(2345)
+            // 構建符合後端 trans_to_order 規格的 payload
             const payload = {
                 customer_id: currentCustomerId,
-                vendor_id: items[0].product_vendor_id || 1,
-                policy_id: selectedCouponId, // 若未選則為 null
+                vendor_id: items[0].product_vendor_id,
+                policy_id: selectedPolicyId, // 選中的 ID，若未選則為 null
                 note: note,
                 payment_methods: "cash",
             };
 
-            const res = await createOrder(payload); // POST /order/trans
+            const res = await createOrder(payload);
             if (res.data.success) {
-                alert("結帳成功！");
-                window.location.reload(); 
+                alert("付款結帳成功！");
+                window.location.reload();
+            } else {
+                alert("失敗：" + res.data.message);
             }
         } catch (err) {
-            alert("結帳發生錯誤");
+            alert("結帳連線異常");
         }
     };
 
-    if (loading) return <div className={styles["container"]}>正在從伺服器同步資料...</div>;
+    if (loading) return <div className={styles["container"]}>同步後端資料中...</div>;
 
     return (
         <section className={styles["container"]}>
@@ -113,12 +123,10 @@ export default function Cart() {
 
             <main>
                 <CartList items={items} onRemove={handleRemoveItem} />
-                
-                {/* 傳入後端抓取的真 coupons */}
                 <Sidebar 
                     couponList={coupons} 
-                    selectedId={selectedCouponId} 
-                    setSelectedId={setSelectedCouponId} 
+                    selectedId={selectedPolicyId} 
+                    setSelectedId={setSelectedPolicyId} 
                     note={note} 
                     setNote={setNote} 
                 />
@@ -128,17 +136,17 @@ export default function Cart() {
                 <div className={styles["cartOperation"]}>
                     <Link to="/home">繼續加點</Link>
                     <span>|</span>
-                    <a onClick={() => alert("功能開發中")}>清空購物車</a>
+                    <a onClick={() => alert("功能對接中")}>清空購物車</a>
                 </div>
 
                 <div className={styles["totalArea"]}>
-                    {/* SCSS 會自動處理「總共」與「元」的文字 */}
+                    {/* SCSS 已處理 content 偽元素顯示「總共/元」 */}
                     <div className={styles["total"]}>{totalAmount}</div>
                     <button 
                         onClick={handleCheckout} 
                         disabled={items.length === 0}
                     >
-                        結帳
+                        確認付款
                     </button>
                 </div>
             </footer>
@@ -146,8 +154,14 @@ export default function Cart() {
     );
 }
 
-// 🛒 購物清單組件
-function CartList({ items, onRemove }: { items: CartItemFromBackend[]; onRemove: (id: number) => void }) {
+// 🛒 購物清單子組件
+function CartList({ 
+    items, 
+    onRemove 
+}: { 
+    items: CartItemFromBackend[]; 
+    onRemove: (id: number) => void 
+}) {
     return (
         <ul className={styles["list"]}>
             {items.map((item) => (
@@ -158,18 +172,16 @@ function CartList({ items, onRemove }: { items: CartItemFromBackend[]; onRemove:
                     <div className={styles["options"]}>
                         <h3>{item.product_name}</h3>
                         <div className="flex">
-                            <div>規格: {item.selected_size}</div>
-                            <div>冰塊: {item.selected_ice}</div>
-                            <div>糖度: {item.selected_sugar}</div>
+                            <div>{item.selected_size} / {item.selected_ice} / {item.selected_sugar}</div>
                         </div>
                     </div>
                     <div className={styles["price"]}>
                         <h3>${item.subtotal}</h3>
                         <div className={styles["quantity"]}>{item.quantity}</div>
                         <button 
-                            onClick={() => onRemove(item.cart_item_id)} 
                             className={styles["btnRemove"]}
-                            style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', marginTop: '5px' }}
+                            style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
+                            onClick={() => onRemove(item.cart_item_id)}
                         >
                             移除
                         </button>
@@ -180,24 +192,28 @@ function CartList({ items, onRemove }: { items: CartItemFromBackend[]; onRemove:
     );
 }
 
-// 📑 側邊欄組件 (渲染後端折價券)
+// 📑 側邊欄子組件 (處理真折價券顯示)
 function Sidebar({ couponList, selectedId, setSelectedId, note, setNote }: any) {
     return (
         <section className={styles["sidebar"]}>
             <div className={styles["list"]}>
-                <div>可用折價券</div>
+                <div>可用優惠</div>
                 <hr />
                 <ul>
-                    {couponList && couponList.map((coupon: any) => (
+                    {couponList && couponList.map((policy: any) => (
                         <li
-                            key={coupon.id}
-                            className={selectedId === coupon.id ? styles.selected : ""}
-                            onClick={() => setSelectedId(selectedId === coupon.id ? null : coupon.id)}
+                            key={policy.policy_id}
+                            className={selectedId === policy.policy_id ? styles.selected : ""}
+                            onClick={() => setSelectedId(selectedId === policy.policy_id ? null : policy.policy_id)}
                         >
-                            <span>{coupon.code}</span>
-                            <div className={styles["discount"]}>{coupon.discount_amount}</div>
+                            <div className={styles["policyInfo"]}>
+                                <span>{policy.type === '1' ? '滿額折' : '店內折扣'}</span>
+                                <small>低消 ${policy.min_purchase}</small>
+                            </div>
+                            <div className={styles["discount"]}>{policy.value}</div>
                         </li>
                     ))}
+                    {(!couponList || couponList.length === 0) && <p style={{ fontSize: '0.8rem', padding: '10px' }}>目前無可用優惠</p>}
                 </ul>
             </div>
             <div className={styles["note"]}>
