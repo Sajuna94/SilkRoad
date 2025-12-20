@@ -517,4 +517,4 @@ def delete_user(user_id):
 def current_user():
     if not session.get('user_id'):
         return jsonify({"success": False, "message": "Not logged in"}), 401
-    return jsonify({"success": True, "data": session.get('user_id')}), 200
+    return jsonify({"success": True, "data": session.get('user')}), 200
