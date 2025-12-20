@@ -1,110 +1,150 @@
 .header-warp {
-	display: flex;
-	align-items: center;
+  display: flex;
+  align-items: center;
 
-	position: sticky;
-	top: 0;
-	z-index: 999;
+  position: sticky;
+  top: 0;
+  z-index: 999;
 
-	padding: 2vh 5vh;
-	gap: 50px;
-	background-color: #19191e;
+  padding: 2vh 5vh;
+  gap: 50px;
+  background-color: #19191e;
 
-	a {
-		color: #aaa;
-		height: 40px;
+  a {
+    color: #aaa;
+    height: 40px;
 
-		&:hover,
-		&:focus {
-			color: #fff;
-		}
-	}
+    &:hover,
+    &:focus {
+      color: #fff;
+    }
+  }
 
-	h1 {
-		font-size: 1.2rem;
-		font-weight: bold;
-	}
+  h1 {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
 
-	nav {
-		flex: 1;
-		display: flex;
-		justify-content: space-between;
+  nav {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-		a {
-			font-weight: 500;
-		}
+    a {
+      font-weight: 500;
+    }
 
-		ul {
-			gap: 30px;
-			display: flex;
-		}
-	}
+    ul {
+      gap: 30px;
+      display: flex;
+    }
+  }
 }
 
-// .navbar {
-// 	display: flex;
-// 	justify-content: space-between;
-// 	position: sticky;
+.userMenuContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-left: 20px;
+}
 
-// 	height: 41px;
-// 	padding: 0 5vh;
-// 	background-color: #19191e;
-// 	// color: white;
-// 	top: 0;
-// 	z-index: 1000;
-// 	// border-bottom: 1px solid #3a3a3a;
+.avatarCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ddd;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
 
-// 	a {
-// 		color: #aaa;
-// 		line-height: 30px;
-// 		&:hover {
-// 			color: #fff;
-// 		}
-// 	}
+  &:hover {
+    transform: scale(1.05);
+  }
 
-// 	nav {
-// 		align-items: center;
-// 		display: flex;
-// 		gap: 1.5rem;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-// 		a {
-// 			font-weight: 500;
-// 		}
-// 	}
+  span {
+    font-weight: bold;
+    color: #555;
+    font-size: 1.2rem;
+  }
+}
 
-// 	.left {
-// 		align-items: center;
-// 		display: flex;
-// 		gap: 2rem;
+.dropdownMenu {
+  position: absolute;
+  top: 55px;
+  right: 0;
+  width: 240px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin: 8px 0;
+  z-index: 1000;
+  border: 1px solid #eee;
 
-// 		.logo {
-// 			font-size: 1.2rem;
-// 			font-weight: bold;
-// 		}
-// 	}
+  /* 小三角形指向上方(裝飾用) */
+  &::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    right: 14px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    transform: rotate(45deg);
+    border-top: 1px solid #eee;
+    border-left: 1px solid #eee;
+  }
 
-// 	.right {}
-// }
+  .menuItem {
+    display: block;
+    padding: 10px 20px;
+    color: #555;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+    cursor: pointer;
 
-// .navbarLogo a {
-// 	font-size: 1.2rem;
-// 	font-weight: bold;
-// 	color: #aaa;
-// 	text-decoration: none;
-// }
+    &:hover {
+      background-color: #f5f5f5;
+      color: #111;
+    }
+  }
 
-// .navbarLinks {
-// 	display: flex;
-// 	gap: 1.5rem;
-// }
+  .logoutBtn {
+    border-top: 1px solid #eee;
+    color: #e53935;
 
-// .navbarLinks a {
-// 	color: #aaa;
-// 	text-decoration: none;
-// 	font-weight: 500;
-// 	transition: color 0.2s ease;
-// }
+    &:hover {
+      background-color: #fff0f0;
+      color: #d32f2f;
+    }
+  }
+}
 
-// .navbarLinks a:hover {
-// 	color: white;
-// }
+.userInfo {
+  padding: 12px 20px;
+  border-bottom: 1px solid #eee;
+
+  .userName {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #111;
+    margin-bottom: 4px;
+  }
+
+  .userEmail {
+    font-size: 0.8rem;
+    color: #888;
+  }
+}

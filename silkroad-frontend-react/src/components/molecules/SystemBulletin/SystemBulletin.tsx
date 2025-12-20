@@ -31,9 +31,8 @@ export default function SystemBulletin({ announcements }: SystemBulletinProps) {
           isExpanded ? styles.expanded : ""
         }`}
       >
-        {/* 上方：主要列 (顯示最新消息) */}
         <div className={styles.headerRow}>
-          {/* 左側：小喇叭 Icon */}
+          {/* 小喇叭 Icon */}
           <div className={styles.iconArea}>
             <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
               <path d="M11 5L6 9H2V15H6L11 19V5Z" />
@@ -42,7 +41,6 @@ export default function SystemBulletin({ announcements }: SystemBulletinProps) {
             </svg>
           </div>
 
-          {/* 中間：最新公告內容 (點擊開啟 Modal) */}
           <div
             className={styles.messageArea}
             onClick={() => handleOpenModal(latestAnnouncement)}
@@ -51,13 +49,12 @@ export default function SystemBulletin({ announcements }: SystemBulletinProps) {
             <span className={styles.text}>{latestAnnouncement.content}</span>
           </div>
 
-          {/* 右側：漢堡選單 (展開/收合) */}
           <button
             className={styles.toggleBtn}
             onClick={() => setIsExpanded(!isExpanded)}
             aria-label={
               isExpanded ? "Close announcements" : "Show announcements"
-            } // 建議加入動態 aria-label
+            }
           >
             <svg
               viewBox="0 0 24 24"
@@ -89,7 +86,6 @@ export default function SystemBulletin({ announcements }: SystemBulletinProps) {
           </button>
         </div>
 
-        {/* 下方：展開後的列表 */}
         {isExpanded && (
           <div className={styles.listArea}>
             {announcements.map((item) => (
@@ -106,7 +102,6 @@ export default function SystemBulletin({ announcements }: SystemBulletinProps) {
         )}
       </div>
 
-      {/* 詳細資訊 Modal */}
       <AnnouncementModal
         isOpen={!!selectedAnnouncement}
         data={selectedAnnouncement}

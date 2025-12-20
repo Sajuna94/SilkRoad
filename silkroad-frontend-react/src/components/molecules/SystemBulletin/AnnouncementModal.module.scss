@@ -13,14 +13,14 @@
 .modal {
   background: white;
   width: 90%;
-  max-width: 500px;
+  max-width: 400px;
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 200px; // 給一點基本高度
+  min-height: 200px;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -41,8 +41,8 @@
 .content {
   flex-grow: 1;
   display: flex;
-  align-items: center; // 垂直置中
-  justify-content: center; // 水平置中
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-size: 1.1rem;
   line-height: 1.6;
@@ -52,7 +52,7 @@
 
 .footer {
   display: flex;
-  justify-content: flex-end; // 靠右對齊
+  justify-content: space-between;
   gap: 1rem;
   border-top: 1px solid #eee;
   padding-top: 1rem;
