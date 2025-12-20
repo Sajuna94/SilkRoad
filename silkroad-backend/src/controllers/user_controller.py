@@ -51,7 +51,7 @@ def register_step1():
         "success": True,
     }), 201
 
-def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
+def register_step2(role): 
     """
     第二步：接收角色特定欄位，合併 Session 資料，寫入 DB
     URL: /api/user/register/<role>
@@ -65,8 +65,7 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
         }), 400
 
     # 3. [安全性檢查] 驗證 URL 傳來的 role 是否等於 Step 1 存下的 role
-    # 避免 Step 1 選 Vendor，Step 2 卻故意打 /register/customer 的 API
-    session_role = temp_data['role'] # session 裡原本存的就是小寫 (在 step1 處理過)
+    session_role = temp_data['role']
     url_role = role.lower()
 
     if url_role != session_role:
@@ -76,11 +75,11 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
         }), 400
 
     data: dict = request.get_json()
-    target_role = session_role # 使用驗證過的角色
+    target_role = session_role 
     new_user = None
     
-    # 用來暫存 manager 物件以便最後回傳使用 (僅 Vendor 用)
-    created_manager = None 
+    # 記錄最終使用的 manager id (Vendor 用)
+    target_manager_id = None
 
     try:
         name = data.get('name')
@@ -113,8 +112,6 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
                 )
             ).first()
 
-            target_manager_id = None
-
             if existing_manager:
                 # A. 如果找到了 -> 直接使用現有的 ID
                 target_manager_id = existing_manager.id
@@ -129,9 +126,7 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
                 db.session.flush() # flush 以取得新生成的 id
                 target_manager_id = new_mgr.id
 
-            # ---------------------------------------------------
             # 呼叫 Vendor.register
-            # ---------------------------------------------------
             new_user = Vendor.register(
                 name=name, 
                 email=temp_data['email'], 
@@ -144,7 +139,7 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
             
         #  Customer 邏輯
         elif target_role == 'customer':
-            if not address or not name  :
+            if not address or not name:
                 return jsonify({"message": "Customer needs address and name", "success": False}), 400
             
             # 1. 建立 Customer 物件
@@ -197,8 +192,7 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
         session.pop('reg_temp', None)
         session['user_id'] = new_user.id
         session['role'] = target_role
-        session.modified = True # 確保 session 被更新
-
+        
         # 回傳資料 (Response Data Construction)
         response_data = {}
 
@@ -215,6 +209,8 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
             }
         
         elif target_role == 'vendor':
+            final_manager = Vendor_Manager.query.get(target_manager_id)
+            
             response_data = {
                 "id": new_user.id,
                 "role": "vendor",
@@ -224,12 +220,15 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
                 "address": new_user.address,
                 "is_active": new_user.is_active,
                 "manager": {
-                    "id": created_manager.id,
-                    "name": created_manager.name,
-                    "email": created_manager.email,
-                    "phone_number": created_manager.phone_number
+                    "id": final_manager.id,
+                    "name": final_manager.name,
+                    "email": final_manager.email,
+                    "phone_number": final_manager.phone_number
                 }
             }
+            
+        session['user'] = response_data
+        session.modified = True 
 
     except ValueError as e:
         return jsonify({
@@ -243,9 +242,6 @@ def register_step2(role): # <--- 1. 這裡新增參數接收 URL 的 role
             "message": f"Database error: {str(e)}", 
             "success": False
         }), 500
-    
-    session['user'] = response_data
-    session.modified = True # 確保 session 被更新
 
     # 6. 回傳最終結果
     return jsonify({
@@ -448,11 +444,17 @@ def update_user():
         return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
 
 @require_login(role=["admin", "vendor", "customer"])
-def update_password(user_id):
+def update_password():
     """
-    更新會員密碼
-    需要驗證舊密碼
+    更新當前登入會員密碼
+    Route: /me/password
+    Method: PATCH
     """
+    # 1. 從 Session 取得 User ID
+    current_user_id = session.get('user_id')
+    if not current_user_id:
+        return jsonify({"message": "Not logged in", "success": False}), 401
+
     data = request.get_json()
     old_password = data.get('old_password')
     new_password = data.get('new_password')
@@ -460,16 +462,16 @@ def update_password(user_id):
     if not all([old_password, new_password]):
         return jsonify({"message": "Missing old_password or new_password", "success": False}), 400
 
-    user = User.query.get(user_id)
+    user = User.query.get(current_user_id)
     if not user:
         return jsonify({"message": "User not found", "success": False}), 404
 
-    # 驗證舊密碼
+    # 2. 驗證舊密碼
     if not user.check_password(old_password):
         return jsonify({"message": "Old password is incorrect", "success": False}), 401
 
     try:
-        # 設定新密碼 (假設 User model 有 set_password 方法)
+        # 3. 設定新密碼
         user.set_password(new_password)
         db.session.commit()
 
@@ -495,7 +497,6 @@ def delete_user(user_id):
     try:
         db.session.delete(user)
         db.session.commit()
-        # 如果刪除的是自己，則清除 session
         if current_user_id == user_id:
             session.pop('user_id', None)
             session.pop('role', None)
@@ -514,6 +515,6 @@ def delete_user(user_id):
         }), 500
     
 def current_user():
-    if not session.get('user'):
+    if not session.get('user_id'):
         return jsonify({"success": False, "message": "Not logged in"}), 401
-    return jsonify({"success": True, "data": session.get('user')}), 200
+    return jsonify({"success": True, "data": session.get('user_id')}), 200

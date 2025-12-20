@@ -167,47 +167,83 @@ return:
 }
 """
 
-user_routes.route('/update/<int:user_id>', methods=['PUT'])(update_user)
+user_routes.route('/me', methods=['PATCH'])(update_user)
 """
-Update User Profile (excluding password)
-expect:
+Update Current User Profile
+URL: /api/user/me
+Method: PATCH
+Headers: Cookie (Session User ID)
+
+Expect (Body):
 {
     "name": string (optional),
     "phone_number": string (optional),
-    "address": string (optional, valid for vendor/customer only)
+    "address": string (optional)
 }
 
-return:
+Return:
+
+If Success (Customer):
 {
-    "data": {
-        "address": if admin: null 
-                   else: string,
-        "email": string,
-        "id": int,
-        "name": string,
-        "phone_number": string,
-        "role": string
-    },
-    "message": "User profile updated successfully",
     "success": True,
+    "message": "User profile updated successfully",
+    "data": [{
+        "id": int,
+        "role": "customer",
+        "name": string,
+        "email": string,
+        "phone_number": string,
+        "created_at": datetime,
+        "address": string,
+        "membership_level": int,
+        "is_active": boolean
+    }]
 }
-else:
+
+If Success (Vendor):
+{
+    "success": True,
+    "message": "User profile updated successfully",
+    "data": [{
+        "id": int,
+        "role": "vendor",
+        "name": string,
+        "email": string,
+        "phone_number": string,
+        "created_at": datetime,
+        "address": string,
+        "is_active": boolean,
+        "manager": {
+            "id": int,
+            "name": string,
+            "email": string,
+            "phone_number": string
+        }
+    }]
+}
+
+If Failure:
 {
     "message": "...",
     "success": False
 }
 """
 
-user_routes.route('/update_password/<int:user_id>', methods=['PUT'])(update_password)
+user_routes.route('/me/password', methods=['PATCH'])(update_password)
+
 """
-Update User Password
-expect:
+Update Current User Password
+URL: /api/user/me/password
+Method: PATCH
+Headers: Cookie (Session ID)
+
+Expect:
 {
-    "old_password": string,
-    "new_password": string
+    "old_password": "old_pass",
+    "new_password": "new_pass"
 }
 
-return:
+Return:
 {
     "message": "Password updated successfully",
     "success": True
