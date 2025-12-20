@@ -48,7 +48,7 @@ order_routes.route('/view', methods=['POST'])(view_order)
     #        "note": order.note,
     #        "payment_methods": order.payment_methods,
     #        "refund_status": order.refund_status,
-    #        "refund_at": order.refund_at,
+    #        "refund_at": order.refund_at, 格式： YYYY-MM-DD HH:mm:ss
     #        "is_completed": order.is_completed,
     #        "is_delivered": order.is_delivered,
     #        "total_price": order.total_price
@@ -56,6 +56,7 @@ order_routes.route('/view', methods=['POST'])(view_order)
     #
         #   data包含
     #        {
+    #        "discount_amount": order.discount_amount,
     #        "order_item_id": item.id,
     #        "order_id": item.order_id,
     #        "product_id": item.product_id,
@@ -81,8 +82,32 @@ order_routes.route('/update', methods=['POST'])(update_orderinfo)
     #     "is_delivered":XXX
     #     }
 
-    #     回傳:
-    #    {
-    #    "message": "...",
-    #    "success": True/False
-    #    }   
+
+        #   order_info包含
+    #        {
+    #        "note": order.note,
+    #        "payment_methods": order.payment_methods,
+    #        "refund_status": order.refund_status,
+    #        "refund_at": order.refund_at, 格式： YYYY-MM-DD HH:mm:ss
+    #        "is_completed": order.is_completed,
+    #        "is_delivered": order.is_delivered,
+    #        "total_price": order.total_price
+    #        }
+    #
+        #   data包含
+    #        {
+    #        "discount_amount": order.discount_amount,
+    #        "order_item_id": item.id,
+    #        "order_id": item.order_id,
+    #        "product_id": item.product_id,
+    #        "product_name": product.name,
+    #        "product_image": product.image_url,
+
+    #        "price": item.price,
+    #        "quantity": item.quantity,
+    #        "subtotal": item_sub_price,
+
+    #        "selected_sugar": item.selected_sugar,
+    #        "selected_ice": item.selected_ice,
+    #        "selected_size": item.selected_size
+    #         } 

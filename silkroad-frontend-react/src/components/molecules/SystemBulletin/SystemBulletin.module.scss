@@ -9,7 +9,7 @@ $icon-color: #d97706;
   background-color: $bulletin-bg;
   border: 1px solid $bulletin-border;
   border-radius: 8px;
-  margin-bottom: 1.5rem; // 與下方列表保持距離
+  margin-bottom: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   overflow: hidden;
@@ -43,7 +43,7 @@ $icon-color: #d97706;
   flex: 1;
   display: flex;
   align-items: center;
-  overflow: hidden; // 確保超出隱藏
+  overflow: hidden;
   cursor: pointer;
 
   &:hover .text {
@@ -65,7 +65,7 @@ $icon-color: #d97706;
 .text {
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; // 重點：超出變...
+  text-overflow: ellipsis; // 超出變成...
   color: $text-color;
   font-size: 0.95rem;
   margin-right: 10px;
@@ -89,7 +89,6 @@ $icon-color: #d97706;
   }
 }
 
-/* 展開後的列表區域 */
 .listArea {
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   background: rgba(255, 255, 255, 0.4);
