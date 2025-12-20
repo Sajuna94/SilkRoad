@@ -136,7 +136,6 @@ def post_announcement():
             "success": False
         }), 500
     
-
 @require_login(role=["admin"])
 def update_announcement(announcement_id):
     """
@@ -234,6 +233,110 @@ def delete_announcement(announcement_id):
 
     except Exception as e:
         db.session.rollback()
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
+    
+沒問題，這三個功能主要是讀取資料（Read），相較於寫入邏輯會單純一些。
+
+以下幫你撰寫三個 API 的 Controller 函式，以及對應的 Route 設定。
+
+1. 修改 Controller (src/controllers/admin_controller.py)
+請將以下這三個函式加入到你的 admin_controller.py 檔案中。我使用了 List Comprehension (列表推導式) 來快速將資料庫物件轉換成 JSON 格式，並加上了 .isoformat() 處理時間格式，避免報錯。
+
+Python
+
+# ... (保留你原有的 import 和函式)
+
+@require_login(role=["admin"])
+def get_all_customers():
+    """
+    列出所有顧客資料
+    """
+    try:
+        customers = Customer.query.all()
+        
+        # 將物件列表轉換為字典列表
+        result = [{
+            "id": c.id,
+            "name": c.name,
+            "email": c.email,
+            "phone_number": c.phone_number,
+            "address": c.address,
+            "membership_level": getattr(c, 'membership_level', 0),
+            "is_active": c.is_active,
+            "created_at": c.created_at.isoformat() if c.created_at else None
+        } for c in customers]
+
+        return jsonify({
+            "success": True,
+            "message": "Retrieved all customers successfully",
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
+
+
+@require_login(role=["admin"])
+def get_all_vendors():
+    """
+    列出所有店家資料
+    """
+    try:
+        vendors = Vendor.query.all()
+        
+        result = [{
+            "id": v.id,
+            "name": v.name, # 店名
+            "email": v.email,
+            "phone_number": v.phone_number,
+            "address": v.address,
+            "vendor_manager_id": getattr(v, 'vendor_manager_id', None),
+            "is_active": v.is_active,
+            "created_at": v.created_at.isoformat() if v.created_at else None
+        } for v in vendors]
+
+        return jsonify({
+            "success": True,
+            "message": "Retrieved all vendors successfully",
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
+
+
+@require_login(role=["admin"])
+def get_all_announcements():
+    """
+    列出所有系統公告 (建議依時間倒序排列)
+    """
+    try:
+        # 依建立時間由新到舊排序
+        announcements = System_Announcement.query.order_by(System_Announcement.created_at.desc()).all()
+        
+        result = [{
+            "id": a.id,
+            "admin_id": a.admin_id,
+            "message": a.message,
+            "created_at": a.created_at.isoformat() if a.created_at else None
+        } for a in announcements]
+
+        return jsonify({
+            "success": True,
+            "message": "Retrieved all announcements successfully",
+            "data": result
+        }), 200
+
+    except Exception as e:
         return jsonify({
             "message": f"Database error: {str(e)}",
             "success": False
