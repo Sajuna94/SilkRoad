@@ -23,16 +23,10 @@ export default function SystemDashboard() {
   const [selectedDate, setSelectedDate] = useState("");
   const [newSummary, setNewSummary] = useState("");
 
-<<<<<<< HEAD
-  // ★ 新增：編輯/刪除模式的狀態
-  const [editingId, setEditingId] = useState<number | null>(null); // 目前正在編輯哪一個 ID
-const [editMessages, setEditMessages] = useState<Record<number, string>>({}); // 編輯中的文字內容
-  const [deletingId, setDeletingId] = useState<number | null>(null); // 要刪除的公告
+  const [editingId, setEditingId] = useState<number | null>(null); 
+  const [editMessages, setEditMessages] = useState<Record<number, string>>({}); 
+  const [deletingId, setDeletingId] = useState<number | null>(null); 
 
-=======
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editMessage, setEditMessage] = useState("");
->>>>>>> 2b338bd89bf3874d47a94e1b823e8ff88c43759b
 
   const handlePost = () => {
     if (!newSummary.trim()) return alert("請輸入公告內容");
@@ -49,12 +43,11 @@ const [editMessages, setEditMessages] = useState<Record<number, string>>({}); //
     );
   };
 
-<<<<<<< HEAD
-  // --- 功能 2: 開始編輯 ---
+ 
 
   const startEdit = (id: number, currentMessage: string) => {
-  setEditingId(id); // 設定當前編輯的 ID
-  setEditMessages((prev) => ({ // 把原本的文字帶入輸入框
+  setEditingId(id); 
+  setEditMessages((prev) => ({ 
     ...prev,
     [id]: currentMessage,
   }));
@@ -65,7 +58,7 @@ const cancelEdit = () => {
   setEditingId(null);
 };
 
-  // --- 功能 4: 儲存編輯 (Update) ---
+
 const saveEdit = (id: number) => {
   const message = editMessages[id];
   if (!message?.trim()) return alert("公告內容不能為空");
@@ -88,7 +81,6 @@ const saveEdit = (id: number) => {
 
 
 
-  // --- 功能 5: 刪除公告 (Delete) ---
 const handleDelete = (id: number) => {
   if (!confirm("確定要刪除這則公告嗎？此動作無法復原。")) return;
 
@@ -109,48 +101,6 @@ const handleDelete = (id: number) => {
   );
 };
 
-=======
-  const startEdit = (id: number, currentMessage: string) => {
-    setEditingId(id);
-    setEditMessage(currentMessage);
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditMessage("");
-  };
-
-  const saveEdit = (id: number) => {
-    if (!editMessage.trim()) return alert("公告內容不能為空");
-
-    updateMutation.mutate(
-      { announcement_id: id, admin_id: adminId, message: editMessage },
-      {
-        onSuccess: () => {
-          alert("修改成功！");
-          setEditingId(null);
-          qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
-        },
-        onError: (err) => alert("修改失敗：" + err.message),
-      }
-    );
-  };
-
-  const handleDelete = (id: number) => {
-    if (!confirm("確定要刪除這則公告嗎？此動作無法復原。")) return;
-
-    deleteMutation.mutate(
-      { announcement_id: id, admin_id: adminId },
-      {
-        onSuccess: () => {
-          alert("刪除成功");
-          qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
-        },
-        onError: (err) => alert("刪除失敗：" + err.message),
-      }
-    );
-  };
->>>>>>> 2b338bd89bf3874d47a94e1b823e8ff88c43759b
 
   const displayAnnouncements = (apiData || []).filter((item) => {
     const dateStr = item.created_at?.split("T")[0] || "";
