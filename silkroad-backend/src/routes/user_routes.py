@@ -8,6 +8,7 @@ from controllers.user_controller import (
     register_step1, 
     register_step2,
     current_user,
+    get_public_vendors
 )
 
 user_routes = Blueprint('user', __name__)
@@ -274,3 +275,33 @@ else:
 """
 
 user_routes.route('/current_user', methods=['GET'])(current_user)
+
+
+user_routes.route('/vendors', methods=['GET'])(get_public_vendors)
+
+"""
+Get Public Vendors List
+URL: /api/user/vendors
+Method: GET
+Header: None (No Cookie required)
+Return:
+{
+    "success": true,
+    "message": "...",
+    "data": [
+        {
+            "id": int,
+            "name": string,
+            "address": string,
+            "phone_number": string,
+            "email": string
+        },
+        ...
+    ]
+}
+else:
+{
+    "message": "...",
+    "success": False
+}
+"""
