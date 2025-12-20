@@ -4,8 +4,8 @@ import styles from "./SystemDashboard.module.scss";
 import {
   useAllAnnouncements,
   usePostAnnouncement,
-  useUpdateAnnouncement, // 新增：更新用的 Hook
-  useDeleteAnnouncement, // 新增：刪除用的 Hook
+  useUpdateAnnouncement,
+  useDeleteAnnouncement,
 } from "@/hooks/auth/admin";
 import { useCurrentUser } from "@/hooks/auth/user";
 
@@ -14,22 +14,18 @@ export default function SystemDashboard() {
   const { data: user } = useCurrentUser();
   const adminId = user?.id || 1;
 
-  // --- API Hooks ---
   const { data: apiData, isLoading, isError } = useAllAnnouncements();
   const postMutation = usePostAnnouncement();
-  const updateMutation = useUpdateAnnouncement(); // 初始化 Hook
-  const deleteMutation = useDeleteAnnouncement(); // 初始化 Hook
+  const updateMutation = useUpdateAnnouncement();
+  const deleteMutation = useDeleteAnnouncement();
 
-  // --- 狀態管理 ---
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [newSummary, setNewSummary] = useState("");
 
-  // ★ 新增：編輯模式的狀態
-  const [editingId, setEditingId] = useState<number | null>(null); // 目前正在編輯哪一個 ID
-  const [editMessage, setEditMessage] = useState(""); // 編輯中的文字內容
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editMessage, setEditMessage] = useState("");
 
-  // --- 功能 1: 發布公告 ---
   const handlePost = () => {
     if (!newSummary.trim()) return alert("請輸入公告內容");
     postMutation.mutate(
@@ -45,19 +41,16 @@ export default function SystemDashboard() {
     );
   };
 
-  // --- 功能 2: 開始編輯 ---
   const startEdit = (id: number, currentMessage: string) => {
-    setEditingId(id); // 設定當前編輯的 ID
-    setEditMessage(currentMessage); // 把原本的文字帶入輸入框
+    setEditingId(id);
+    setEditMessage(currentMessage);
   };
 
-  // --- 功能 3: 取消編輯 ---
   const cancelEdit = () => {
     setEditingId(null);
     setEditMessage("");
   };
 
-  // --- 功能 4: 儲存編輯 (Update) ---
   const saveEdit = (id: number) => {
     if (!editMessage.trim()) return alert("公告內容不能為空");
 
@@ -66,7 +59,7 @@ export default function SystemDashboard() {
       {
         onSuccess: () => {
           alert("修改成功！");
-          setEditingId(null); // 退出編輯模式
+          setEditingId(null);
           qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
         },
         onError: (err) => alert("修改失敗：" + err.message),
@@ -74,7 +67,6 @@ export default function SystemDashboard() {
     );
   };
 
-  // --- 功能 5: 刪除公告 (Delete) ---
   const handleDelete = (id: number) => {
     if (!confirm("確定要刪除這則公告嗎？此動作無法復原。")) return;
 
@@ -82,7 +74,7 @@ export default function SystemDashboard() {
       { announcement_id: id, admin_id: adminId },
       {
         onSuccess: () => {
-          // alert("刪除成功"); // 刪除通常不一定要 alert，看需求
+          alert("刪除成功");
           qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
         },
         onError: (err) => alert("刪除失敗：" + err.message),
@@ -90,7 +82,6 @@ export default function SystemDashboard() {
     );
   };
 
-  // --- 資料篩選 ---
   const displayAnnouncements = (apiData || []).filter((item) => {
     const dateStr = item.created_at?.split("T")[0] || "";
     const matchesSearch =
@@ -107,7 +98,6 @@ export default function SystemDashboard() {
     <div className={styles.container}>
       <h2 className={styles.title}>系統公告 / System Announcements</h2>
 
-      {/* 新增區塊 */}
       <div
         className={styles.createSection}
         style={{ marginBottom: "20px", display: "flex", gap: "10px" }}
@@ -123,14 +113,13 @@ export default function SystemDashboard() {
         <button
           onClick={handlePost}
           disabled={postMutation.isPending}
-          className={styles.actionBtn} // 建議在 SCSS 加個通用 class
+          className={styles.actionBtn}
           style={{ cursor: "pointer", padding: "0 20px" }}
         >
           {postMutation.isPending ? "..." : "發布"}
         </button>
       </div>
 
-      {/* 篩選區塊 */}
       <div className={styles.filters}>
         <input
           type="text"
@@ -147,7 +136,6 @@ export default function SystemDashboard() {
         />
       </div>
 
-      {/* 表格區塊 */}
       <table className={styles.table}>
         <thead className={styles.thead}>
           <tr>
@@ -169,12 +157,10 @@ export default function SystemDashboard() {
             </tr>
           ) : (
             displayAnnouncements.map((item) => {
-              // 判斷此行是否處於「編輯模式」
               const isEditing = editingId === item.announcement_id;
 
               return (
                 <tr key={item.announcement_id} className={styles.tr}>
-                  {/* --- 欄位 1: 訊息內容 (根據模式切換顯示) --- */}
                   <td className={styles.td}>
                     {isEditing ? (
                       <input
@@ -183,21 +169,18 @@ export default function SystemDashboard() {
                         onChange={(e) => setEditMessage(e.target.value)}
                         className={styles.input}
                         style={{ width: "100%" }}
-                        autoFocus // 自動聚焦
+                        autoFocus
                       />
                     ) : (
                       item.message
                     )}
                   </td>
 
-                  {/* --- 欄位 2: 日期 (純顯示) --- */}
                   <td className={styles.td}>{item.created_at.split("T")[0]}</td>
 
-                  {/* --- 欄位 3: 操作按鈕 --- */}
                   <td className={styles.td}>
                     <div style={{ display: "flex", gap: "10px" }}>
                       {isEditing ? (
-                        // 編輯模式下的按鈕：儲存 / 取消
                         <>
                           <button
                             onClick={() => saveEdit(item.announcement_id)}
@@ -224,7 +207,6 @@ export default function SystemDashboard() {
                           </button>
                         </>
                       ) : (
-                        // 檢視模式下的按鈕：編輯 / 刪除
                         <>
                           <button
                             onClick={() =>
