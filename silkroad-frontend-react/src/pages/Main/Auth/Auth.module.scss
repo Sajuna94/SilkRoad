@@ -1,47 +1,30 @@
 .background::before {
-	content: "";
-	position: fixed;
-	inset: 0;
-	background: rgba(0, 0, 0, 0.5);
-	z-index: -1;
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: -1;
 }
 
 .background::after {
-	content: "";
-	position: fixed;
-	inset: 0;
-	background-image: url("https://res.cloudinary.com/dq8jvjcv4/image/upload/v1763180444/stuttgart-bar-guide-die-besten-cocktailbars-der-stadt-2_v7g94h.jpg");
-	background-repeat: no-repeat;
-	background-size: cover;
-	background-position: top;
-	filter: blur(8px);
-	z-index: -2;
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("https://res.cloudinary.com/dq8jvjcv4/image/upload/v1763180444/stuttgart-bar-guide-die-besten-cocktailbars-der-stadt-2_v7g94h.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: top;
+  filter: blur(8px);
+  z-index: -2;
 }
 
 .centered {
-	flex: 1;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+  min-height: calc(100vh - 140px);
+  // flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
 }
-
-
-// .dropdown {
-// 	display: flex;
-// 	align-items: center;
-
-// 	label {
-// 		color: #213547;
-// 		font-size: 1rem;
-// 		margin-right: 8px;
-// 	}
-
-// 	select {
-// 		flex: 1;
-// 		padding: 6px 10px;
-// 		color: #213547;
-// 		border: 1px solid #ccc;
-// 		border-radius: 4px;
-// 		background-color: #fff;
-// 	}
-// }

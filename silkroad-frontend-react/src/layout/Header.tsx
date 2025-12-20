@@ -100,7 +100,17 @@ export default function Header() {
                       className={styles.menuItem}
                       onClick={handleLinkClick}
                     >
-                      管理員後台
+                      管理員後臺
+                    </Link>
+                  )}
+
+                  {user.role === "vendor" && (
+                    <Link
+                      to="/vendor/dashboard"
+                      className={styles.menuItem}
+                      onClick={handleLinkClick}
+                    >
+                      商家後臺
                     </Link>
                   )}
 
