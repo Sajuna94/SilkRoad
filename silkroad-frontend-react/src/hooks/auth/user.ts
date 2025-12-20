@@ -94,6 +94,7 @@ export const useCurrentUser = () => {
     queryKey: ["user"],
     queryFn: async () => {
       const res = await api.get("/user/current_user");
+      console.log(res);
       return res.data.data;
     },
     retry: false,

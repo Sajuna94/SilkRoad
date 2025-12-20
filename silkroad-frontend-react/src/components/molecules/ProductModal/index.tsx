@@ -61,7 +61,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ on
     return (
         <Dialog ref={dialogRef}>
             <picture>
-                <img src={product.url} />
+                <img src={product.image_url} />
             </picture>
             <form>
                 <header>
