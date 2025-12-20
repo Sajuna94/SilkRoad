@@ -238,15 +238,6 @@ def delete_announcement(announcement_id):
             "success": False
         }), 500
     
-沒問題，這三個功能主要是讀取資料（Read），相較於寫入邏輯會單純一些。
-
-以下幫你撰寫三個 API 的 Controller 函式，以及對應的 Route 設定。
-
-1. 修改 Controller (src/controllers/admin_controller.py)
-請將以下這三個函式加入到你的 admin_controller.py 檔案中。我使用了 List Comprehension (列表推導式) 來快速將資料庫物件轉換成 JSON 格式，並加上了 .isoformat() 處理時間格式，避免報錯。
-
-Python
-
 # ... (保留你原有的 import 和函式)
 
 @require_login(role=["admin"])
