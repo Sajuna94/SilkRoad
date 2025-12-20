@@ -137,9 +137,9 @@ def init_data():
         admin = User.query.filter_by(email=admin_email).first()
         if not admin:
             admin = Admin(
-                name="Super Admin", 
+                name="SuperAdmin", 
                 email=admin_email, 
-                password=generate_password_hash("password123"),
+                password=generate_password_hash("123"),
                 phone_number="0900000000"
             )
             db.session.add(admin)
@@ -190,7 +190,37 @@ def init_data():
         db.session.rollback()
         print(f"[Error] {str(e)}")
         return jsonify({"error": str(e)}), 500
+    
+@test_routes.route("/init_admin")
+def init_admin():
+    """
+    初始化 Admin測試資料
+    """
+    try:
+        # 2. 建立 Admin
+        admin_email = "admin@test.com"
+        admin = User.query.filter_by(email=admin_email).first()
+        if not admin:
+            admin = Admin(
+                name="SuperAdmin", 
+                email=admin_email, 
+                password=generate_password_hash("123"),
+                phone_number="0900000000"
+            )
+            db.session.add(admin)
+            print("[test] Admin created")
 
+        db.session.commit()
+        
+        return jsonify({
+            "status": "Admin init success",
+            "admin_id": admin.id
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[Error] {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 # for cloudinary upload signature generation
 import cloudinary
