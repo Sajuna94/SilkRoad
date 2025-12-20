@@ -1,34 +1,13 @@
 import { Link } from "react-router-dom";
 import styles from "./Header.module.scss";
-import { type User } from "@/types/user"
-import { useQueryClient } from "@tanstack/react-query";
-import { useLogout } from "@/hooks/auth/user";
-
-
+import { useCurrentUser, useLogout } from "@/hooks/auth/user";
 
 export default function Header() {
+    const logout = useLogout();
 
-    // const user: User = {
-    //     id: 2,
-    //     name: "test",
-    //     email: "test@gmail.com",
-    //     phone_number: "2222",
-    //     role: "admin",
-    //     created_at: "22020/22/22"
-    // };
-
-    const qc = useQueryClient();
-    const user = qc.getQueryData<User>(["user"]);
-
-    const logout= useLogout();
-    // if (!user) {
-    // logout
-    // }   
+    const { data: user } = useCurrentUser();
 
     return (
-
-
-
         <header className={styles['header-warp']}>
             <h1>
                 <Link to="/home">SilkRoad</Link>
@@ -44,32 +23,14 @@ export default function Header() {
                     )} */}
                     <li><Link to="/user/orders">訂單紀錄</Link></li>
                     <li><Link to="/cart">查看購物車</Link></li>
-                    {
-                        user ? (
-                            <li onClick={() => {logout.mutate();}}>登出</li>
-                        ) : (
-                            <li><Link to="/login">登入</Link></li>
-                        )
-                    }
+
+                    {user ? (
+                        <li onClick={() => { logout.mutate(); }}><a>登出</a></li>
+                    ) : (
+                        <li><Link to="/login">登入</Link></li>
+                    )}
                 </ul>
             </nav>
-            {/* <div className={styles['left']}>
-                <div className={styles['logo']}>
-                    <Link to="/home">SilkRoad</Link>
-                </div>
-                <nav className={styles['links']}>
-                    <Link to="/about">關於我們</Link>
-                </nav>
-                <nav className={styles['links']}>
-                    <Link to="/admin">Admin</Link>
-                    <Link to="/vendor">Vendor</Link>
-                </nav>
-            </div>
-            <nav className={styles['right']}>
-                <Link to="/cart">購物車</Link>
-                <Link to="/user/orders">查看訂單</Link>
-                <Link to="/login">登入</Link>
-            </nav> */}
         </header>
     );
 }

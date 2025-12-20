@@ -25,6 +25,7 @@ export const useLogin = () => {
 		onSuccess: (res) => {
 			console.log(`[${res.role}] Login successful:`, res);
 			qc.setQueryData(["user"], res);
+			qc.invalidateQueries({ queryKey: ['user'] });
 		},
 	});
 };
@@ -48,6 +49,7 @@ export const useRegisterRole = (role: UserRole) => {
 		},
 		onSuccess: (res) => {
 			qc.setQueryData(["user"], res);
+			qc.invalidateQueries({ queryKey: ['user'] });
 		},
 		onError: (error) => {
 			console.error("註冊失敗:", error.response?.data);
@@ -76,13 +78,14 @@ export const useLogout = () => {
 		},
 		onSuccess: () => {
 			qc.clear();
+			qc.invalidateQueries();
 		},
 	});
 }
 
 export const useCurrentUser = () => {
 	return useQuery<User, ApiErrorBody>({
-		queryKey: ["current_user"],
+		queryKey: ["user"],
 		queryFn: async () => {
 			const res = await api.get("/user/current_user");
 			return res.data.data;

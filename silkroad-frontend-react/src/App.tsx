@@ -7,7 +7,6 @@ import Router from "./router";
 import Header from "@/layout/Header";
 import Footer from "@/layout/Footer";
 import { useCurrentUser } from "./hooks/auth/user";
-import { useQueryClient } from "@tanstack/react-query";
 
 // import { usePing } from "@/hooks/test/usePing";
 
@@ -15,12 +14,10 @@ function App() {
     // const ping = usePing();
     // if (ping.isSuccess) console.log("Backend response:", ping.data);
 
-    const qc = useQueryClient();
     const currentUser = useCurrentUser();
 
     if (currentUser.isSuccess) {
         const user = currentUser.data;
-        qc.setQueryData(['user'], user);
         console.log(`[${user.role}] Current user loaded:`, user);
     }
 
