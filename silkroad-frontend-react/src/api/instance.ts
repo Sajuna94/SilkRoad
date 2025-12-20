@@ -52,3 +52,35 @@ api.interceptors.response.use(
 		return Promise.reject(err)
 	}
 )
+
+export const getCartData = (cartId: number) => 
+    api.get(`/cart/view/${cartId}`);
+
+// 2. 移除商品 (POST /api/cart/remove)
+// 後端需要 JSON 包含 { "cart_item_id": XXX }
+export const removeFromCart = (cartItemId: number) => 
+    api.post('/cart/remove', { cart_item_id: cartItemId });
+
+// 3. 加入購物車 (POST /api/cart/add)
+// 傳入商品 ID、數量及規格 (sugar, ice, size)
+export const addToCart = (data: {
+    customer_id?: number;
+    vendor_id: number;
+    product_id: number;
+    quantity: number;
+    selected_sugar: string;
+    selected_ice: string;
+    selected_size: string;
+}) => api.post('/cart/add', data);
+
+/** --- 訂單 API 對接 --- **/
+
+// 執行結帳 (POST /api/order/checkout)
+// 這會觸發後端的 generate_new_order 邏輯
+export const createOrder = (data: {
+    customer_id: number;
+    vendor_id: number;
+    policy_id: number | null; // 必須提供，若無則傳 null
+    note: string;
+    payment_methods: string;
+}) => api.post('/order/trans', data);

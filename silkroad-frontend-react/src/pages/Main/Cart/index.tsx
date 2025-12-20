@@ -3,13 +3,14 @@ import styles from "./Cart.module.scss";
 import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import { Link } from "react-router-dom";
-import { getCartData, createOrder } from "@/api"; // 確保你的 api.ts 有導出這兩個函式
+// 確保 api.ts 有匯出這三個函式
+import { getCartData, createOrder, removeFromCart } from "@/api"; 
 
-// 1. 定義後端回傳的資料型別，對齊你的 SQL 與 JSON 輸出
+// 1. 定義後端回傳的資料型別，確保包含移除與結帳所需的 ID
 interface CartItemFromBackend {
     cart_item_id: number;
     product_id: number;
-	product_vendor_id: number;
+    product_vendor_id: number; // 修正：確保 Interface 包含此欄位以消除紅線
     product_name: string;
     product_image: string;
     price: number;
@@ -25,49 +26,68 @@ export default function Cart() {
     const [items, setItems] = useState<CartItemFromBackend[]>([]);
     const [totalAmount, setTotalAmount] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [note, setNote] = useState(""); // 備註狀態
-    const [selectedCoupon, setSelectedCoupon] = useState(""); // 選中的折價券
+    const [note, setNote] = useState(""); 
+    const [selectedCoupon, setSelectedCoupon] = useState("");
 
     // 暫代 ID，實作中應由登入狀態獲取
     const currentCustomerId = 1; 
 
-    // B. 生命週期：組件掛載時抓取後端購物車真資料
-    useEffect(() => {
-        const fetchCart = async () => {
-            try {
-                // 呼叫你的後端路由 /api/cart/view/<id>
-                const res = await getCartData(currentCustomerId);
-                if (res.data.success) {
-                    setItems(res.data.data); // 對應你的 result_list
-                    setTotalAmount(res.data.total_amount); // 對應你的 total_price
-                }
-            } catch (err) {
-                console.error("購物車對接失敗，請檢查後端與 CORS 設定", err);
-            } finally {
-                setLoading(false);
+    // B. 資料抓取邏輯：封裝成獨立函式，以便在刪除後重複呼叫
+    const fetchCart = async () => {
+        try {
+            const res = await getCartData(currentCustomerId);
+            if (res.data.success) {
+                setItems(res.data.data); // 對應後端的 result_list
+                setTotalAmount(res.data.total_amount); // 對應後端的 total_price
             }
-        };
+        } catch (err) {
+            console.error("購物車對接失敗", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 初次掛載時執行
+    useEffect(() => {
         fetchCart();
     }, []);
 
-    // C. 結帳處理邏輯 (對接你的 generate_new_order)
+    // C. 移除商品邏輯
+    const handleRemoveItem = async (cartItemId: number) => {
+        if (!confirm("確定要從購物車移除這項商品嗎？")) return;
+
+        try {
+            const res = await removeFromCart(cartItemId);
+            if (res.data.success) {
+                alert("已移除商品");
+                fetchCart(); // 重新抓取資料，實現自動重新整理清單
+            } else {
+                alert("移除失敗：" + res.data.message);
+            }
+        } catch (err) {
+            console.error("移除失敗", err);
+            alert("移除發生錯誤");
+        }
+    };
+
+    // D. 結帳處理邏輯
     const handleCheckout = async () => {
         if (items.length === 0) return alert("購物車是空的！");
 
         try {
             const payload = {
                 customer_id: currentCustomerId,
-                vendor_id: items[0].product_vendor_id || 1, // 暫時假設，實作應從 items[0] 取得對應商店
+                vendor_id: items[0].product_vendor_id || 1, // 從購物車項目動態獲取商店 ID
                 note: note,
-                payment_methods: "cash", // 預設支付方式
+                payment_methods: "cash",
                 // policy_id: selectedCoupon ? 某個ID : undefined
             };
 
             const res = await createOrder(payload);
             if (res.data.success) {
                 alert("訂單建立成功！單號：" + res.data.order_id);
-                // 重新載入購物車或導向訂單頁
-                window.location.reload();
+                fetchCart(); // 結帳完後清空/更新狀態
+                setNote("");
             }
         } catch (err) {
             console.error("結帳失敗", err);
@@ -82,10 +102,9 @@ export default function Cart() {
             <header>購物車</header>
 
             <main>
-                {/* 傳入真資料給清單組件 */}
-                <CartList items={items} />
+                {/* 將 items 與 handleRemoveItem 傳入 */}
+                <CartList items={items} onRemove={handleRemoveItem} />
                 
-                {/* 傳入狀態控制給側邊欄 */}
                 <Sidebar 
                     note={note} 
                     setNote={setNote} 
@@ -98,11 +117,10 @@ export default function Cart() {
                 <div className={styles["cartOperation"]}>
                     <Link to="/home">繼續加點</Link>
                     <span>|</span>
-                    <a onClick={() => alert("清空功能對接中")}>清空購物車</a>
+                    <a onClick={() => alert("功能開發中")}>清空購物車</a>
                 </div>
 
                 <div className={styles["totalArea"]}>
-                    {/* 顯示後端精確計算的總金額 */}
                     <div className={styles["total"]}>${totalAmount}</div>
                     <button 
                         onClick={handleCheckout} 
@@ -116,8 +134,14 @@ export default function Cart() {
     );
 }
 
-// 🛒 購物清單子組件
-function CartList({ items }: { items: CartItemFromBackend[] }) {
+// 🛒 購物清單子組件 (接收 onRemove)
+function CartList({ 
+    items, 
+    onRemove 
+}: { 
+    items: CartItemFromBackend[]; 
+    onRemove: (id: number) => void 
+}) {
     const modalRef = useRef<ProductModalRef>(null);
 
     if (items.length === 0)
@@ -142,17 +166,35 @@ function CartList({ items }: { items: CartItemFromBackend[] }) {
                         <div className={styles["price"]}>
                             <h3>${item.subtotal}</h3>
                             <div className={styles["quantity"]}>數量: {item.quantity}</div>
+                            
+                            {/* 移除按鈕 */}
+                            <button 
+                                className={styles["btnRemove"]}
+                                style={{ 
+                                    color: 'red', 
+                                    border: 'none', 
+                                    background: 'none', 
+                                    cursor: 'pointer',
+                                    fontSize: '0.8rem',
+                                    marginTop: '5px' 
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation(); // 防止點擊觸發編輯彈窗
+                                    onRemove(item.cart_item_id);
+                                }}
+                            >
+                                移除項目
+                            </button>
                         </div>
                     </li>
                 ))}
             </ul>
-            {/* TODO: 串接修改 API */}
             <ProductModal ref={modalRef} submitText="確認修改" />
         </>
     );
 }
 
-// 📑 側邊欄子組件 (處理備註與折扣)
+// 📑 側邊欄子組件
 function Sidebar({ note, setNote, selected, setSelected }: any) {
     const coupons = ["VIP666", "VIP888", "VIP999", "NTUT"];
 
@@ -169,7 +211,7 @@ function Sidebar({ note, setNote, selected, setSelected }: any) {
                             onClick={() => setSelected(selected === code ? "" : code)}
                         >
                             <span>{code}</span>
-                            <div className={styles["discount"]}>可抵 $100</div>
+                            <div className={styles["discount"]}>100</div>
                         </li>
                     ))}
                 </ul>
