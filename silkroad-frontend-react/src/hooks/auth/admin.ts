@@ -26,6 +26,17 @@ export type DeleteAnnouncementReq = {
   admin_id: number;
 };
 
+export type UpdateAnnouncementArgs = {
+  announcement_id: number;
+  admin_id: number;
+  message: string;
+};
+
+export type DeleteAnnouncementArgs = {
+  announcement_id: number;
+  admin_id: number;
+};
+
 export type Customer = {
   id: number;
   name: string;
@@ -52,23 +63,6 @@ export type Announcement = {
   announcement_id: number;
   message: string;
   created_at: string;
-};
-
-export type UpdateVendorStatusReq = {
-  admin_id: number;
-  status: "active" | "suspended";
-};
-
-export const useUpdateVendorStatus = (vendorId: number) => {
-  return useMutation<any, ApiErrorBody, UpdateVendorStatusReq>({
-    mutationFn: async (payload) => {
-      const res = await api.post(
-        `/admin/vendors/${vendorId}/status`,
-        payload
-      );
-      return res.data;
-    },
-  });
 };
 
 export const useBlockUser = () => {
@@ -98,25 +92,25 @@ export const usePostAnnouncement = () => {
   });
 };
 
-export const useUpdateAnnouncement = (announcementId: number) => {
-  return useMutation<any, ApiErrorBody, UpdateAnnouncementReq>({
-    mutationFn: async (payload) => {
-      const res = await api.put(
-        `/admin/announce/${announcementId}`,
-        payload
-      );
+export const useUpdateAnnouncement = () => {
+  return useMutation<any, ApiErrorBody, UpdateAnnouncementArgs>({
+    mutationFn: async ({ announcement_id, admin_id, message }) => {
+      const res = await api.put(`/admin/announce/${announcement_id}`, {
+        admin_id,
+        message,
+      });
       return res.data;
     },
   });
 };
 
-export const useDeleteAnnouncement = (announcementId: number) => {
-  return useMutation<any, ApiErrorBody, DeleteAnnouncementReq>({
-    mutationFn: async (payload) => {
-      const res = await api.delete(
-        `/admin/announce/${announcementId}`,
-        { data: payload }
-      );
+export const useDeleteAnnouncement = () => {
+  return useMutation<any, ApiErrorBody, DeleteAnnouncementArgs>({
+    mutationFn: async ({ announcement_id, admin_id }) => {
+      // 注意 axios delete 的 body 需要包在 data 屬性裡
+      const res = await api.delete(`/admin/announce/${announcement_id}`, {
+        data: { admin_id },
+      });
       return res.data;
     },
   });
@@ -156,4 +150,3 @@ export const useAllAnnouncements = () => {
     refetchOnWindowFocus: false,
   });
 };
-
