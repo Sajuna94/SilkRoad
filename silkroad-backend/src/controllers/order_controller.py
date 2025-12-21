@@ -349,3 +349,47 @@ def update_orderinfo():
         db.session.rollback()
         print(f"更新訂單時發生錯誤: {e}")
         return jsonify({"message": "伺服器內部錯誤", "success": False}), 500
+    
+def view_all_user_orders():
+    data = request.get_json()
+    """
+    只需傳給我 { "user_id": XXX }
+    """
+    if not data or not data.get("user_id"):
+        return jsonify({'message': '缺少 user_id', "success": False}), 400
+    
+    request_user_id = data.get("user_id")
+
+    try:
+        orders = Order.query.filter_by(user_id=request_user_id).order_by(Order.id.desc()).all()
+
+        if not orders:
+            return jsonify({
+                "data": [],
+                "message": "尚無任何訂單紀錄",
+                "success": True
+            })
+
+        result_list = []
+        for order in orders:
+            #整理每筆訂單的概要資訊
+            result_list.append({
+                "order_id": order.id,
+                "vendor_id": order.vendor_id,
+                "total_price": order.total_price,
+                "discount_amount": order.discount_amount,
+                "is_completed": order.is_completed,
+                "is_delivered": order.is_delivered,
+                "payment_methods": str(order.payment_methods),
+                "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S') if hasattr(order, 'created_at') else None,
+                "note": order.note
+            })
+        
+        return jsonify({
+            "data": result_list,
+            "message": "成功取得所有訂單",
+            "success": True,         
+        })       
+    except Exception as e:
+        print(f"Error details: {e}")
+        return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
