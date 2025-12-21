@@ -4,26 +4,23 @@ import type { Product } from "@/types/store";
 import type { Vendor } from "@/types/user";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-type ToggleProductReq = {
+type UpdateProductPayload = {
 	product_id: number;
 	is_listed: boolean;
 }[];
 
-export const useToggleProducts = () => {
+export const useUpdateProductsListed = () => {
 	const qc = useQueryClient();
 
-	return useMutation<Product[], ApiErrorBody, ToggleProductReq>({
-		mutationFn: async (payload) => {
-			const res = await api.patch("/vendor/", payload);
+	return useMutation({
+		mutationFn: async (payload: UpdateProductPayload) => {
+			const res = await api.patch("/vendor/products/listed", payload);
 			return res.data;
 		},
 		onSuccess: () => {
-			// 商品狀態改變，通常需要刷新 vendor / products
-			qc.invalidateQueries({ queryKey: ["vendor"] });
+			// 成功後刷新商品列表
+
 			qc.invalidateQueries({ queryKey: ["products"] });
-		},
-		onError: (error) => {
-			console.error("商品上下架失敗:", error.response?.data);
 		},
 	});
 };
@@ -33,9 +30,9 @@ type AddProductReq = {
 	price: number;
 	description: string;
 	options: {
-		size: string[];
-		ice: string[];
-		sugar: string[];
+		size: string;
+		ice: string;
+		sugar: string;
 	};
 	image_url: string;
 };
@@ -46,6 +43,7 @@ export const useAddProduct = () => {
 	return useMutation<Product, ApiErrorBody, AddProductReq>({
 		mutationFn: async (payload) => {
 			const res = await api.post("/vendor/product/add", payload);
+			console.log(res);
 			return res.data.data;
 		},
 		onSuccess: (product) => {
@@ -83,3 +81,14 @@ export const useVendors = () => {
 		retry: false,
 	});
 };
+
+export const useVendorProducts = () => {
+	return useQuery<Product[], ApiErrorBody>({
+		queryKey: ["products"],
+		queryFn: async () => {
+			const res = await api.get(`/vendor/products`);
+			return res.data.data;
+		},
+		retry: false,
+	});
+}

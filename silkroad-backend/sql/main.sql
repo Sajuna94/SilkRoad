@@ -18,13 +18,7 @@ DROP TABLE IF EXISTS `order`.`discount_policies`;
 -- store schema
 DROP TABLE IF EXISTS `store`.`reviews`;
 
-DROP TABLE IF EXISTS `store`.`products`;
 
-DROP TABLE IF EXISTS `store`.`sugar_options`;
-
-DROP TABLE IF EXISTS `store`.`ice_options`;
-
-DROP TABLE IF EXISTS `store`.`sizes_options`;
 
 -- auth schema
 DROP TABLE IF EXISTS `auth`.`customers`;
@@ -103,34 +97,38 @@ CREATE TABLE `auth`.`system_announcements` (
 );
 
 -- store tables
+DROP TABLE IF EXISTS `store`.`products`;
 CREATE TABLE `store`.`products` (
     `id` int PRIMARY KEY AUTO_INCREMENT,
     `vendor_id` int NOT NULL,
     `name` varchar(50) NOT NULL,
     `price` int NOT NULL,
     `description` text,
-    `image_url` varchar(255) UNIQUE,
+    `image_url` varchar(255),
     `is_listed` boolean NOT NULL DEFAULT true COMMENT '上架狀態',
     `created_at` timestamp NOT NULL DEFAULT(now()),
     FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`)
 );
 
+DROP TABLE IF EXISTS `store`.`sugar_options`;
 CREATE TABLE `store`.`sugar_options` (
     `product_id` int PRIMARY KEY,
     `options` text NOT NULL COMMENT '糖度選項，使用逗號分隔 eg. 70%, 50%, sgrfree',
-    FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`)
+    FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`) ON DELETE CASCADE
 );
 
+DROP TABLE IF EXISTS `store`.`ice_options`;
 CREATE TABLE `store`.`ice_options` (
     `product_id` int PRIMARY KEY,
     `options` text NOT NULL COMMENT '冰量選項，使用逗號分隔 eg. 70%, 50%, 0%',
-    FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`)
+    FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`) ON DELETE CASCADE
 );
 
+DROP TABLE IF EXISTS `store`.`sizes_options`;
 CREATE TABLE `store`.`sizes_options` (
     `product_id` int PRIMARY KEY,
     `options` text NOT NULL COMMENT '大小選項，使用逗號分隔 eg. L, M, S',
-    FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`)
+    FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `store`.`reviews` (

@@ -1,5 +1,6 @@
 import { api } from '@/api/instance';
 import { useMutation } from '@tanstack/react-query'
+import axios from 'axios';
 
 type CloudinarySign = {
 	api_key: string;
@@ -12,7 +13,7 @@ type CloudinarySign = {
 export const useCloudinaryUpload = () => {
 	return useMutation({
 		mutationFn: async (file: File): Promise<{ secure_url: string }> => {
-			const res = await api.get('/cloudinary-signature');
+			const res = await api.get('/test/cloudinary-signature');
 			const sign = res.data as CloudinarySign;
 
 			const formData = new FormData();
@@ -23,7 +24,7 @@ export const useCloudinaryUpload = () => {
 			formData.append('folder', sign.folder);
 
 			const url = `https://api.cloudinary.com/v1_1/${sign.cloud_name}/image/upload`;
-			return (await api.post(url, formData)).data;
+			return (await axios.post(url, formData)).data;
 		}
 	});
 }

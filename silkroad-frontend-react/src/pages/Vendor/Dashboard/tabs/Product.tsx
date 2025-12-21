@@ -1,25 +1,34 @@
-import { useAddProduct } from "@/hooks/auth/vendor";
+import { useAddProduct, useUpdateProductsListed, useVendorProducts } from "@/hooks/auth/vendor";
 import styles from "./Product.module.scss";
-import { products } from "@/types/data/product";
+// import { products } from "@/types/data/product";
 import type { Product } from "@/types/store";
 import React from "react";
+import { useCloudinaryUpload } from "@/hooks/utils/cloudinary";
+import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal";
 
 export default function ProductTab() {
-    const [initProducts, setProducts] = React.useState<Product[]>(products);
+    const cloudinaryUploadMutation = useCloudinaryUpload();
+    const addProductMutation = useAddProduct();
+    const vendorProductsQuery = useVendorProducts();
+    const updateProductsMutation = useUpdateProductsListed();
+
+    const [products, setProducts] = React.useState<Product[]>([]);
+    const modalRef = React.useRef<ProductModalRef>(null);
+
+    React.useEffect(() => {
+        if (vendorProductsQuery.isSuccess) {
+            setProducts(vendorProductsQuery.data);
+            console.log(vendorProductsQuery.data);
+        }
+    }, [vendorProductsQuery.data, vendorProductsQuery.isSuccess]);
+
     const [form, setForm] = React.useState({
-        name: "",
-        price: 0,
-        desc: "",
-        options: {
-            size: "",
-            sugar: "",
-            ice: "",
-        },
+        name: "長島冰茶",
+        price: 999,
+        desc: "長島的茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶",
+        options: { size: "大,小", sugar: "半糖,微糖", ice: "去冰,微冰 ", },
         url: "",
     });
-
-    const addProduct = useAddProduct();
-
 
     const toggleListed = (id: number) => {
         setProducts((prev) =>
@@ -27,44 +36,71 @@ export default function ProductTab() {
         );
     };
 
+    const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        cloudinaryUploadMutation.mutate(file, {
+            onSuccess: (data) => {
+                console.log("Uploaded URL:", data.secure_url);
+                setForm((f) => ({ ...f, url: data.secure_url }))
+            },
+        });
+    };
+
     const handleAddProduct = () => {
         console.log(form);
 
-        addProduct.mutate({
-            name: "紅茶",
-            price: 30,
-            description: "古早味紅茶",
+        addProductMutation.mutate({
+            name: form.name,
+            price: form.price,
+            description: form.desc,
             options: {
-                size: ["M", "L"],
-                ice: ["正常冰", "少冰"],
-                sugar: ["全糖", "半糖", "無糖"],
+                size: form.options.size,
+                ice: form.options.ice,
+                sugar: form.options.sugar,
             },
-            image_url: "https://...",
+            image_url: form.url,
         });
     }
 
+    const handleUpdateSave = () => {
+        updateProductsMutation.mutate(products.map(p => ({
+            product_id: p.id,
+            is_listed: p.is_listed,
+        })));
+    };
+
     return (
         <section className={styles["container"]}>
+            <ProductModal
+                ref={modalRef}
+                submitText="關閉預覽"
+                onSubmit={async () => { modalRef.current?.close(); }}
+            />
+
             <div className={styles["info"]}>
                 <header>商品資訊</header>
                 <div className={styles["content"]}>
                     <div style={{ flex: 1 }}>
                         <h4 className={styles["table-title"]}>上架專區</h4>
                         <ProductTable
-                            products={initProducts.filter((p) => p.is_listed)}
+                            products={products.filter((p) => p.is_listed)}
                             onToggle={toggleListed}
+                            onOpenModal={(product) => modalRef.current?.open(product)}
                         />
                     </div>
                     <div style={{ flex: 1 }}>
                         <h4 className={styles["table-title"]}>下架專區</h4>
                         <ProductTable
-                            products={initProducts.filter((p) => !p.is_listed)}
+                            products={products.filter((p) => !p.is_listed)}
                             onToggle={toggleListed}
+                            onOpenModal={(product) => modalRef.current?.open(product)}
                         />
                     </div>
                 </div>
                 <footer>
-                    <button>儲存</button>
+                    <button onClick={handleUpdateSave}>儲存</button>
                 </footer>
             </div>
             <div className={styles["add"]}>
@@ -113,6 +149,9 @@ export default function ProductTab() {
                             onChange={(e) => setForm((f) => ({ ...f, options: { ...f.options, ice: e.target.value } }))}
                         />
                     </div>
+                    <div>
+                        <input type="file" onChange={handleUpload} />
+                    </div>
                 </div>
                 <footer>
                     <button onClick={handleAddProduct}>確認新增</button>
@@ -125,9 +164,11 @@ export default function ProductTab() {
 function ProductTable({
     products,
     onToggle,
+    onOpenModal,
 }: {
     products: Product[];
     onToggle: (id: number) => void;
+    onOpenModal: (product: Product) => void;
 }) {
     return (
         <div className={styles["table-wrapper"]}>
@@ -136,6 +177,7 @@ function ProductTable({
                     <tr>
                         <th>名稱</th>
                         <th style={{ width: "90px" }}>上/下架</th>
+                        <th style={{ width: "90px" }}>idk</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -145,6 +187,11 @@ function ProductTable({
                             <td style={{ width: "90px" }}>
                                 <button onClick={() => onToggle(p.id)}>
                                     {p.is_listed ? "下架" : "上架"}
+                                </button>
+                            </td>
+                            <td style={{ width: "90px" }}>
+                                <button onClick={() => onOpenModal(p)}>
+                                    預覽
                                 </button>
                             </td>
                         </tr>

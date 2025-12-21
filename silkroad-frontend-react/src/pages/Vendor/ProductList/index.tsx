@@ -6,26 +6,6 @@ import ReviewCard from "@/components/molecules/ReviewCard";
 import styles from "./ProductList.module.scss";
 
 export default function ProductList() {
-<<<<<<< HEAD
-    return (
-        <>
-            <Link to={"/vendor/dashboard"}> dashboard </Link>
-            <ProductGallery products={products} pageSize={10} />
-            <VendorHeaderBarImage />
-            <div style={{ marginTop: "40px" }}>
-                <ReviewCard />
-            </div>
-        </>
-    );
-}
-
-function VendorHeaderBarImage() {
-    return (
-        <>
-            <FadeInImage fullSrc="" />
-        </>
-    );
-=======
   return (
     <>
       <main className={styles.pageContainer}>
@@ -78,5 +58,4 @@ function VendorHeaderBarImage() {
       <FadeInImage fullSrc="https://eventbotler.com/images/cocktails/shirley-temple-84bDzLRS.webp" />
     </>
   );
->>>>>>> b382ba1dbacd6fd98b36ae2b4d94a83706d70c71
 }

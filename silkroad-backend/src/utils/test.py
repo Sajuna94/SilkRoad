@@ -226,14 +226,14 @@ def init_admin():
 import cloudinary
 import cloudinary.utils
 import time
+import os
 
 # Could use env variables to store sensitive info
 cloudinary.config(
-    cloud_name="your_cloud_name",  # Replace with your Cloudinary cloud name
-    api_key="your_api_key",
-    api_secret="your_api_secret",  # Replace with your Cloudinary API secret
+    cloud_name=os.getenv("CLOUDINARY_NAME"),  # Replace with your Cloudinary cloud name
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),  # Replace with your Cloudinary API secret
 )
-
 
 # Maybe folder name could name by "vendor_{vendor_id}/product_images"
 # Maybe need @login_required decorator or other auth methods
