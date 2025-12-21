@@ -8,7 +8,7 @@ import {
 import { type Product } from "@/types/store";
 import { InfiniteList } from "@/components/atoms/InfiniteList";
 import { useAddToCart } from "@/hooks/order/cart";
-import { useUser } from "@/hooks/auth/user";
+import { useCurrentUser } from "@/hooks/auth/user";
 
 interface ProductGalleryProps {
     products: Product[];
