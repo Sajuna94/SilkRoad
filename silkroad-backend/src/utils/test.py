@@ -156,7 +156,8 @@ def init_data():
                 phone_number="0911111111",
                 address="Taipei City",
                 vendor_manager_id=manager.id,
-                is_active=True
+                is_active=True,
+                description="This is a test vendor."
             )
             db.session.add(vendor)
             print("[test] Vendor created")

@@ -10,6 +10,7 @@ from controllers import (
     view_discount_policy,
     invalid_discount_policy,
     get_public_vendors,
+    update_vendor_description
 )
 vendor_routes = Blueprint('vendor', __name__)
 
@@ -276,6 +277,32 @@ Return:
         },
         ...
     ]
+}
+else:
+{
+    "message": "...",
+    "success": False
+}
+"""
+
+vendor_routes.route('/description', methods=['PATCH'])(update_vendor_description)
+"""
+Update Vendor Description
+URL: /api/vendor/description
+Method: PATCH
+Header: Cookie (Session required, Role: 'vendor')
+Body:
+{
+    "description": string (nullable)
+}
+Return:
+{
+    "success": true,
+    "message": "Description updated successfully",
+    "data": [{
+        "id": int,
+        "description": string
+    }]
 }
 else:
 {

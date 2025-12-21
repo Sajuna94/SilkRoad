@@ -134,7 +134,8 @@ def register_step2(role):
                 phone_number=temp_data['phone_number'],
                 address=address,
                 vendor_manager_id=target_manager_id, # 使用上面判斷出來的 ID
-                is_active=True
+                is_active=True,
+                description=""
             )
             
         #  Customer 邏輯
@@ -219,6 +220,7 @@ def register_step2(role):
                 "phone_number": new_user.phone_number,
                 "address": new_user.address,
                 "is_active": new_user.is_active,
+                "description": new_user.description,
                 "manager": {
                     "id": final_manager.id,
                     "name": final_manager.name,
@@ -323,6 +325,7 @@ def login_user():
             **base_info,
             "address": getattr(user, 'address', None),
             "is_active": getattr(user, 'is_active', True),
+            "description": getattr(user, 'description', ""),
             "manager": manager_info
         }
 
@@ -430,6 +433,7 @@ def update_user():
             response_data.update({
                 "address": getattr(user, 'address', None),
                 "is_active": getattr(user, 'is_active', True),
+                "description": getattr(user, 'description', ""),
                 "manager": manager_info
             })
 

@@ -755,4 +755,71 @@ def get_public_vendors():
         )
 
     except Exception as e:
-        return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
+
+@require_login(role=["vendor"])
+def update_vendor_description():
+    """
+    修改 Vendor 的 description
+    Payload 範例: { "description": "我們是一家專賣有機食品的商店..." }
+    """
+
+    # 1. 權限檢查 (Security Check)
+    # 必須確保登入者存在，且角色是 'vendor'
+    current_user_id = session.get('user_id')
+    current_role = session.get('role')
+
+    if not current_user_id or current_role != 'vendor':
+        return jsonify({
+            "success": False, 
+            "message": "Unauthorized: Only vendors can perform this action"
+        }), 403
+
+    # 2. 獲取並驗證資料
+    data = request.get_json()
+    
+    # 檢查請求中是否有 description 欄位
+    if 'description' not in data:
+        return jsonify({
+            "success": False, 
+            "message": "Missing 'description' field"
+        }), 400
+
+    new_description = data.get('description')
+
+    # 3. 查詢 Vendor 資料
+    # 因為 Vendor 繼承 User，且 PK 是 user_id，所以直接用 get(current_user_id) 即可
+    vendor = Vendor.query.get(current_user_id)
+
+    if not vendor:
+        return jsonify({
+            "success": False, 
+            "message": "Vendor profile not found"
+        }), 404
+
+    # 4. 更新並儲存 (Update & Commit)
+    try:
+        # 直接賦值，SQLAlchemy 會自動追蹤變更 (Dirty checking)
+        vendor.description = new_description
+        
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Description updated successfully",
+            "data": [{
+                "id": vendor.user_id,
+                "description": vendor.description
+            }]
+        }), 200
+
+    except Exception as e:
+        db.session.rollback() # 發生錯誤時回滾，避免 DB 鎖死
+        print(f"Update Error: {e}")
+        return jsonify({
+            "success": False, 
+            "message": "Database error occurred"
+        }), 500

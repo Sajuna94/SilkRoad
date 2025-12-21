@@ -65,6 +65,7 @@ CREATE TABLE `auth`.`vendors` (
     `is_active` boolean NOT NULL DEFAULT true,
     `revenue` int NOT NULL DEFAULT 0 COMMENT '營業額',
     `address` varchar(255) UNIQUE NOT NULL,
+    `description` text DEFAULT NULL,
     FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`),
     FOREIGN KEY (`vendor_manager_id`) REFERENCES `auth`.`vendor_managers` (`id`)
 );
