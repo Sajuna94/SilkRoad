@@ -26,8 +26,8 @@ export default function ProductTab() {
         name: "長島冰茶",
         price: 999,
         desc: "長島的茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶",
-        options: { size: "大,小", sugar: "半糖,微糖", ice: "去冰,微冰 ", },
-        url: "",
+        options: { size: "大,小", sugar: "半糖,微糖", ice: "去冰,微冰", },
+        url: "https://imgs.gvm.com.tw/upload/gallery/20180227/43031_01.jpg",
     });
 
     const toggleListed = (id: number) => {
@@ -100,7 +100,7 @@ export default function ProductTab() {
                     </div>
                 </div>
                 <footer>
-                    <button onClick={handleUpdateSave}>儲存</button>
+                    <button onClick={handleUpdateSave}>{updateProductsMutation.isPending ? "處理中" : "儲存"}</button>
                 </footer>
             </div>
             <div className={styles["add"]}>
@@ -154,7 +154,7 @@ export default function ProductTab() {
                     </div>
                 </div>
                 <footer>
-                    <button onClick={handleAddProduct}>確認新增</button>
+                    <button onClick={handleAddProduct}>{addProductMutation.isPending ? "處理中" : "確認新增"}</button>
                 </footer>
             </div>
         </section>

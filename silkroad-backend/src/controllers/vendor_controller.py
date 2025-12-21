@@ -129,6 +129,7 @@ def get_products():
 @require_login(role=["vendor"])
 def add_product():
     data: dict = request.get_json() or {}
+    print(data)
 
     # Define required top-level fields and types
     required_fields = {
@@ -171,7 +172,9 @@ def add_product():
             }), 400
 
     # Convert comma-separated string to list for storage
-    options[key] = [opt.strip() for opt in options[key].split(",") if opt.strip()]
+    for key in options_required:
+        options[key] = [opt.strip() for opt in options[key].split(",") if opt.strip()]
+    print(options)
 
     vendor_id = session["user_id"]
     vendor = Vendor.query.get(vendor_id)
