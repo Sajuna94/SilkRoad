@@ -11,21 +11,31 @@ import os
 
 app = Flask(__name__)
 load_dotenv()
-app.secret_key = os.getenv('SESSION_KEY')
+app.secret_key = os.getenv("SESSION_KEY")
 
-app.config['SESSION_COOKIE_NAME'] = 'flask_session'
+app.config["SESSION_COOKIE_NAME"] = "flask_session"
 # app.config['SESSION_COOKIE_HTTPONLY'] = True  # 防止 JavaScript 存取 cookie
 # app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # 跨域必須設為 None
 # app.config['SESSION_COOKIE_SECURE'] = False  # 開發環境用 False,生產環境用 True(需要 HTTPS)
+<<<<<<< HEAD
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)  # Session 有效期
 #app.config['SQLALCHEMY_ECHO'] = True
 CORS(app, 
     origins=[
     "https://sajuna94.github.io", 
     "http://localhost:5173"],
+=======
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=24)  # Session 有效期
+
+CORS(
+    app,
+    origins=["https://sajuna94.github.io", "http://localhost:5173"],
+>>>>>>> 53cdc11ca1ba55d244a1ff9a5277ad631fe0ddbe
     supports_credentials=True,  # 允許傳送 cookie(最重要!)
-    allow_headers=['Content-Type', 'Authorization'],
-    methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+)
+
 
 def route_info_printer(bool_debug: bool = True):
     if not bool_debug:
@@ -34,39 +44,41 @@ def route_info_printer(bool_debug: bool = True):
     print("[app] ========== 已註冊的路由 ==========")
     route_count = 0
     for rule in app.url_map.iter_rules():
-        if rule.endpoint != 'static':  # 忽略靜態檔案
-            methods = ','.join(rule.methods - {'HEAD', 'OPTIONS'})
+        if rule.endpoint != "static":  # 忽略靜態檔案
+            methods = ",".join(rule.methods - {"HEAD", "OPTIONS"})
             print(f"  {rule.rule:40} -> {rule.endpoint:30} [{methods}]")
             route_count += 1
     print(f"[app] 共註冊 {route_count} 個路由")
     print("[app] ===================================")
 
+
 # 初始化資料庫
 print("[app] 初始化資料庫...")
-init_db(app) 
+init_db(app)
 
 # 註冊路由
 print("[app] 註冊路由...")
-app.register_blueprint(test_routes, url_prefix='/api/test')
-app.register_blueprint(user_routes, url_prefix='/api/user')
-app.register_blueprint(cart_routes, url_prefix='/api/cart')
-app.register_blueprint(admin_routes,url_prefix='/api/admin')
-app.register_blueprint(order_routes,url_prefix='/api/order')
-app.register_blueprint(vendor_routes, url_prefix='/api/vendor')
+app.register_blueprint(test_routes, url_prefix="/api/test")
+app.register_blueprint(user_routes, url_prefix="/api/user")
+app.register_blueprint(cart_routes, url_prefix="/api/cart")
+app.register_blueprint(admin_routes, url_prefix="/api/admin")
+app.register_blueprint(order_routes, url_prefix="/api/order")
+app.register_blueprint(vendor_routes, url_prefix="/api/vendor")
+
 
 @app.route("/")
 def index():
     return "test"
 
-@app.route('/uploads/<path:filename>')
+
+@app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
     """提供上傳的檔案（如產品圖片）"""
-    uploads_dir = os.path.join(os.path.dirname(__file__), '..', 'uploads')
+    uploads_dir = os.path.join(os.path.dirname(__file__), "..", "uploads")
     return send_from_directory(uploads_dir, filename)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     route_info_printer(True)
     print("[app] 啟動 Flask 伺服器...")
     app.run(debug=True)
-
-

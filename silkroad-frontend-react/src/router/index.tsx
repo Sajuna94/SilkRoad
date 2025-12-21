@@ -3,6 +3,7 @@ import { AdminDashboard } from "@/pages/Admin";
 import { About, Auth, Cart, Home } from "@/pages/Main";
 import { UserOrders, UserProfile } from "@/pages/User";
 import { VendorDashboard, VendorProductList } from "@/pages/Vendor";
+import ReviewPage from "@/pages/ReviewPage";
 
 export const routes = [
   {
@@ -31,6 +32,7 @@ export const routes = [
         children: [
           { index: true, element: <VendorProductList /> },
           { path: "dashboard", element: <VendorDashboard /> },
+          { path: "reviews", element: <ReviewPage /> },
         ],
       },
     ],

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { products } from "@/types/data/product";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery";
-import ReviewCard from "@/components/molecules/ReviewCard";
+import ReviewInput from "@/components/molecules/ReviewInput";
 import styles from "./ProductList.module.scss";
 
 export default function ProductList() {
@@ -18,7 +18,9 @@ export default function ProductList() {
             <h1>Vendor Name</h1>
             <div className={styles.meta}>
               <span>台北市信義區松壽路 1 號</span>
-              <span>⭐ 4.8 (120 評論)</span>
+              <Link to="/vendor/reviews" className={styles.ratingLink}>
+                <span>⭐ 4.8 (120 評論)</span>
+              </Link>
             </div>
           </div>
 
@@ -35,19 +37,12 @@ export default function ProductList() {
         </section>
 
         <section className={styles.reviewSection}>
-          <h2 className={styles.sectionTitle}>顧客評論</h2>
-          <div style={{ marginTop: "20px" }}>
-            <ReviewCard />
+          <h2 className={styles.sectionTitle}>撰寫評論</h2>
+          <div>
+            <ReviewInput />
           </div>
         </section>
       </main>
-      {/* <Link to={"/vendor/dashboard"}> dashboard </Link>
-      <VendorHeaderBarImage />
-      <h1>Vendor Name</h1>
-      <ProductGallery products={products} pageSize={10} />
-      <div style={{ marginTop: "40px" }}>
-        <ReviewCard />
-      </div> */}
     </>
   );
 }
