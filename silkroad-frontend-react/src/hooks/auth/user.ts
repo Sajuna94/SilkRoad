@@ -63,6 +63,21 @@ export const useRegisterRole = (role: UserRole) => {
   });
 };
 
+<<<<<<< HEAD
+=======
+export const useUser = () => {
+  return useQuery<User, ApiErrorBody>({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const res = await api.get("/user/me");
+      return res.data.data;
+    },
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+};
+
+>>>>>>> 69db8d5ae8acec796d0400c61372421071a33d0a
 export const useLogout = () => {
   const qc = useQueryClient();
 
@@ -78,6 +93,7 @@ export const useLogout = () => {
 };
 
 export const useCurrentUser = () => {
+<<<<<<< HEAD
 	return useQuery<User, ApiErrorBody>({
 		queryKey: ["user"],
 		queryFn: async () => {
@@ -88,3 +104,16 @@ export const useCurrentUser = () => {
 		refetchOnWindowFocus: false,
 	});
 }
+=======
+  return useQuery<User, ApiErrorBody>({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const res = await api.get("/user/current_user");
+      console.log(res);
+      return res.data.data;
+    },
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+};
+>>>>>>> 69db8d5ae8acec796d0400c61372421071a33d0a

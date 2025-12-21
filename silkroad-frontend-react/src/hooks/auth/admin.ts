@@ -60,7 +60,8 @@ export type Vendor = {
 };
 
 export type Announcement = {
-  announcement_id: number;
+  id: number;
+  admin_id: number;
   message: string;
   created_at: string;
 };

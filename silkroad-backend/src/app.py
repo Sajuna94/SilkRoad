@@ -17,11 +17,20 @@ app.config["SESSION_COOKIE_NAME"] = "flask_session"
 # app.config['SESSION_COOKIE_HTTPONLY'] = True  # 防止 JavaScript 存取 cookie
 # app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # 跨域必須設為 None
 # app.config['SESSION_COOKIE_SECURE'] = False  # 開發環境用 False,生產環境用 True(需要 HTTPS)
+<<<<<<< HEAD
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=24)  # Session 有效期
 
 CORS(
     app,
     origins=["https://sajuna94.github.io", "http://localhost:5173"],
+=======
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)  # Session 有效期
+app.config['SQLALCHEMY_ECHO'] = True
+CORS(app, 
+    origins=[
+    "https://sajuna94.github.io", 
+    "http://localhost:5173"],
+>>>>>>> 69db8d5ae8acec796d0400c61372421071a33d0a
     supports_credentials=True,  # 允許傳送 cookie(最重要!)
     allow_headers=["Content-Type", "Authorization"],
     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
