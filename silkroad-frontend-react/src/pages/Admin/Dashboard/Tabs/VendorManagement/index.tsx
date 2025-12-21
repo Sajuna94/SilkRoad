@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styles from "./VendorManagement.module.scss";
 
+import { useCurrentUser } from "@/hooks/auth/user";
 import {
   useAllVendors,
   useBlockUser,
@@ -19,11 +20,16 @@ export default function VendorManagement() {
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
 
-  // 這裡先寫死 Admin ID，你之後需要從登入狀態 (Context/Redux) 取得當前管理員 ID
-  const CURRENT_ADMIN_ID = 1;
+  const { data: user } = useCurrentUser();
+  const adminId = user?.id;
 
   const handleToggleBlock = (vendor: Vendor) => {
-    const isVendorActive = vendor.is_active; // API: true=正常, false=被封鎖
+    if (!adminId) {
+      alert("無法取得管理員身分，請重新登入");
+      return;
+    }
+
+    const isVendorActive = vendor.is_active;
 
     if (isVendorActive) {
       const reason = window.prompt(
@@ -34,7 +40,7 @@ export default function VendorManagement() {
 
       blockUserMutation.mutate(
         {
-          admin_id: CURRENT_ADMIN_ID,
+          admin_id: adminId,
           target_user_id: vendor.id,
           reason: reason,
         },
@@ -53,7 +59,7 @@ export default function VendorManagement() {
 
       unblockUserMutation.mutate(
         {
-          admin_id: CURRENT_ADMIN_ID,
+          admin_id: adminId,
           target_user_id: vendor.id,
         },
         {

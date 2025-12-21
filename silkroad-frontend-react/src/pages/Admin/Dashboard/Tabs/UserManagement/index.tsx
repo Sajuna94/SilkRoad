@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styles from "./UserManagement.module.scss";
 
+import { useCurrentUser } from "@/hooks/auth/user";
 import {
   useAllCustomers,
   useBlockUser,
@@ -24,27 +25,32 @@ export default function UserManagement() {
   const blockUserMutation = useBlockUser();
   const unblockUserMutation = useUnblockUser();
 
-  // 這裡先寫死 Admin ID，之後需要從登入狀態 (Context/Redux) 取得當前管理員 ID
-  const CURRENT_ADMIN_ID = 1;
+  const { data: user } = useCurrentUser();
+  const adminId = user?.id;
 
   const handleToggleBlock = (customer: Customer) => {
+    if (!adminId) {
+      alert("無法取得管理員身分，請重新登入");
+      return;
+    }
+
     if (customer.is_active) {
       const reason = window.prompt(
-        `請輸入封鎖 ${customer.name} 的理由：`,
-        "違反使用者規範"
+        `請輸入封鎖顧客 ${customer.name} 的理由：`,
+        "違反顧客規範"
       );
 
       if (!reason) return;
 
       blockUserMutation.mutate(
         {
-          admin_id: CURRENT_ADMIN_ID,
+          admin_id: adminId,
           target_user_id: customer.id,
           reason: reason,
         },
         {
           onSuccess: () => {
-            alert(`已成功封鎖使用者：${customer.name}`);
+            alert(`已成功封鎖顧客：${customer.name}`);
             refetch();
           },
           onError: (err) => {
@@ -57,12 +63,12 @@ export default function UserManagement() {
 
       unblockUserMutation.mutate(
         {
-          admin_id: CURRENT_ADMIN_ID,
+          admin_id: adminId,
           target_user_id: customer.id,
         },
         {
           onSuccess: () => {
-            alert(`已成功解鎖使用者：${customer.name}`);
+            alert(`已成功解鎖顧客：${customer.name}`);
             refetch();
           },
           onError: (err) => {
