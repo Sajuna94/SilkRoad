@@ -23,10 +23,9 @@ export default function SystemDashboard() {
   const [selectedDate, setSelectedDate] = useState("");
   const [newSummary, setNewSummary] = useState("");
 
-  const [editingId, setEditingId] = useState<number | null>(null); 
-  const [editMessages, setEditMessages] = useState<Record<number, string>>({}); 
-  const [deletingId, setDeletingId] = useState<number | null>(null); 
-
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editMessage, setEditMessage] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const handlePost = () => {
     if (!newSummary.trim()) return alert("請輸入公告內容");
@@ -43,64 +42,56 @@ export default function SystemDashboard() {
     );
   };
 
- 
-
   const startEdit = (id: number, currentMessage: string) => {
-  setEditingId(id); 
-  setEditMessages((prev) => ({ 
-    ...prev,
-    [id]: currentMessage,
-  }));
-};
+    setEditingId(id);
+    setEditMessage(currentMessage);
+  };
 
-  // --- 功能 3: 取消編輯 ---
-const cancelEdit = () => {
-  setEditingId(null);
-};
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditMessage("");
+  };
 
+  const saveEdit = (id: number) => {
+    if (!editMessage?.trim()) return alert("公告內容不能為空");
 
-const saveEdit = (id: number) => {
-  const message = editMessages[id];
-  if (!message?.trim()) return alert("公告內容不能為空");
-
-  updateMutation.mutate(
-    {
-      announcement_id: id,
-      admin_id: adminId,
-      message,
-    },
-    {
-      onSuccess: () => {
-        setEditingId(null);
-        qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
+    updateMutation.mutate(
+      {
+        announcement_id: id,
+        admin_id: adminId,
+        message: editMessage,
       },
-      onError: () => alert("修改失敗"),
-    }
-  );
-};
+      {
+        onSuccess: () => {
+          alert("修改成功！");
+          setEditingId(null);
+          setEditMessage("");
+          qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
+        },
+        onError: (err) => alert("修改失敗：" + err.message),
+      }
+    );
+  };
 
+  const handleDelete = (id: number) => {
+    if (!confirm("確定要刪除這則公告嗎？此動作無法復原。")) return;
 
+    setDeletingId(id);
 
-const handleDelete = (id: number) => {
-  if (!confirm("確定要刪除這則公告嗎？此動作無法復原。")) return;
-
-  setDeletingId(id);
-
-  deleteMutation.mutate(
-    { announcement_id: id, admin_id: adminId },
-    {
-      onSuccess: () => {
-        setDeletingId(null);
-        qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
-      },
-      onError: () => {
-        setDeletingId(null);
-        alert("刪除失敗");
-      },
-    }
-  );
-};
-
+    deleteMutation.mutate(
+      { announcement_id: id, admin_id: adminId },
+      {
+        onSuccess: () => {
+          setDeletingId(null);
+          qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
+        },
+        onError: () => {
+          setDeletingId(null);
+          alert("刪除失敗");
+        },
+      }
+    );
+  };
 
   const displayAnnouncements = (apiData || []).filter((item) => {
     const dateStr = item.created_at?.split("T")[0] || "";
@@ -177,24 +168,19 @@ const handleDelete = (id: number) => {
             </tr>
           ) : (
             displayAnnouncements.map((item) => {
-              const isEditing = editingId === item.announcement_id;
+              const isEditing = editingId === item.id;
 
               return (
-                <tr key={item.announcement_id} className={styles.tr}>
+                <tr key={item.id} className={styles.tr}>
                   <td className={styles.td}>
-					<div style={{ fontSize: "12px", color: "#888" }}>
-    					#{item.announcement_id}
-  					</div>
+                    <div style={{ fontSize: "12px", color: "#888" }}>
+                      #{item.id}
+                    </div>
                     {isEditing ? (
                       <input
                         type="text"
-                        value={editMessages[item.announcement_id] || ""}
-                        onChange={(e) =>
-        					setEditMessages((prev) => ({
-          						...prev,
-          						[item.announcement_id]: e.target.value,
-        					}))
-      					}
+                        value={editMessage}
+                        onChange={(e) => setEditMessage(e.target.value)}
                         className={styles.input}
                         style={{ width: "100%" }}
                         autoFocus
@@ -211,7 +197,7 @@ const handleDelete = (id: number) => {
                       {isEditing ? (
                         <>
                           <button
-                            onClick={() => saveEdit(item.announcement_id)}
+                            onClick={() => saveEdit(item.id)}
                             disabled={updateMutation.isPending}
                             style={{
                               color: "green",
@@ -237,9 +223,7 @@ const handleDelete = (id: number) => {
                       ) : (
                         <>
                           <button
-                            onClick={() =>
-                              startEdit(item.announcement_id, item.message)
-                            }
+                            onClick={() => startEdit(item.id, item.message)}
                             style={{
                               color: "blue",
                               cursor: "pointer",
@@ -250,8 +234,8 @@ const handleDelete = (id: number) => {
                             編輯
                           </button>
                           <button
-                            onClick={() => handleDelete(item.announcement_id)}
-                            disabled={deletingId === item.announcement_id}
+                            onClick={() => handleDelete(item.id)}
+                            disabled={deletingId === item.id}
                             style={{
                               color: "red",
                               cursor: "pointer",
@@ -259,7 +243,7 @@ const handleDelete = (id: number) => {
                               background: "none",
                             }}
                           >
-                            {deletingId === item.announcement_id ? "..." : "刪除"}
+                            {deletingId === item.id ? "..." : "刪除"}
                           </button>
                         </>
                       )}
