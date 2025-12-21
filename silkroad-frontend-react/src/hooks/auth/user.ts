@@ -63,8 +63,6 @@ export const useRegisterRole = (role: UserRole) => {
   });
 };
 
-<<<<<<< HEAD
-=======
 export const useUser = () => {
   return useQuery<User, ApiErrorBody>({
     queryKey: ["user"],
@@ -77,7 +75,6 @@ export const useUser = () => {
   });
 };
 
->>>>>>> b382ba1dbacd6fd98b36ae2b4d94a83706d70c71
 export const useLogout = () => {
   const qc = useQueryClient();
 
@@ -93,18 +90,6 @@ export const useLogout = () => {
 };
 
 export const useCurrentUser = () => {
-<<<<<<< HEAD
-	return useQuery<User, ApiErrorBody>({
-		queryKey: ["user"],
-		queryFn: async () => {
-			const res = await api.get("/user/current_user");
-			return res.data.data;
-		},
-		retry: false,
-		refetchOnWindowFocus: false,
-	});
-}
-=======
   return useQuery<User, ApiErrorBody>({
     queryKey: ["user"],
     queryFn: async () => {
@@ -116,4 +101,3 @@ export const useCurrentUser = () => {
     refetchOnWindowFocus: false,
   });
 };
->>>>>>> b382ba1dbacd6fd98b36ae2b4d94a83706d70c71

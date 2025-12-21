@@ -62,40 +62,6 @@ export default function Cart() {
     }
   };
 
-<<<<<<< HEAD
-    return (
-        <>
-            <ul className={styles["list"]}>
-                {items.map((item, index) => {
-                    return (
-                        <li
-                            key={index}
-                            className={styles["item"]}
-                            onClick={() => modalRef.current?.open(item.product, item.quantity)}
-                        >
-                            <div className={styles["area"]}>
-                                <FadeInImage fullSrc={item.product.image_url} />
-                            </div>
-                            <div className={styles["options"]}>
-                                <h3>{item.product.name}</h3>
-                                <div className="flex">
-                                    <div>{item.options.size}</div>
-                                    <div>{item.options.ice}</div>
-                                    <div>{item.options.sugar}</div>
-                                </div>
-                            </div>
-                            <div className={styles["price"]}>
-                                <h3>{item.product.price * item.quantity}</h3>
-                                <div className={styles["quantity"]}>{item.quantity}</div>
-                            </div>
-                        </li>
-                    );
-                })}
-            </ul>
-            <ProductModal ref={modalRef} onSubmit={handleEdit} submitText="修改完成" />
-        </>
-    );
-=======
   // 初次掛載時執行
   useEffect(() => {
     fetchCart();
@@ -179,7 +145,6 @@ export default function Cart() {
       </footer>
     </section>
   );
->>>>>>> b382ba1dbacd6fd98b36ae2b4d94a83706d70c71
 }
 
 // 🛒 購物清單子組件 (接收 onRemove)
