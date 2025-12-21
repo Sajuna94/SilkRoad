@@ -1,37 +1,40 @@
+// src/types/user.ts
+
 export enum UserRole {
-	ADMIN = 'admin',
-	VENDOR = 'vendor',
-	CUSTOMER = 'customer',
+  ADMIN = "admin",
+  VENDOR = "vendor",
+  CUSTOMER = "customer",
 }
 
-interface BaseUser {
-	id: number
-	name: string
-	email: string
-	phone_number: string
-	role: UserRole
-	created_at?: string
+export interface BaseUser {
+  id: number;
+  name: string;
+  email: string;
+  phone_number: string;
+  role: UserRole;
+  created_at: string;
 }
 
 export interface Admin extends BaseUser {
-	role: UserRole.ADMIN
+  role: UserRole.ADMIN;
 }
 
 export interface Vendor extends BaseUser {
-	role: UserRole.VENDOR
-	is_active: boolean
-	revenue: number
-	address: string
-	manager_id?: number
+  role: UserRole.VENDOR;
+  revenue: number;
+  address: string;
+  vendor_manager_id: number;
+  logo_url?: string;
+  description?: string;
+  is_active: boolean;
 }
 
 export interface Customer extends BaseUser {
-	role: UserRole.CUSTOMER
-	is_active: boolean
-	membership_level: number
-	stored_balance: number
-	address: string
+  role: UserRole.CUSTOMER;
+  membership_level: number;
+  stored_balance: number;
+  address: string;
+  is_active: boolean;
 }
 
 export type User = Admin | Vendor | Customer;
-

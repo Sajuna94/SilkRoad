@@ -1,6 +1,8 @@
 import { api, type ApiErrorBody } from "@/api/instance";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
+import type { Customer, Vendor } from "@/types/user";
+
 export type BlockUserReq = {
   admin_id: number;
   target_user_id: number;
@@ -17,15 +19,6 @@ export type PostAnnouncementReq = {
   message: string;
 };
 
-export type UpdateAnnouncementReq = {
-  admin_id: number;
-  message: string;
-};
-
-export type DeleteAnnouncementReq = {
-  admin_id: number;
-};
-
 export type UpdateAnnouncementArgs = {
   announcement_id: number;
   admin_id: number;
@@ -37,34 +30,15 @@ export type DeleteAnnouncementArgs = {
   admin_id: number;
 };
 
-export type Customer = {
-  id: number;
-  name: string;
-  email: string;
-  phone_number: string;
-  address: string;
-  membership_level: number;
-  is_active: boolean;
-  created_at: string;
-};
-
-export type Vendor = {
-  id: number;
-  name: string;
-  email: string;
-  phone_number: string;
-  address: string;
-  vendor_manager_id: number;
-  is_active: boolean;
-  created_at: string;
-};
-
+// Announcement 暫時保留在這裡，或是移到 src/types/data.ts 統一管理也可以
 export type Announcement = {
   id: number;
   admin_id: number;
   message: string;
   created_at: string;
 };
+
+// --- Hooks ---
 
 export const useBlockUser = () => {
   return useMutation<any, ApiErrorBody, BlockUserReq>({
@@ -108,7 +82,6 @@ export const useUpdateAnnouncement = () => {
 export const useDeleteAnnouncement = () => {
   return useMutation<any, ApiErrorBody, DeleteAnnouncementArgs>({
     mutationFn: async ({ announcement_id, admin_id }) => {
-      // 注意 axios delete 的 body 需要包在 data 屬性裡
       const res = await api.delete(`/admin/announce/${announcement_id}`, {
         data: { admin_id },
       });
@@ -117,7 +90,7 @@ export const useDeleteAnnouncement = () => {
   });
 };
 
-//queries
+// --- Queries ---
 
 export const useAllCustomers = () => {
   return useQuery<Customer[], ApiErrorBody>({

@@ -197,11 +197,13 @@ Return:
     "data": [
         {
             "announcement_id": int,
+            "admin_id": int,
             "message": string,
             "created_at": datetime
         },
         {
             "announcement_id": int,
+            "admin_id": int,
             "message": string,
             "created_at": datetime
         },

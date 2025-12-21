@@ -75,7 +75,7 @@ export const useVendors = () => {
 	return useQuery<Vendor[], ApiErrorBody>({
 		queryKey: ["vendors"],
 		queryFn: async () => {
-			const res = await api.get("/vendors");
+			const res = await api.get("/vendor/vendors");
 			return res.data.data;
 		},
 		retry: false,
