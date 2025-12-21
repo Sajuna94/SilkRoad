@@ -18,7 +18,7 @@ app.config['SESSION_COOKIE_NAME'] = 'flask_session'
 # app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # 跨域必須設為 None
 # app.config['SESSION_COOKIE_SECURE'] = False  # 開發環境用 False,生產環境用 True(需要 HTTPS)
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)  # Session 有效期
-app.config['SQLALCHEMY_ECHO'] = True
+#app.config['SQLALCHEMY_ECHO'] = True
 CORS(app, 
     origins=[
     "https://sajuna94.github.io", 

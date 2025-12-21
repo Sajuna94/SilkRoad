@@ -44,6 +44,7 @@ expect (If Role is Vendor):
 {
     "name": string,
     "address": string,
+    "description": string,
     "manager": {
         "name": string,
         "email": string,
@@ -70,7 +71,8 @@ if success (Customer):
         "phone_number": string,
         "address": string,
         "membership_level": int,
-        "is_active": boolean
+        "is_active": boolean,
+        "description": string
     }]
 }
 
@@ -138,6 +140,7 @@ if success (Vendor):
         "phone_number": string,
         "address": string,
         "is_active": boolean,
+        "description": string,
         "manager": {
             "id": int,
             "name": string,
@@ -213,6 +216,7 @@ If Success (Vendor):
         "created_at": datetime,
         "address": string,
         "is_active": boolean,
+        "description": string,
         "manager": {
             "id": int,
             "name": string,
