@@ -21,7 +21,7 @@ export default function ProductGallery({
 }: ProductGalleryProps) {
     const modalRef = useRef<ProductModalRef>(null);
     const addToCart = useAddToCart();
-    const { data: user } = useUser();
+    const { data: user } = useCurrentUser();
 
     return (
         <section>
