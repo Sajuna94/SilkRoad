@@ -7,6 +7,8 @@ import {
 } from "@/components/molecules/ProductModal";
 import { type Product } from "@/types/store";
 import { InfiniteList } from "@/components/atoms/InfiniteList";
+import { useAddToCart } from "@/hooks/order/cart";
+import { useUser } from "@/hooks/auth/user";
 
 interface ProductGalleryProps {
     products: Product[];
@@ -18,17 +20,25 @@ export default function ProductGallery({
     pageSize,
 }: ProductGalleryProps) {
     const modalRef = useRef<ProductModalRef>(null);
+    const addToCart = useAddToCart();
+    const { data: user } = useUser();
 
     return (
         <section>
             <ProductModal
                 ref={modalRef}
                 submitText="加入購物車"
-                onSubmit={async () => {
-                    // 模擬等待 2 秒
-                    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-                    console.log(modalRef.current?.getForm());
+                onSubmit={async (product, form) => {
+                    // Backend switcher handles both logged-in and guest users
+                    await addToCart.mutateAsync({
+                        customer_id: user?.id, // Optional - only passed when logged in
+                        vendor_id: product.vendor_id,
+                        product_id: product.id,
+                        quantity: form.quantity,
+                        selected_sugar: form.sugar,
+                        selected_ice: form.ice,
+                        selected_size: form.size,
+                    });
                 }}
             />
 
