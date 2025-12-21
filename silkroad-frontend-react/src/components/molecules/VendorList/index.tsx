@@ -6,7 +6,7 @@ export interface Vendor {
   id: string;
   name: string;
   logoUrl: string;
-  description: string;
+  description: string | undefined;
 }
 
 interface VendorListProps {
