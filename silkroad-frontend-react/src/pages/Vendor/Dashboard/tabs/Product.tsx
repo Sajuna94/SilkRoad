@@ -154,7 +154,16 @@ export default function ProductTab() {
                     </div>
                 </div>
                 <footer>
-                    <button onClick={handleAddProduct}>{addProductMutation.isPending ? "處理中" : "確認新增"}</button>
+                    <button
+                        onClick={handleAddProduct}
+                        disabled={
+                            addProductMutation.isPending ||
+                            cloudinaryUploadMutation.isPending
+                        }>{
+                            addProductMutation.isPending ||
+                            cloudinaryUploadMutation.isPending ? "處理中" : "確認新增"
+                        }
+                    </button>
                 </footer>
             </div>
         </section>
