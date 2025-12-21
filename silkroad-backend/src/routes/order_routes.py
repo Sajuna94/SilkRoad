@@ -1,4 +1,4 @@
-from controllers import trans_to_order, view_order, update_orderinfo
+from controllers import trans_to_order, view_order, update_orderinfo, view_all_user_orders
 from flask import Blueprint
 
 order_routes = Blueprint("order", __name__)
@@ -111,3 +111,28 @@ order_routes.route('/update', methods=['POST'])(update_orderinfo)
     #        "selected_ice": item.selected_ice,
     #        "selected_size": item.selected_size
     #         } 
+
+order_routes.route('/view_user_orders', methods=['POST'])(view_all_user_orders)
+
+"""
+需要 { "user_id": int }
+
+回傳
+jsonify({
+            "data": result_list,
+            "message": "成功取得所有訂單",
+            "success": True,         
+        })  
+result_list 包含一個或多個
+{
+    "order_id": order.id, (int)
+    "vendor_id": order.vendor_id, (int)
+    "total_price": order.total_price, (int)
+    "discount_amount": order.discount_amount, (int)
+    "is_completed": order.is_completed, (boolean)
+    "is_delivered": order.is_delivered, (boolean)
+    "payment_methods": str(order.payment_methods), (ENUM(str))
+    "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S') if hasattr(order, 'created_at') else None, (timestamp(str))
+    "note": order.note (text(str))
+}
+"""
