@@ -6,7 +6,8 @@ from controllers import (
     view_vendor_products,
     view_vendor_product_detail,
     view_discount_policy,
-    invalid_discount_policy
+    invalid_discount_policy,
+    get_public_vendors
 )
 vendor_routes = Blueprint('vendor', __name__)
 
@@ -186,7 +187,7 @@ or
 vendor_routes.route("/view_discount", methods=["POST"])(view_discount_policy)
 '''
 需要{
-"vendor_id":XXX
+"vendor_id": int
 }
 '''
 
@@ -228,8 +229,8 @@ vendor_routes.route("/invalid_discount", methods=["POST"])(invalid_discount_poli
 所以折價券有誤時，請先無效(停用)折價券，再做新的
 
 需要{
-"policy_id":XXX,
-"vendor_id": XXX,
+"policy_id": int,
+"vendor_id": int,
 }
 '''
 
@@ -248,3 +249,32 @@ or
     "success": True}
 
 '''
+
+vendor_routes.route('/vendors', methods=['GET'])(get_public_vendors)
+
+"""
+Get Public Vendors List
+URL: /api/vendor/vendors
+Method: GET
+Header: None (No Cookie required)
+Return:
+{
+    "success": true,
+    "message": "...",
+    "data": [
+        {
+            "id": int,
+            "name": string,
+            "address": string,
+            "phone_number": string,
+            "email": string
+        },
+        ...
+    ]
+}
+else:
+{
+    "message": "...",
+    "success": False
+}
+"""

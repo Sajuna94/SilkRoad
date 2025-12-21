@@ -623,3 +623,36 @@ def invalid_discount_policy():
         return jsonify(
             {"message": "系統錯誤，停用失敗", "error": str(e), "success": False}
         ), 500
+    
+def get_public_vendors():
+    """
+    公開取得所有營業中的店家列表
+    權限：公開 (Public) - 訪客、顧客、店家、管理員皆可存取
+    """
+    try:
+        # 這裡我們通常只撈取 is_active=True 的店家
+        # 如果你想連停權的都顯示，就把 filter_by 去掉，改用 Vendor.query.all()
+        vendors = Vendor.query.filter_by(is_active=True).all()
+
+        result = []
+        for v in vendors:
+            result.append({
+                "id": v.id,
+                "name": v.name,          # 店名
+                "address": v.address,    # 地址
+                "phone_number": v.phone_number,
+                "email": v.email,        # 聯絡信箱 (視需求決定是否公開)
+                # "created_at": v.created_at.isoformat() # 如果前端需要顯示 "新店家" 標籤可加這行
+            })
+
+        return jsonify({
+            "success": True,
+            "message": "Retrieved public vendor list successfully",
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500

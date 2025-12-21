@@ -6,11 +6,11 @@ order_routes = Blueprint("order", __name__)
 order_routes.route('/trans', methods=['POST'])(trans_to_order)
 
     #     需要{
-    #     "customer_id":XXX,
-    #     "vendor_id":XXX,
-    #     "policy_id":XXX,
-    #     "note":XXX,
-    #     "payment_methods":XXX,
+    #     "customer_id":int,
+    #     "vendor_id":int,
+    #     "policy_id":int,
+    #     "note":text(str),
+    #     "payment_methods":enum(str),
     #     }
 
         # 可能會回傳:
@@ -22,9 +22,9 @@ order_routes.route('/trans', methods=['POST'])(trans_to_order)
 order_routes.route('/view', methods=['POST'])(view_order)
 
     #     預計傳給我{
-    #     "order_id":XXX,
-    #     "user_id":XXX,
-    #     "vendor_id":XXX,
+    #     "order_id":int,
+    #     "user_id":int,
+    #     "vendor_id":int,
     #     }
 
         # 錯誤時回傳:
@@ -75,11 +75,11 @@ order_routes.route('/view', methods=['POST'])(view_order)
 order_routes.route('/update', methods=['POST'])(update_orderinfo)
 
     #     需要{
-    #     "order_id": XXX,
-    #     "refund_status":XXX,
-    #     "refund_at":XXX,
-    #     "is_completed":XXX,
-    #     "is_delivered":XXX
+    #     "order_id": int,
+    #     "refund_status": ENUM(str),
+    #     "refund_at": timestamp(str),
+    #     "is_completed": boolean ,
+    #     "is_delivered": boolean
     #     }
 
 

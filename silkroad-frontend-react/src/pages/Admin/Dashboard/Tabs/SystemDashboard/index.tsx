@@ -1,49 +1,153 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import styles from "./SystemDashboard.module.scss";
-
-interface Announcement {
-  id: number;
-  date: string;
-  summary: string;
-}
+import {
+  useAllAnnouncements,
+  usePostAnnouncement,
+  useUpdateAnnouncement,
+  useDeleteAnnouncement,
+} from "@/hooks/auth/admin";
+import { useCurrentUser } from "@/hooks/auth/user";
 
 export default function SystemDashboard() {
+  const qc = useQueryClient();
+  const { data: user } = useCurrentUser();
+  const adminId = user?.id || 1;
+
+  const { data: apiData, isLoading, isError } = useAllAnnouncements();
+  const postMutation = usePostAnnouncement();
+  const updateMutation = useUpdateAnnouncement();
+  const deleteMutation = useDeleteAnnouncement();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [newSummary, setNewSummary] = useState("");
 
-  const announcements: Announcement[] = [
+  const [editingId, setEditingId] = useState<number | null>(null); 
+  const [editMessages, setEditMessages] = useState<Record<number, string>>({}); 
+  const [deletingId, setDeletingId] = useState<number | null>(null); 
+
+
+  const handlePost = () => {
+    if (!newSummary.trim()) return alert("請輸入公告內容");
+    postMutation.mutate(
+      { admin_id: adminId, message: newSummary },
+      {
+        onSuccess: () => {
+          alert("公告發布成功！");
+          setNewSummary("");
+          qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
+        },
+        onError: (err) => alert("發布失敗：" + err.message),
+      }
+    );
+  };
+
+ 
+
+  const startEdit = (id: number, currentMessage: string) => {
+  setEditingId(id); 
+  setEditMessages((prev) => ({ 
+    ...prev,
+    [id]: currentMessage,
+  }));
+};
+
+  // --- 功能 3: 取消編輯 ---
+const cancelEdit = () => {
+  setEditingId(null);
+};
+
+
+const saveEdit = (id: number) => {
+  const message = editMessages[id];
+  if (!message?.trim()) return alert("公告內容不能為空");
+
+  updateMutation.mutate(
     {
-      id: 1,
-      date: "2025-11-05",
-      summary: "We’ve improved delivery tracking and site performance.",
+      announcement_id: id,
+      admin_id: adminId,
+      message,
     },
     {
-      id: 2,
-      date: "2025-11-10",
-      summary: "We've fixed certain bugs.",
-    },
-  ];
-
-  const filteredAnnouncements = announcements.filter(
-    (item) => 
-      (item.summary.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       item.date.includes(searchTerm)) &&
-      (selectedDate === "" || item.date === selectedDate)
+      onSuccess: () => {
+        setEditingId(null);
+        qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
+      },
+      onError: () => alert("修改失敗"),
+    }
   );
+};
+
+
+
+const handleDelete = (id: number) => {
+  if (!confirm("確定要刪除這則公告嗎？此動作無法復原。")) return;
+
+  setDeletingId(id);
+
+  deleteMutation.mutate(
+    { announcement_id: id, admin_id: adminId },
+    {
+      onSuccess: () => {
+        setDeletingId(null);
+        qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
+      },
+      onError: () => {
+        setDeletingId(null);
+        alert("刪除失敗");
+      },
+    }
+  );
+};
+
+
+  const displayAnnouncements = (apiData || []).filter((item) => {
+    const dateStr = item.created_at?.split("T")[0] || "";
+    const matchesSearch =
+      item.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      dateStr.includes(searchTerm);
+    const matchesDate = selectedDate === "" || dateStr === selectedDate;
+    return matchesSearch && matchesDate;
+  });
+
+  if (isLoading) return <div className={styles.container}>載入公告中...</div>;
+  if (isError) return <div className={styles.container}>載入失敗</div>;
 
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>系統公告 / System Announcements</h2>
 
+      <div
+        className={styles.createSection}
+        style={{ marginBottom: "20px", display: "flex", gap: "10px" }}
+      >
+        <input
+          type="text"
+          placeholder="輸入新公告內容..."
+          value={newSummary}
+          onChange={(e) => setNewSummary(e.target.value)}
+          className={styles.input}
+          style={{ flex: 1 }}
+        />
+        <button
+          onClick={handlePost}
+          disabled={postMutation.isPending}
+          className={styles.actionBtn}
+          style={{ cursor: "pointer", padding: "0 20px" }}
+        >
+          {postMutation.isPending ? "..." : "發布"}
+        </button>
+      </div>
+
       <div className={styles.filters}>
         <input
           type="text"
-          placeholder="搜尋訊息或日期..."
+          placeholder="搜尋..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className={styles.input}
         />
-
         <input
           type="date"
           value={selectedDate}
@@ -56,16 +160,115 @@ export default function SystemDashboard() {
         <thead className={styles.thead}>
           <tr>
             <th className={styles.th}>Message</th>
-            <th className={styles.th}>Date</th>
+            <th className={styles.th} style={{ width: "120px" }}>
+              Date
+            </th>
+            <th className={styles.th} style={{ width: "160px" }}>
+              Action
+            </th>
           </tr>
         </thead>
         <tbody>
-          {filteredAnnouncements.map((item) => (
-            <tr key={item.id} className={styles.tr}>
-              <td className={styles.td}>{item.summary}</td>
-              <td className={styles.td}>{item.date}</td>
+          {displayAnnouncements.length === 0 ? (
+            <tr>
+              <td colSpan={3} className={styles.td}>
+                沒有符合的公告
+              </td>
             </tr>
-          ))}
+          ) : (
+            displayAnnouncements.map((item) => {
+              const isEditing = editingId === item.announcement_id;
+
+              return (
+                <tr key={item.announcement_id} className={styles.tr}>
+                  <td className={styles.td}>
+					<div style={{ fontSize: "12px", color: "#888" }}>
+    					#{item.announcement_id}
+  					</div>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editMessages[item.announcement_id] || ""}
+                        onChange={(e) =>
+        					setEditMessages((prev) => ({
+          						...prev,
+          						[item.announcement_id]: e.target.value,
+        					}))
+      					}
+                        className={styles.input}
+                        style={{ width: "100%" }}
+                        autoFocus
+                      />
+                    ) : (
+                      item.message
+                    )}
+                  </td>
+
+                  <td className={styles.td}>{item.created_at.split("T")[0]}</td>
+
+                  <td className={styles.td}>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      {isEditing ? (
+                        <>
+                          <button
+                            onClick={() => saveEdit(item.announcement_id)}
+                            disabled={updateMutation.isPending}
+                            style={{
+                              color: "green",
+                              cursor: "pointer",
+                              border: "none",
+                              background: "none",
+                            }}
+                          >
+                            儲存
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            style={{
+                              color: "#666",
+                              cursor: "pointer",
+                              border: "none",
+                              background: "none",
+                            }}
+                          >
+                            取消
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() =>
+                              startEdit(item.announcement_id, item.message)
+                            }
+                            style={{
+                              color: "blue",
+                              cursor: "pointer",
+                              border: "none",
+                              background: "none",
+                            }}
+                          >
+                            編輯
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.announcement_id)}
+                            disabled={deletingId === item.announcement_id}
+                            style={{
+                              color: "red",
+                              cursor: "pointer",
+                              border: "none",
+                              background: "none",
+                            }}
+                          >
+                            {deletingId === item.announcement_id ? "..." : "刪除"}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })
+          )}
         </tbody>
       </table>
     </div>

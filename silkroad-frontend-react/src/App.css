@@ -5,6 +5,11 @@
   width: 100%;
 }
 
+main,
+section {
+  flex: 1;
+}
+
 /* #root {
 	max-width: 50vh;
 	margin: 0 2rem;

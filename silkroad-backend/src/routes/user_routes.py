@@ -7,7 +7,7 @@ from controllers.user_controller import (
     delete_user,
     register_step1, 
     register_step2,
-    current_user,
+    current_user
 )
 
 user_routes = Blueprint('user', __name__)

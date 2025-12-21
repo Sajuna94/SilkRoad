@@ -1,10 +1,12 @@
+import { Link } from "react-router-dom";
+import { products } from "@/types/data/product";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery";
-import { products } from "@/types/data/product";
-import { Link } from "react-router-dom";
 import ReviewCard from "@/components/molecules/ReviewCard";
+import styles from "./ProductList.module.scss";
 
 export default function ProductList() {
+<<<<<<< HEAD
     return (
         <>
             <Link to={"/vendor/dashboard"}> dashboard </Link>
@@ -23,4 +25,58 @@ function VendorHeaderBarImage() {
             <FadeInImage fullSrc="" />
         </>
     );
+=======
+  return (
+    <>
+      <main className={styles.pageContainer}>
+        <section className={styles.bannerWrapper}>
+          <VendorHeaderBarImage />
+        </section>
+
+        <header className={styles.vendorHeader}>
+          <div className={styles.vendorInfo}>
+            <h1>Vendor Name</h1>
+            <div className={styles.meta}>
+              <span>台北市信義區松壽路 1 號</span>
+              <span>⭐ 4.8 (120 評論)</span>
+            </div>
+          </div>
+
+          <div className={styles.actions}>
+            <Link to={"/vendor/dashboard"} className={styles.dashboardBtn}>
+              管理商家後台
+            </Link>
+          </div>
+        </header>
+
+        <section className={styles.productSection}>
+          <h2 className={styles.sectionTitle}>熱門商品</h2>
+          <ProductGallery products={products} pageSize={10} />
+        </section>
+
+        <section className={styles.reviewSection}>
+          <h2 className={styles.sectionTitle}>顧客評論</h2>
+          <div style={{ marginTop: "20px" }}>
+            <ReviewCard />
+          </div>
+        </section>
+      </main>
+      {/* <Link to={"/vendor/dashboard"}> dashboard </Link>
+      <VendorHeaderBarImage />
+      <h1>Vendor Name</h1>
+      <ProductGallery products={products} pageSize={10} />
+      <div style={{ marginTop: "40px" }}>
+        <ReviewCard />
+      </div> */}
+    </>
+  );
+}
+
+function VendorHeaderBarImage() {
+  return (
+    <>
+      <FadeInImage fullSrc="https://eventbotler.com/images/cocktails/shirley-temple-84bDzLRS.webp" />
+    </>
+  );
+>>>>>>> b382ba1dbacd6fd98b36ae2b4d94a83706d70c71
 }
