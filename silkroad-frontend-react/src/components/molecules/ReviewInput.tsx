@@ -56,6 +56,7 @@ export default function ReviewInput() {
           resize: "none",
           outline: "none",
           marginBottom: "16px",
+          boxSizing: "border-box",
         }}
         placeholder="寫下您的心得..."
         value={comment}
