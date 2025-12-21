@@ -7,7 +7,8 @@ from controllers.user_controller import (
     delete_user,
     register_step1, 
     register_step2,
-    current_user
+    current_user,
+    get_all_announcements
 )
 
 user_routes = Blueprint('user', __name__)
@@ -278,3 +279,32 @@ else:
 """
 
 user_routes.route('/current_user', methods=['GET'])(current_user)
+
+user_routes.route('/announcements', methods=['GET'])(get_all_announcements)
+"""
+Return:
+{
+    "success": true,
+    "message": "Retrieved all announcements successfully",
+    "data": [
+        {
+            "announcement_id": int,
+            "admin_id": int,
+            "message": string,
+            "created_at": datetime
+        },
+        {
+            "announcement_id": int,
+            "admin_id": int,
+            "message": string,
+            "created_at": datetime
+        },
+        if more...
+    ]
+}
+else:
+{
+    "message": "...",
+    "success": False
+}
+"""

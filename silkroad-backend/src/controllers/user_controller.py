@@ -1,6 +1,6 @@
 from flask import request, jsonify, session
 from models import User
-from models import Admin,Vendor,Customer,Vendor_Manager,Cart,Cart_Item
+from models import Admin,Vendor,Customer,Vendor_Manager,Cart,Cart_Item,System_Announcement
 from config import db
 from utils import require_login
 from sqlalchemy import or_
@@ -522,3 +522,30 @@ def current_user():
     if not session.get('user_id'):
         return jsonify({"success": False, "message": "Not logged in"}), 401
     return jsonify({"success": True, "data": session.get('user')}), 200
+
+def get_all_announcements():
+    """
+    列出所有系統公告 (建議依時間倒序排列)
+    """
+    try:
+        # 依建立時間由新到舊排序
+        announcements = System_Announcement.query.order_by(System_Announcement.created_at.desc()).all()
+        
+        result = [{
+            "id": a.id,
+            "admin_id": a.admin_id,
+            "message": a.message,
+            "created_at": a.created_at.isoformat() if a.created_at else None
+        } for a in announcements]
+
+        return jsonify({
+            "success": True,
+            "message": "Retrieved all announcements successfully",
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
