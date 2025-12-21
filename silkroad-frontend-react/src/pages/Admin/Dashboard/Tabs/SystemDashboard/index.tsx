@@ -81,6 +81,7 @@ const saveEdit = (id: number) => {
 
 
 
+  // --- 功能 5: 刪除公告 (Delete) ---
 const handleDelete = (id: number) => {
   if (!confirm("確定要刪除這則公告嗎？此動作無法復原。")) return;
 
