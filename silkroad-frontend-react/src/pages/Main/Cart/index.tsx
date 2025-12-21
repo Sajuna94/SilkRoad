@@ -73,7 +73,7 @@ function CartList() {
                             onClick={() => modalRef.current?.open(item.product, item.quantity)}
                         >
                             <div className={styles["area"]}>
-                                <FadeInImage fullSrc={item.product.url} />
+                                <FadeInImage fullSrc={item.product.image_url} />
                             </div>
                             <div className={styles["options"]}>
                                 <h3>{item.product.name}</h3>

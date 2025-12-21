@@ -12,8 +12,8 @@ export default function Profile() {
     const navigate = useNavigate();
 
     const logout = useLogout();
-    const currentUserQuery = useCurrentUser();
-    const user = currentUserQuery.data as Customer;
+    const userQuery = useCurrentUser();
+    const user = userQuery.data as Customer;
 
     const [formData, setFormData] = useState({
         name: "",
@@ -49,7 +49,7 @@ export default function Profile() {
         });
     };
 
-    if (currentUserQuery.isLoading) return <p>Loading...</p>;
+    if (userQuery.isLoading) return <p>Loading...</p>;
     if (!user) return <p>請先登入</p>;
 
     // 檢查封鎖狀態 (假設 user.status 存在，或是你可以手動設為 'blocked' 來測試效果)

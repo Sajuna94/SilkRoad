@@ -63,18 +63,6 @@ export const useRegisterRole = (role: UserRole) => {
 	});
 };
 
-export const useUser = () => {
-	return useQuery<User, ApiErrorBody>({
-		queryKey: ["user"],
-		queryFn: async () => {
-			const res = await api.get("/user/me");
-			return res.data.data;
-		},
-		retry: false,
-		refetchOnWindowFocus: false,
-	});
-};
-
 export const useLogout = () => {
 	const qc = useQueryClient();
 
@@ -94,7 +82,6 @@ export const useCurrentUser = () => {
 		queryKey: ["user"],
 		queryFn: async () => {
 			const res = await api.get("/user/current_user");
-			console.log(res);
 			return res.data.data;
 		},
 		retry: false,
