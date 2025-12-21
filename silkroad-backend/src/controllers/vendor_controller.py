@@ -739,6 +739,7 @@ def get_public_vendors():
                     "address": v.address,  # 地址
                     "phone_number": v.phone_number,
                     "email": v.email,  # 聯絡信箱 (視需求決定是否公開)
+                    "description": v.description
                     # "created_at": v.created_at.isoformat() # 如果前端需要顯示 "新店家" 標籤可加這行
                 }
             )
