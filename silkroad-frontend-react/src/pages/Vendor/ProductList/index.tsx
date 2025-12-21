@@ -1,11 +1,25 @@
-import { Link } from "react-router-dom";
-import { products } from "@/types/data/product";
+import { Link, useParams } from "react-router-dom";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery";
 import ReviewInput from "@/components/molecules/ReviewInput";
+import { useVendor, useVendorProductsByVendorId } from "@/hooks/auth/vendor";
 import styles from "./ProductList.module.scss";
 
 export default function ProductList() {
+  const { vendorId } = useParams<{ vendorId: string }>();
+  const vendorIdNum = vendorId ? parseInt(vendorId, 10) : undefined;
+
+  const { data: vendor, isLoading: isVendorLoading } = useVendor(vendorIdNum!);
+  const { data: products, isLoading: isProductsLoading } = useVendorProductsByVendorId(vendorIdNum);
+
+  if (isVendorLoading || isProductsLoading) {
+    return <div className={styles.pageContainer}>載入中...</div>;
+  }
+
+  if (!vendor) {
+    return <div className={styles.pageContainer}>找不到店家</div>;
+  }
+
   return (
     <>
       <main className={styles.pageContainer}>
@@ -15,9 +29,9 @@ export default function ProductList() {
 
         <header className={styles.vendorHeader}>
           <div className={styles.vendorInfo}>
-            <h1>Vendor Name</h1>
+            <h1>{vendor.name}</h1>
             <div className={styles.meta}>
-              <span>台北市信義區松壽路 1 號</span>
+              <span>{vendor?.address || "地址未提供"}</span>
               <Link to="/vendor/reviews" className={styles.ratingLink}>
                 <span>⭐ 4.8 (120 評論)</span>
               </Link>
@@ -33,7 +47,11 @@ export default function ProductList() {
 
         <section className={styles.productSection}>
           <h2 className={styles.sectionTitle}>熱門商品</h2>
-          <ProductGallery products={products} pageSize={10} />
+          {products && products.length > 0 ? (
+            <ProductGallery products={products} pageSize={10} />
+          ) : (
+            <p>此店家暫無商品</p>
+          )}
         </section>
 
         <section className={styles.reviewSection}>

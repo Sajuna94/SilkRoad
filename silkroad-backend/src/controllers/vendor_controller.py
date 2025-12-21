@@ -824,3 +824,28 @@ def update_vendor_description():
             "success": False, 
             "message": "Database error occurred"
         }), 500
+
+def get_info(vendor_id : int):
+    """Get vendor information by ID"""
+    
+    vendor = Vendor.query.get(vendor_id)
+
+    if not vendor:
+        return jsonify({
+            "success": False, 
+            "message": "Vendor profile not found"
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "message": "Vendor information retrieved successfully",
+        "data": {
+            "revenue": vendor.revenue,
+            "address": vendor.address,
+            "vendor_manager_id": vendor.vendor_manager_id,
+            # "logo_url": vendor.logo_url,
+            "description": vendor.description,
+            "is_active": vendor.is_active,
+            "name": vendor.name
+        }
+    }), 200

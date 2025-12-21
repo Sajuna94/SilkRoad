@@ -1,6 +1,7 @@
 import styles from "./VendorList.module.scss";
 import VendorCard from "@/components/molecules/VendorCard";
 import { InfiniteList } from "@/components/atoms/InfiniteList";
+import { useNavigate } from "react-router-dom";
 
 export interface Vendor {
   id: string;
@@ -14,9 +15,11 @@ interface VendorListProps {
 }
 
 export default function VendorList({ vendors }: VendorListProps) {
+  const navigate = useNavigate();
+
   const handleVendorClick = (vendorId: string) => {
     console.log(`Maps to vendor: ${vendorId}`);
-    // navigate(`/vendor/${vendorId}`); // 未來實作路由導向
+    navigate(`/vendor/${vendorId}`);
   };
 
   return (

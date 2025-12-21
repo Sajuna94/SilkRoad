@@ -64,7 +64,7 @@ export const useVendor = (vendorId: number) => {
 		queryKey: ["vendor", vendorId],
 		queryFn: async () => {
 			const res = await api.get(`/vendor/${vendorId}`);
-			return res.data.data[0];
+			return res.data.data;
 		},
 		enabled: !!vendorId,
 		retry: false,
@@ -89,6 +89,33 @@ export const useVendorProducts = () => {
 			const res = await api.get(`/vendor/products`);
 			return res.data.data;
 		},
+		retry: false,
+	});
+}
+
+export const useVendorProductsByVendorId = (vendorId: number | undefined) => {
+	return useQuery<Product[], ApiErrorBody>({
+		queryKey: ["vendor-products", vendorId],
+		queryFn: async () => {
+			if (!vendorId) throw new Error("Vendor ID is required");
+			const res = await api.get(`/vendor/${vendorId}/view_products`);
+
+			// API returns simplified product data, so we need to add missing fields
+			// description and options will be fetched when user clicks on a product
+			const products = res.data.products.map((p: any) => ({
+				...p,
+				vendor_id: vendorId,
+				description: "", // Will be loaded on-demand
+				options: {
+					size: [],
+					sugar: [],
+					ice: []
+				}
+			}));
+
+			return products;
+		},
+		enabled: !!vendorId,
 		retry: false,
 	});
 }
