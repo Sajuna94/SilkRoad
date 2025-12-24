@@ -1,6 +1,6 @@
 import { api, type ApiErrorBody } from "@/api/instance";
 import type { Order } from "@/types/order";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 
 
@@ -14,5 +14,12 @@ export const useOrders = (customerId?: number) => {
 			return res.data.data;
 		},
 	});
+}
 
+export const useCreateOrder = () => {
+	return useMutation({
+		mutationFn: async () => {
+			
+		}
+	});
 }

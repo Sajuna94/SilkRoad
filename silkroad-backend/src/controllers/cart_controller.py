@@ -38,7 +38,13 @@ def add_to_cart():
     #     "selected_sizece":XXX
     #     }
 
-    customer_id = data.get("customer_id")
+    customer_id = session.get("user_id")
+    if not customer_id:
+        return jsonify({
+            "message": "無法取得 user_id，尚未登入?",
+            "success": False
+        }), 400
+
     vendor_id = data.get("vendor_id")
     product_id = data.get("product_id")
     quantity = data.get("quantity")   
@@ -46,8 +52,8 @@ def add_to_cart():
     selected_ice = data.get("selected_ice")
     selected_size = data.get("selected_size")
 
-    if not customer_id or not vendor_id:
-        return jsonify({"message": "缺少 customer_id 或 vendor_id ",
+    if not vendor_id:
+        return jsonify({"message": "缺少 vendor_id ",
                         "success": False}), 400
 
     try:
@@ -135,6 +141,10 @@ def remove_from_cart():
 def view_cart(cart_id : int):
     
     customer_id = cart_id
+    if cart_id == 0: 
+        customer_id = session.get('user_id')
+
+    print(customer_id)
     
     if not customer_id:
         return jsonify({"message": "缺少 customer_id", "success": False}), 400
