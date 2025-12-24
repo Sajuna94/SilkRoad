@@ -119,3 +119,32 @@ export const useVendorProductsByVendorId = (vendorId: number | undefined) => {
 		retry: false,
 	});
 }
+
+export const useProductDetail = (vendorId: number | undefined, productId: number | undefined) => {
+	return useQuery<Product, ApiErrorBody>({
+		queryKey: ["product-detail", vendorId, productId],
+		queryFn: async () => {
+			if (!vendorId || !productId) throw new Error("Vendor ID and Product ID are required");
+			const res = await api.get(`/vendor/${vendorId}/view_product_detail/${productId}`);
+
+			const productData = res.data.product;
+			// Transform backend response to match Product type
+			return {
+				id: productId,
+				vendor_id: vendorId,
+				name: productData.name,
+				price: productData.price,
+				description: productData.description,
+				options: {
+					size: productData.size_option || [],
+					sugar: productData.sugar_option || [],
+					ice: productData.ice_option || []
+				},
+				image_url: productData.image_url,
+				is_listed: true
+			};
+		},
+		enabled: !!vendorId && !!productId,
+		retry: false,
+	});
+}

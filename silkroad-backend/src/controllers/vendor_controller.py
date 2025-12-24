@@ -411,7 +411,7 @@ def view_vendor_product_detail(vendor_id, product_id):
                     },
                 }
             ),
-            404,
+            200,
         )
 
     except Exception as e:

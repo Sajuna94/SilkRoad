@@ -197,7 +197,7 @@ def add_to_cart_guest():
     data = request.get_json()
     
     vendor_id = data.get("vendor_id")
-    product_id = data.get("product_id")
+    product_id = data.get("product_id") 
     quantity = data.get("quantity")   
     selected_sugar = data.get("selected_sugar")
     selected_ice = data.get("selected_ice")
