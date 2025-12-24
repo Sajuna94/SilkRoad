@@ -10,10 +10,9 @@ import { Link } from "react-router-dom";
 import {
     getCartData,
     createOrder,
-    removeFromCart,
     getAvailablePolicies,
 } from "@/api/instance";
-import { useCartItems, type CartItemData } from "@/hooks/order/cart";
+import { useCartItems, useRemoveFromCart, type CartItemData } from "@/hooks/order/cart";
 
 // 1. 定義商品型別，對齊後端 cart/view 輸出
 // interface CartItemFromBackend {
@@ -48,6 +47,7 @@ export default function Cart() {
     // 暫代 ID，實作中應由登入狀態獲取
     //   const currentCustomerId = 1;
     const cartItemsQuery = useCartItems();
+    const removeFromCartMutation = useRemoveFromCart();
 
     // B. 資料抓取邏輯：封裝成獨立函式，以便在刪除後重複呼叫
     // const fetchCart = async () => {
@@ -80,13 +80,9 @@ export default function Cart() {
         if (!confirm("確定要從購物車移除這項商品嗎？")) return;
 
         try {
-            const res = await removeFromCart(cartItemId);
-            if (res.data.success) {
-                alert("已移除商品");
-                // fetchCart(); // 重新抓取資料，實現自動重新整理清單
-            } else {
-                alert("移除失敗：" + res.data.message);
-            }
+            await removeFromCartMutation.mutateAsync({ cart_item_id: cartItemId });
+            alert("已移除商品");
+            // React Query will automatically refetch cart data after successful removal
         } catch (err) {
             console.error("移除失敗", err);
             alert("移除發生錯誤");

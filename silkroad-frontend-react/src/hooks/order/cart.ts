@@ -101,9 +101,10 @@ export const useRemoveFromCart = () => {
 			});
 			return res.data;
 		},
-		onSuccess: (_, variables) => {
+		onSuccess: () => {
 			// Invalidate the cart query to refetch updated cart data
-			qc.invalidateQueries({ queryKey: ["cartItems", variables.customer_id] });
+			// Use the same query key as useCartItems hook
+			qc.invalidateQueries({ queryKey: ["cartItems"] });
 		},
 	});
 };
