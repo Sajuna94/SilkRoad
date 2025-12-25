@@ -118,7 +118,7 @@ export default function Header() {
 
                   {(user.role === "vendor" || user.role === "customer") && (
                     <Link
-                      to="/user/orders"
+                      to="/orders"
                       className={styles.menuItem}
                       onClick={handleLinkClick}
                     >
@@ -128,7 +128,7 @@ export default function Header() {
 
                   {user.role === "customer" && (
                     <Link
-                      to="/user/topup"
+                      to="/topup"
                       className={styles.menuItem}
                       onClick={handleLinkClick}
                     >
@@ -137,7 +137,7 @@ export default function Header() {
                   )}
 
                   <Link
-                    to="/user/profile"
+                    to="/profile"
                     className={styles.menuItem}
                     onClick={handleLinkClick}
                   >
