@@ -1,7 +1,7 @@
 import { Navigate, useRoutes } from "react-router-dom";
 import { AdminDashboard } from "@/pages/Admin";
 import { About, Auth, Cart, Home } from "@/pages/Main";
-import { UserOrders, UserProfile } from "@/pages/User";
+import { UserOrders, UserProfile, TopUpPage } from "@/pages/User";
 import { VendorDashboard, VendorProductList } from "@/pages/Vendor";
 import ReviewPage from "@/pages/ReviewPage";
 
@@ -25,6 +25,7 @@ export const routes = [
           { index: true, element: <Navigate to="profile" replace /> },
           { path: "orders", element: <UserOrders /> },
           { path: "profile", element: <UserProfile /> },
+          { path: "topup", element: <TopUpPage /> },
         ],
       },
       {

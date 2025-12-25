@@ -116,13 +116,25 @@ export default function Header() {
                     </Link>
                   )}
 
-                  <Link
-                    to="/user/orders"
-                    className={styles.menuItem}
-                    onClick={handleLinkClick}
-                  >
-                    我的訂單
-                  </Link>
+                  {(user.role === "vendor" || user.role === "customer") && (
+                    <Link
+                      to="/user/orders"
+                      className={styles.menuItem}
+                      onClick={handleLinkClick}
+                    >
+                      我的訂單
+                    </Link>
+                  )}
+
+                  {user.role === "customer" && (
+                    <Link
+                      to="/user/topup"
+                      className={styles.menuItem}
+                      onClick={handleLinkClick}
+                    >
+                      儲值中心
+                    </Link>
+                  )}
 
                   <Link
                     to="/user/profile"
