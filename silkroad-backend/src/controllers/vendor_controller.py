@@ -6,12 +6,13 @@ from models import (
     Vendor,
     Product,
     Discount_Policy,
+    Vendor_Manager
 )
 from config.database import db
 from utils import require_login
 
 from datetime import datetime
-
+from sqlalchemy import or_
 
 # def allowed_file(filename):
 #     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -823,4 +824,103 @@ def update_vendor_description():
         return jsonify({
             "success": False, 
             "message": "Database error occurred"
+        }), 500
+
+@require_login(role=["vendor"]) 
+def update_vendor_manager_info():
+    """
+    更新 Vendor 的 Manager (負責人/經理) 資料
+    邏輯：
+    1. 採用 "Find or Create" 模式決定新經理。
+    2. [新增] 如果更換了經理，檢查 "舊經理" 是否還有其他店家在用。若無，則刪除舊經理資料。
+    """
+    current_user_id = session.get('user_id')
+    data = request.get_json()
+    
+    mgr_name = data.get('name')
+    mgr_email = data.get('email')
+    mgr_phone = data.get('phone_number')
+
+    if not all([mgr_name, mgr_email, mgr_phone]):
+        return jsonify({
+            "success": False, 
+            "message": "Missing manager info. Name, Email, and Phone number are required."
+        }), 400
+
+    try:
+        # 1. 查詢 Vendor 本體
+        vendor = Vendor.query.get(current_user_id)
+        if not vendor:
+            return jsonify({"success": False, "message": "Vendor not found"}), 404
+
+        # [關鍵步驟 A] 在修改前，先記住 "舊經理" 是誰
+        old_manager_id = vendor.vendor_manager_id
+
+        # 2. [核心邏輯] Find or Create 新經理
+        existing_manager = Vendor_Manager.query.filter(
+            or_(
+                Vendor_Manager.email == mgr_email,
+                Vendor_Manager.phone_number == mgr_phone
+            )
+        ).first()
+
+        target_manager_id = None
+        
+        if existing_manager:
+            # 找到了：使用現有的 Manager ID
+            # 順便更新姓名 (假設使用者想修正名字)
+            existing_manager.name = mgr_name
+            target_manager_id = existing_manager.id
+        else:
+            # 沒找到：建立新的 Manager
+            new_mgr = Vendor_Manager(
+                name=mgr_name,
+                email=mgr_email,
+                phone_number=mgr_phone
+            )
+            db.session.add(new_mgr)
+            db.session.flush() 
+            target_manager_id = new_mgr.id
+
+        # 3. 更新 Vendor 的關聯
+        vendor.vendor_manager_id = target_manager_id
+        
+        # [關鍵步驟 B] 檢查舊經理是否變成 "孤兒" (Orphan) 並刪除
+        # 只有在 "確實換了人" (ID 不同) 的情況下才需要檢查
+        if old_manager_id and old_manager_id != target_manager_id:
+            
+            # 查詢還有多少個 Vendor 指向這個舊經理
+            # 注意：因為上面第 3 步已經把我們自己 (current vendor) 移除了，
+            # 所以如果 count 為 0，代表真的沒人用了。
+            remaining_usage = Vendor.query.filter_by(vendor_manager_id=old_manager_id).count()
+            
+            if remaining_usage == 0:
+                old_manager_to_delete = Vendor_Manager.query.get(old_manager_id)
+                if old_manager_to_delete:
+                    db.session.delete(old_manager_to_delete)
+                    print(f"Cleaned up orphaned manager ID: {old_manager_id}")
+
+        db.session.commit()
+
+        # 4. 準備回傳資料
+        final_manager = Vendor_Manager.query.get(target_manager_id)
+
+        return jsonify({
+            "success": True,
+            "message": "Manager information updated successfully",
+            "data": {
+                "manager": {
+                    "id": final_manager.id,
+                    "name": final_manager.name,
+                    "email": final_manager.email,
+                    "phone_number": final_manager.phone_number
+                }
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "success": False, 
+            "message": f"Database error: {str(e)}"
         }), 500
