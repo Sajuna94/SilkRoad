@@ -11,7 +11,8 @@ from controllers import (
     invalid_discount_policy,
     get_public_vendors,
     update_vendor_description,
-    update_vendor_manager_info
+    update_vendor_manager_info,
+    get_info
 )
 vendor_routes = Blueprint('vendor', __name__)
 
@@ -344,3 +345,4 @@ else:
     "success": False
 }
 """
+vendor_routes.route('/<int:vendor_id>', methods=['GET'])(get_info)

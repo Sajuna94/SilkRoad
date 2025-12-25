@@ -63,12 +63,20 @@ export default function Header() {
           <li>
             <Link to="/about">關於我們</Link>
           </li>
-          <li>
+          {/* <li>
             <Link to="/vendor">Vendor</Link>
-          </li>
-          <li>
-            <Link to="/cart">查看購物車</Link>
-          </li>
+          </li> */}
+          {(!user || user.role === "customer") && (
+            <li>
+              <Link to="/cart">查看購物車</Link>
+            </li>
+          )}
+
+          {user && user.role === "customer" && (
+            <li>
+              <Link to="/discounts">查看折扣券</Link>
+            </li>
+          )}
         </ul>
         <ul className={styles.authSection}>
           {!user ? (
@@ -114,16 +122,28 @@ export default function Header() {
                     </Link>
                   )}
 
-                  <Link
-                    to="/user/orders"
-                    className={styles.menuItem}
-                    onClick={handleLinkClick}
-                  >
-                    我的訂單
-                  </Link>
+                  {(user.role === "vendor" || user.role === "customer") && (
+                    <Link
+                      to="/orders"
+                      className={styles.menuItem}
+                      onClick={handleLinkClick}
+                    >
+                      我的訂單
+                    </Link>
+                  )}
+
+                  {user.role === "customer" && (
+                    <Link
+                      to="/topup"
+                      className={styles.menuItem}
+                      onClick={handleLinkClick}
+                    >
+                      儲值中心
+                    </Link>
+                  )}
 
                   <Link
-                    to="/user/profile"
+                    to="/profile"
                     className={styles.menuItem}
                     onClick={handleLinkClick}
                   >

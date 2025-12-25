@@ -14,6 +14,12 @@ interface ProductGalleryProps {
     products: Product[];
     pageSize: number;
 }
+interface FormState {
+    size: string;
+    ice: string;
+    sugar: string;
+    quantity: number;
+}
 
 export default function ProductGallery({
     products,
@@ -21,25 +27,27 @@ export default function ProductGallery({
 }: ProductGalleryProps) {
     const modalRef = useRef<ProductModalRef>(null);
     const addToCart = useAddToCart();
-    const { data: user } = useCurrentUser();
+    const currentUserQuery = useCurrentUser();
+
+    const handleSubmit = async (product: Product, form: FormState) => {
+        const res = await addToCart.mutateAsync({
+            vendor_id: product.vendor_id,
+            product_id: product.id,
+            quantity: form.quantity,
+            selected_ice: form.ice,
+            selected_size: form.size,
+            selected_sugar: form.sugar,
+        });
+
+        console.log("addToCart response:", res);
+    };
 
     return (
         <section>
             <ProductModal
                 ref={modalRef}
-                submitText="加入購物車"
-                onSubmit={async (product, form) => {
-                    // Backend switcher handles both logged-in and guest users
-                    await addToCart.mutateAsync({
-                        customer_id: user?.id, // Optional - only passed when logged in
-                        vendor_id: product.vendor_id,
-                        product_id: product.id,
-                        quantity: form.quantity,
-                        selected_sugar: form.sugar,
-                        selected_ice: form.ice,
-                        selected_size: form.size,
-                    });
-                }}
+                submitText={currentUserQuery.isFetched ? "加入購物車" : "請先登入"}
+                onSubmit={currentUserQuery.isFetched ? handleSubmit : async () => { modalRef.current?.close() }}
             />
 
             <div className={styles.container}>

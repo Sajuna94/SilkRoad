@@ -352,44 +352,50 @@ def update_orderinfo():
     
 def view_all_user_orders():
     data = request.get_json()
-    """
-    只需傳給我 { "user_id": XXX }
-    """
-    if not data or not data.get("user_id"):
-        return jsonify({'message': '缺少 user_id', "success": False}), 400
-    
     request_user_id = data.get("user_id")
 
+    if not request_user_id:
+        return jsonify({"message": "缺少 user_id", "success": False}), 400
+    
     try:
+        # 1. 抓取該使用者的所有訂單
         orders = Order.query.filter_by(user_id=request_user_id).order_by(Order.id.desc()).all()
-
-        if not orders:
-            return jsonify({
-                "data": [],
-                "message": "尚無任何訂單紀錄",
-                "success": True
-            })
-
-        result_list = []
+        
+        all_orders_data = []
+        
         for order in orders:
-            #整理每筆訂單的概要資訊
-            result_list.append({
+            # 2. 針對「每一筆訂單」建立其商品清單
+            items_in_this_order = []
+            for item in order.items:
+                product = item.product
+                items_in_this_order.append({
+                    "order_item_id": item.id,
+                    "product_id": item.product_id,
+                    "product_name": product.name if product else "未知商品", 
+                    "product_image": product.image_url if product else None, 
+                    "price": item.price,
+                    "quantity": item.quantity,
+                    "subtotal": item.price * item.quantity,
+                    "selected_sugar": item.selected_sugar,
+                    "selected_ice": item.selected_ice,
+                    "selected_size": item.selected_size
+                })
+            
+            # 3. 將訂單摘要與商品詳情打包
+            all_orders_data.append({
                 "order_id": order.id,
                 "vendor_id": order.vendor_id,
                 "total_price": order.total_price,
                 "discount_amount": order.discount_amount,
                 "is_completed": order.is_completed,
-                "is_delivered": order.is_delivered,
-                "payment_methods": str(order.payment_methods),
-                "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S') if hasattr(order, 'created_at') else None,
-                "note": order.note
+                "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                "items": items_in_this_order 
             })
-        
+
         return jsonify({
-            "data": result_list,
-            "message": "成功取得所有訂單",
-            "success": True,         
-        })       
+            "data": all_orders_data,           
+            "message": "成功取得所有訂單與細項",
+            "success": True,
+        })
     except Exception as e:
-        print(f"Error details: {e}")
-        return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
+        return jsonify({"message": "系統錯誤", "error": str(e), "success": False}), 500

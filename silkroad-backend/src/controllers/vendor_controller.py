@@ -13,6 +13,8 @@ from utils import require_login
 
 from datetime import datetime
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
+
 
 # def allowed_file(filename):
 #     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -101,11 +103,19 @@ def update_products_listed():
 @require_login(role=["vendor"])
 def get_products():
     vendor_id = session.get("user_id")
-    products = Product.query.filter_by(vendor_id=vendor_id).all()
+    products = (
+        Product.query
+        .options(
+            joinedload(Product.sizes_option),
+            joinedload(Product.sugar_option),
+            joinedload(Product.ice_option),
+        )
+        .filter_by(vendor_id=vendor_id)
+        .all()
+    )
     data = []
 
     for p in products:
-        # 取得 options，假設每個 options table 的 options 欄位是以逗號分隔的字串
         sizes = [s.strip() for s in (p.sizes_option.options.split(",") if p.sizes_option else []) if s.strip()]
         sugars = [s.strip() for s in (p.sugar_option.options.split(",") if p.sugar_option else []) if s.strip()]
         ices = [s.strip() for s in (p.ice_option.options.split(",") if p.ice_option else []) if s.strip()]
@@ -125,7 +135,7 @@ def get_products():
             "is_listed": p.is_listed,
         })
 
-    return jsonify({"success": True, "data": data})
+    return jsonify({"message": "", "success": True, "products": data})
 
 @require_login(role=["vendor"])
 def add_product():
@@ -324,58 +334,93 @@ def update_products():
             "success": False
         }), 500
 
+
 def view_vendor_products(vendor_id):
-    try:
-        vendor = Vendor.query.get(vendor_id)
-        if not vendor:
-            return jsonify({"message": "Vendor not found", "success": False}), 404
+    vendor = Vendor.query.get(vendor_id)
+    if not vendor:
+        return jsonify({"message": "Vendor not found", "success": False}), 404
 
-        products = Product.query.filter_by(vendor_id=vendor_id).all()
-        if not products:
-            return (
-                jsonify(
-                    {
-                        "message": "No products found for this vendor",
-                        "success": True,
-                        "products": [],
-                    }
-                ),
-                200,
-            )
-
-        # 準備回傳的產品資訊
-        products_data = []
-        for product in products:
-            products_data.append(
-                {
-                    "id": product.id,
-                    "name": product.name,
-                    "price": product.price,
-                    "image_url": product.image_url,
-                    "is_listed": product.is_listed,
-                }
-            )
-
-        return (
-            jsonify(
-                {
-                    "message": "Vendor products retrieved successfully",
-                    "success": True,
-                    "products": products_data,
-                }
-            ),
-            200,
+    products = (
+        Product.query
+        .options(
+            joinedload(Product.sizes_option),
+            joinedload(Product.sugar_option),
+            joinedload(Product.ice_option),
         )
-    except Exception as e:
-        return (
-            jsonify(
-                {
-                    "message": f"Failed to retrieve vendor products: {str(e)}",
-                    "success": False,
-                }
-            ),
-            500,
-        )
+        .filter_by(vendor_id=vendor_id)
+        .all()
+    )
+    data = []
+
+    for p in products:
+        sizes = [s.strip() for s in (p.sizes_option.options.split(",") if p.sizes_option else []) if s.strip()]
+        sugars = [s.strip() for s in (p.sugar_option.options.split(",") if p.sugar_option else []) if s.strip()]
+        ices = [s.strip() for s in (p.ice_option.options.split(",") if p.ice_option else []) if s.strip()]
+
+        data.append({
+            "id": p.id,
+            "vendor_id": p.vendor_id,
+            "name": p.name,
+            "price": p.price,
+            "description": p.description,
+            "options": {
+                "size": sizes,
+                "sugar": sugars,
+                "ice": ices,
+            },
+            "image_url": p.image_url,
+            "is_listed": p.is_listed,
+        })
+
+    return jsonify({"message": "", "success": True, "products": data})
+
+        # products = Product.query.filter_by(vendor_id=vendor_id).all()
+        # print(products)
+        # if not products:
+        #     return (
+        #         jsonify(
+        #             {
+        #                 "message": "No products found for this vendor",
+        #                 "success": True,
+        #                 "products": [],
+        #             }
+        #         ),
+        #         200,
+        #     )
+
+        # # 準備回傳的產品資訊
+        # products_data = []
+        # for product in products:
+        #     products_data.append(
+        #         {
+        #             "id": product.id,
+        #             "name": product.name,
+        #             "price": product.price,
+        #             "image_url": product.image_url,
+        #             "is_listed": product.is_listed,
+        #         }
+        #     )
+
+        # return (
+        #     jsonify(
+        #         {
+        #             "message": "Vendor products retrieved successfully",
+        #             "success": True,
+        #             "products": products_data,
+        #         }
+        #     ),
+        #     200,
+        # )
+    # except Exception as e:
+    #     return (
+    #         jsonify(
+    #             {
+    #                 "message": f"Failed to retrieve vendor products: {str(e)}",
+    #                 "success": False,
+    #             }
+    #         ),
+    #         500,
+    #     )
 
 
 def view_vendor_product_detail(vendor_id, product_id):
@@ -412,7 +457,7 @@ def view_vendor_product_detail(vendor_id, product_id):
                     },
                 }
             ),
-            404,
+            200,
         )
 
     except Exception as e:
@@ -924,3 +969,28 @@ def update_vendor_manager_info():
             "success": False, 
             "message": f"Database error: {str(e)}"
         }), 500
+
+def get_info(vendor_id : int):
+    """Get vendor information by ID"""
+    
+    vendor = Vendor.query.get(vendor_id)
+
+    if not vendor:
+        return jsonify({
+            "success": False, 
+            "message": "Vendor profile not found"
+        }), 404
+
+    return jsonify({
+        "success": True,
+        "message": "Vendor information retrieved successfully",
+        "data": {
+            "revenue": vendor.revenue,
+            "address": vendor.address,
+            "vendor_manager_id": vendor.vendor_manager_id,
+            # "logo_url": vendor.logo_url,
+            "description": vendor.description,
+            "is_active": vendor.is_active,
+            "name": vendor.name
+        }
+    }), 200

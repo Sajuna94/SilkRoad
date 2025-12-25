@@ -25,7 +25,6 @@ export type CartItemsRes = {
 
 // Add to cart request payload
 export type AddToCartReq = {
-	customer_id?: number; // Optional - only needed when logged in
 	vendor_id: number;
 	product_id: number;
 	quantity: number;
@@ -46,7 +45,7 @@ export type RemoveFromCartReq = {
  */
 export const useCartItems = (customerId?: number) => {
 	return useQuery<CartItemsRes, ApiErrorBody>({
-		queryKey: ["cartItems", customerId],
+		queryKey: ["cartItems"],
 		queryFn: async () => {
 			// For guests, use 0 as placeholder (backend ignores it and reads from session)
 			// For logged-in users, use their customer_id
@@ -73,11 +72,11 @@ export const useAddToCart = () => {
 			// Invalidate the cart query to refetch updated cart data
 			// For logged-in users, invalidate by customer_id
 			// For guests, the backend uses session
-			if (variables.customer_id) {
-				qc.invalidateQueries({ queryKey: ["cartItems", variables.customer_id] });
-			} else {
-				qc.invalidateQueries({ queryKey: ["cartItems"] });
-			}
+			// if (variables.customer_id) {
+			// 	qc.invalidateQueries({ queryKey: ["cartItems", variables.customer_id] });
+			// } else {
+			qc.invalidateQueries({ queryKey: ["cartItems"] });
+			// }
 		},
 	});
 };
@@ -102,9 +101,10 @@ export const useRemoveFromCart = () => {
 			});
 			return res.data;
 		},
-		onSuccess: (_, variables) => {
+		onSuccess: () => {
 			// Invalidate the cart query to refetch updated cart data
-			qc.invalidateQueries({ queryKey: ["cartItems", variables.customer_id] });
+			// Use the same query key as useCartItems hook
+			qc.invalidateQueries({ queryKey: ["cartItems"] });
 		},
 	});
 };

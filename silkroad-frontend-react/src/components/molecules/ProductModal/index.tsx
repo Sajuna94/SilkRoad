@@ -1,8 +1,9 @@
 import type { Product } from "@/types/store";
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState, useEffect } from "react";
 import styles from "./ProductModal.module.scss"
 import { Dialog, type DialogRef } from "@/components/ui/Dialog";
 import { QuantityInput } from "@/components/atoms/QuantityInput";
+import { useProductDetail } from "@/hooks/auth/vendor";
 
 export interface ProductModalRef {
     open: (product: Product, quantity?: number) => void;
@@ -29,20 +30,44 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ on
         size: "", ice: "", sugar: "", quantity: 1,
     });
     const [pending, setPending] = useState(false);
+    const [vendorId, setVendorId] = useState<number | undefined>(undefined);
+    const [productId, setProductId] = useState<number | undefined>(undefined);
+
+    // Fetch product detail when modal opens
+    const { data: productDetail, isLoading: isLoadingDetail } = useProductDetail(vendorId, productId);
+
+    // Update product and form when product detail is loaded
+    useEffect(() => {
+        if (productDetail) {
+            setProduct(productDetail);
+            setForm(prevForm => ({
+                size: productDetail?.options?.size[0] || "",
+                ice: productDetail?.options?.ice[0] || "",
+                sugar: productDetail?.options?.sugar[0] || "",
+                quantity: prevForm.quantity, // Keep the quantity from initial open
+            }));
+        }
+    }, [productDetail]);
 
     useImperativeHandle(ref, () => ({
         open: (newProduct: Product, newQuantity = 1) => {
+            // Set initial product and IDs for fetching detail
             setProduct(newProduct);
+            setVendorId(newProduct.vendor_id);
+            setProductId(newProduct.id);
             setForm({
-                size: newProduct?.options?.size[0],
-                ice: newProduct?.options?.ice[0],
-                sugar: newProduct?.options?.sugar[0],
+                size: newProduct?.options?.size[0] || "",
+                ice: newProduct?.options?.ice[0] || "",
+                sugar: newProduct?.options?.sugar[0] || "",
                 quantity: newQuantity,
             });
             dialogRef.current?.open();
         },
         close: () => {
             dialogRef.current?.close();
+            // Reset IDs when closing
+            setVendorId(undefined);
+            setProductId(undefined);
         },
         getForm: () => form,
     }));
@@ -64,43 +89,49 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ on
                 <img src={product.image_url} />
             </picture>
             <form>
-                <header>
-                    <div className={styles['name']}>{product.name}</div>
-                    <div className={styles['price']}>NT ${product.price}</div>
-                    <div className={styles['desc']}>{product.description}</div>
-                </header>
-                <div className={styles['content']}>
-                    <OptionDropdown
-                        id="size"
-                        label="大小"
-                        value={form.size}
-                        options={product?.options?.size ?? []}
-                        onChange={(val) => setForm({ ...form, size: val })}
-                    />
-                    <OptionDropdown
-                        id="ice"
-                        label="冰度"
-                        value={form.ice}
-                        options={product?.options?.ice ?? []}
-                        onChange={(val) => setForm({ ...form, ice: val })}
-                    />
-                    <OptionDropdown
-                        id="sugar"
-                        label="甜度"
-                        value={form.sugar}
-                        options={product?.options?.sugar ?? []}
-                        onChange={(val) => setForm({ ...form, sugar: val })}
-                    />
-                    <QuantityInput
-                        value={form.quantity}
-                        onChange={(val) => setForm({ ...form, quantity: val })}
-                    />
-                </div>
-                <footer>
-                    <button type="button" onClick={handleSubmit} disabled={pending}>
-                        {pending ? "處理中..." : submitText}
-                    </button>
-                </footer>
+                {isLoadingDetail ? (
+                    <div className={styles['loading']}>載入商品詳情中...</div>
+                ) : (
+                    <>
+                        <header>
+                            <div className={styles['name']}>{product.name}</div>
+                            <div className={styles['price']}>NT ${product.price}</div>
+                            <div className={styles['desc']}>{product.description}</div>
+                        </header>
+                        <div className={styles['content']}>
+                            <OptionDropdown
+                                id="size"
+                                label="大小"
+                                value={form.size}
+                                options={product?.options?.size ?? []}
+                                onChange={(val) => setForm({ ...form, size: val })}
+                            />
+                            <OptionDropdown
+                                id="ice"
+                                label="冰度"
+                                value={form.ice}
+                                options={product?.options?.ice ?? []}
+                                onChange={(val) => setForm({ ...form, ice: val })}
+                            />
+                            <OptionDropdown
+                                id="sugar"
+                                label="甜度"
+                                value={form.sugar}
+                                options={product?.options?.sugar ?? []}
+                                onChange={(val) => setForm({ ...form, sugar: val })}
+                            />
+                            <QuantityInput
+                                value={form.quantity}
+                                onChange={(val) => setForm({ ...form, quantity: val })}
+                            />
+                        </div>
+                        <footer>
+                            <button type="button" onClick={handleSubmit} disabled={pending || isLoadingDetail}>
+                                {pending ? "處理中..." : submitText}
+                            </button>
+                        </footer>
+                    </>
+                )}
             </form>
         </Dialog>
     );

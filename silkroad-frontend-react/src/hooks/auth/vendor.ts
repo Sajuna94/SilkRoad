@@ -64,7 +64,7 @@ export const useVendor = (vendorId: number) => {
 		queryKey: ["vendor", vendorId],
 		queryFn: async () => {
 			const res = await api.get(`/vendor/${vendorId}`);
-			return res.data.data[0];
+			return res.data.data;
 		},
 		enabled: !!vendorId,
 		retry: false,
@@ -75,7 +75,7 @@ export const useVendors = () => {
 	return useQuery<Vendor[], ApiErrorBody>({
 		queryKey: ["vendors"],
 		queryFn: async () => {
-			const res = await api.get("/vendors");
+			const res = await api.get("/vendor/vendors");
 			return res.data.data;
 		},
 		retry: false,
@@ -87,8 +87,65 @@ export const useVendorProducts = () => {
 		queryKey: ["products"],
 		queryFn: async () => {
 			const res = await api.get(`/vendor/products`);
-			return res.data.data;
+			return res.data.products;
 		},
+		retry: false,
+	});
+}
+
+export const useVendorProductsByVendorId = (vendorId: number | undefined) => {
+	return useQuery<Product[], ApiErrorBody>({
+		queryKey: ["vendor-products", vendorId],
+		queryFn: async () => {
+			if (!vendorId) throw new Error("Vendor ID is required");
+			console.log("entry");
+			const res = await api.get(`/vendor/${vendorId}/view_products`);
+
+			// API returns simplified product data, so we need to add missing fields
+			// description and options will be fetched when user clicks on a product
+			// const products = res.data.products.map((p: any) => ({
+			// 	...p,
+			// 	vendor_id: vendorId,
+			// 	description: "", // Will be loaded on-demand
+			// 	options: {
+			// 		size: [],
+			// 		sugar: [],
+			// 		ice: []
+			// 	}
+			// }));
+
+			return res.data.products;
+		},
+		enabled: !!vendorId,
+		retry: false,
+	});
+}
+
+export const useProductDetail = (vendorId: number | undefined, productId: number | undefined) => {
+	return useQuery<Product, ApiErrorBody>({
+		queryKey: ["product-detail", vendorId, productId],
+		queryFn: async () => {
+			if (!vendorId || !productId) throw new Error("Vendor ID and Product ID are required");
+			const res = await api.get(`/vendor/${vendorId}/view_product_detail/${productId}`);
+
+			const productData = res.data.product;
+			// Transform backend response to match Product type
+			return {
+				id: productId,
+				vendor_id: vendorId,
+				name: productData.name,
+				price: productData.price,
+				description: productData.description,
+				options: {
+					size: productData.size_option || [],
+					sugar: productData.sugar_option || [],
+					ice: productData.ice_option || []
+				},
+				image_url: productData.image_url,
+				is_listed: true
+			};
+		},
+		enabled: !!vendorId && !!productId,
 		retry: false,
 	});
 }
