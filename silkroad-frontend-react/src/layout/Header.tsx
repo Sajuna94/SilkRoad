@@ -63,12 +63,14 @@ export default function Header() {
           <li>
             <Link to="/about">關於我們</Link>
           </li>
-          <li>
+          {/* <li>
             <Link to="/vendor">Vendor</Link>
-          </li>
-          <li>
-            <Link to="/cart">查看購物車</Link>
-          </li>
+          </li> */}
+          {(!user || user.role === "customer") && (
+            <li>
+              <Link to="/cart">查看購物車</Link>
+            </li>
+          )}
         </ul>
         <ul className={styles.authSection}>
           {!user ? (
