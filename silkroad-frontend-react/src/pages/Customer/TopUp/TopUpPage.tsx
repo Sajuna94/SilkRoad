@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import styles from "./TopUpPage.module.scss";
-// 假設有這個 Hook，若無可先用本地 state 模擬
-// import { useUpdateBalance } from "@/hooks/auth/user";
+import { useTopUp, useCurrentUser } from "@/hooks/auth/user";
 
 type FloatingItem = {
   id: number;
@@ -13,12 +12,50 @@ type FloatingItem = {
 };
 
 export default function TopUpPage() {
-  // const updateBalanceMutation = useUpdateBalance(); // API
-  const [balance, setBalance] = useState(1000); // 模擬當前餘額
+  const topUpMutation = useTopUp();
+  const { data: currentUser, isLoading, isError } = useCurrentUser();
+
   const [manualAmount, setManualAmount] = useState<string>("");
   const [floatingItems, setFloatingItems] = useState<FloatingItem[]>([]);
 
   const itemIdRef = useRef(0);
+
+  // Loading 狀態
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <h1 className={styles.title}>儲值中心</h1>
+        <p style={{ textAlign: "center", padding: "2rem" }}>載入中...</p>
+      </div>
+    );
+  }
+
+  // 未登入或錯誤狀態
+  if (isError || !currentUser) {
+    return (
+      <div className={styles.container}>
+        <h1 className={styles.title}>儲值中心</h1>
+        <p style={{ textAlign: "center", padding: "2rem" }}>
+          請先以顧客身份登入
+        </p>
+      </div>
+    );
+  }
+
+  // 非 customer
+  if (currentUser.role !== "customer") {
+    return (
+      <div className={styles.container}>
+        <h1 className={styles.title}>儲值中心</h1>
+        <p style={{ textAlign: "center", padding: "2rem" }}>
+          此功能僅供顧客使用
+        </p>
+      </div>
+    );
+  }
+
+  // 安全獲取餘額
+  const balance = currentUser.stored_balance ?? 0;
 
   // 計算機率與金額
   const calculateWin = () => {
@@ -44,8 +81,7 @@ export default function TopUpPage() {
     const { amount, scale, isCrit } = calculateWin();
 
     // 呼叫 API
-    // updateBalanceMutation.mutate({ amount });
-    setBalance((prev) => prev + amount);
+    topUpMutation.mutate({ amount });
 
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -71,14 +107,22 @@ export default function TopUpPage() {
     const val = parseInt(manualAmount, 10);
 
     if (isNaN(val)) return;
-    if (val < 0) return alert("不能輸入負數");
+    if (val <= 0) return alert("金額必須大於 0");
     if (val > 9999) return alert("單次上限為 9999");
 
-    // API
-    setBalance((prev) => prev + val);
-
-    alert(`成功儲值 $${val}`);
-    setManualAmount("");
+    // 呼叫 API
+    topUpMutation.mutate(
+      { amount: val },
+      {
+        onSuccess: () => {
+          alert(`成功儲值 $${val}`);
+          setManualAmount("");
+        },
+        onError: (error) => {
+          alert(`儲值失敗: ${error.response?.data?.message || "未知錯誤"}`);
+        },
+      }
+    );
   };
 
   return (
@@ -134,9 +178,9 @@ export default function TopUpPage() {
           <button
             className={styles.submitBtn}
             onClick={handleManualSubmit}
-            disabled={!manualAmount}
+            disabled={!manualAmount || topUpMutation.isPending}
           >
-            確認儲值
+            {topUpMutation.isPending ? "處理中..." : "確認儲值"}
           </button>
         </div>
       </div>

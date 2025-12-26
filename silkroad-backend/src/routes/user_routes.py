@@ -1,14 +1,15 @@
 from flask import Blueprint
 from controllers.user_controller import (
-    login_user, 
-    logout_user, 
-    update_user, 
-    update_password, 
+    login_user,
+    logout_user,
+    update_user,
+    update_password,
     delete_user,
-    register_step1, 
+    register_step1,
     register_step2,
     current_user,
-    get_all_announcements
+    get_all_announcements,
+    topup_balance
 )
 
 user_routes = Blueprint('user', __name__)
@@ -306,5 +307,34 @@ else:
 {
     "message": "...",
     "success": False
+}
+"""
+
+user_routes.route('/topup', methods=['POST'])(topup_balance)
+"""
+Customer Top-up Balance
+URL: /api/user/topup
+Method: POST
+Headers: Cookie (Session required, Role: 'customer')
+
+Expect:
+{
+    "amount": int (1 - 9999)
+}
+
+Return (Success):
+{
+    "success": true,
+    "message": "儲值成功",
+    "data": {
+        "new_balance": int,
+        "added_amount": int
+    }
+}
+
+Return (Failure):
+{
+    "message": "...",
+    "success": false
 }
 """

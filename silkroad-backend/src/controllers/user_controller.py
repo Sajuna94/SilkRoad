@@ -206,7 +206,8 @@ def register_step2(role):
                 "phone_number": new_user.phone_number,
                 "address": new_user.address,
                 "membership_level": new_user.membership_level,
-                "is_active": new_user.is_active
+                "is_active": new_user.is_active,
+                "stored_balance": new_user.stored_balance
             }
         
         elif target_role == 'vendor':
@@ -301,7 +302,8 @@ def login_user():
             **base_info,
             "address": getattr(user, 'address', None),
             "membership_level": getattr(user, 'membership_level', 0),
-            "is_active": getattr(user, 'is_active', True)
+            "is_active": getattr(user, 'is_active', True),
+            "stored_balance": getattr(user, 'stored_balance', 0)
         }
 
     # 5-3. Vendor 特有資料 (包含 Manager)
@@ -413,7 +415,8 @@ def update_user():
             response_data.update({
                 "address": getattr(user, 'address', None),
                 "membership_level": getattr(user, 'membership_level', 0),
-                "is_active": getattr(user, 'is_active', True)
+                "is_active": getattr(user, 'is_active', True),
+                "stored_balance": getattr(user, 'stored_balance', 0)
             })
 
         # Vendor 特有欄位 (包含 Manager)
@@ -530,7 +533,7 @@ def get_all_announcements():
     try:
         # 依建立時間由新到舊排序
         announcements = System_Announcement.query.order_by(System_Announcement.created_at.desc()).all()
-        
+
         result = [{
             "id": a.id,
             "admin_id": a.admin_id,
@@ -545,6 +548,88 @@ def get_all_announcements():
         }), 200
 
     except Exception as e:
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
+
+@require_login(role='customer')
+def topup_balance():
+    """
+    Customer top-up balance
+    Route: /api/user/topup
+    Method: POST
+
+    Expect:
+    {
+        "amount": int (1 - 9999)
+    }
+
+    Return:
+    {
+        "success": True,
+        "message": "儲值成功",
+        "data": {
+            "new_balance": int,
+            "added_amount": int
+        }
+    }
+    """
+    # 1. 從 session 獲取當前 customer user_id
+    current_user_id = session.get('user_id')
+    if not current_user_id:
+        return jsonify({"message": "Not logged in", "success": False}), 401
+
+    # 2. 從 request.json 獲取儲值金額
+    data = request.get_json()
+    amount = data.get('amount')
+
+    # 3. 驗證金額
+    if amount is None:
+        return jsonify({"message": "Amount is required", "success": False}), 400
+
+    try:
+        amount = int(amount)
+    except (ValueError, TypeError):
+        return jsonify({"message": "Amount must be a valid integer", "success": False}), 400
+
+    if amount <= 0:
+        return jsonify({"message": "金額必須大於 0", "success": False}), 400
+
+    if amount > 9999:
+        return jsonify({"message": "單次儲值上限為 9999", "success": False}), 400
+
+    # 4. 查詢 Customer 實例
+    customer = Customer.query.get(current_user_id)
+    if not customer:
+        return jsonify({"message": "Customer not found", "success": False}), 404
+
+    try:
+        # 5. 更新餘額
+        old_balance = customer.stored_balance or 0
+        customer.stored_balance = old_balance + amount
+        new_balance = customer.stored_balance
+
+        # 6. 提交到資料庫
+        db.session.commit()
+
+        # 7. 更新 session 中的 user 資料
+        if session.get('user'):
+            session['user']['stored_balance'] = new_balance
+            session.modified = True
+
+        # 8. 回傳結果
+        return jsonify({
+            "success": True,
+            "message": "儲值成功",
+            "data": {
+                "new_balance": new_balance,
+                "added_amount": amount
+            }
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
         return jsonify({
             "message": f"Database error: {str(e)}",
             "success": False

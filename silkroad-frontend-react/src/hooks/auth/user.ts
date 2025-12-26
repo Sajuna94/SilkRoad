@@ -88,3 +88,24 @@ export const useCurrentUser = () => {
 		refetchOnWindowFocus: false,
 	});
 }
+
+type TopUpReq = { amount: number };
+type TopUpRes = { new_balance: number; added_amount: number };
+
+export const useTopUp = () => {
+  const qc = useQueryClient();
+
+  return useMutation<TopUpRes, ApiErrorBody, TopUpReq>({
+    mutationFn: async (payload) => {
+      const res = await api.post("/user/topup", payload);
+      return res.data.data;
+    },
+    onSuccess: (data) => {
+      // 更新 user query cache 中的 stored_balance
+      qc.setQueryData<User>(["user"], (old) => {
+        if (!old || old.role !== "customer") return old;
+        return { ...old, stored_balance: data.new_balance };
+      });
+    },
+  });
+};
