@@ -8,17 +8,48 @@ import { VendorForm } from "./Vendor";
 import { CustomerForm } from "./Customer";
 
 export const RegisterForm = () => {
-    const [hash, setHash] = React.useState(window.location.hash.replace("#", ""));
+    const [currentStep, setCurrentStep] = React.useState<"basic" | "vendor" | "customer">("basic");
     const [form, setForm] = React.useState({
-        email: "vendor@example.com",
-        password: "123",
-        phone: "123",
-        role: "vendor",
-    })
+        email: "",
+        password: "",
+        phone: "",
+        role: "customer",
+    });
+    const [validationError, setValidationError] = React.useState("");
 
     const registerMutation = useRegister();
+
+    const validateForm = () => {
+        // Email 驗證
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(form.email)) {
+            setValidationError("請輸入有效的 Email 地址");
+            return false;
+        }
+
+        // 密碼驗證
+        if (form.password.length < 6) {
+            setValidationError("密碼至少需要 6 個字符");
+            return false;
+        }
+
+        // 電話號碼驗證
+        if (form.phone.trim().length === 0) {
+            setValidationError("請輸入電話號碼");
+            return false;
+        }
+
+        setValidationError("");
+        return true;
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
         console.log("Form Info:", form);
 
         registerMutation.mutate({
@@ -28,8 +59,7 @@ export const RegisterForm = () => {
             role: form.role,
         }, {
             onSuccess: () => {
-                window.location.hash = form.role;
-                setHash(form.role.replace("#", ""));
+                setCurrentStep(form.role as "vendor" | "customer");
             },
             onError: (error) => {
                 console.error("註冊失敗:", error.response?.data);
@@ -37,12 +67,24 @@ export const RegisterForm = () => {
         });
     };
 
-    if (hash === "vendor") return <VendorForm />;
-    if (hash === "customer") return <CustomerForm />;
+    if (currentStep === "vendor") return <VendorForm />;
+    if (currentStep === "customer") return <CustomerForm />;
 
     return (
         <form className={styles['form']} onSubmit={handleSubmit}>
             <h2 className={styles['title']}>註冊帳號</h2>
+
+            {validationError && (
+                <div className={styles['error']}>
+                    {validationError}
+                </div>
+            )}
+
+            {registerMutation.isError && (
+                <div className={styles['error']}>
+                    {registerMutation.error.response?.data?.message || "註冊失敗，請稍後再試"}
+                </div>
+            )}
 
             <LabeledInput
                 label="Email"

@@ -46,4 +46,15 @@
 		background-color: #fff;
 		color: #333;
 	}
+
+	.error {
+		padding: 0.75rem;
+		margin-bottom: 1rem;
+		background-color: #fee;
+		border: 1px solid #fcc;
+		border-radius: 4px;
+		color: #c33;
+		font-size: 0.9rem;
+		text-align: center;
+	}
 }
