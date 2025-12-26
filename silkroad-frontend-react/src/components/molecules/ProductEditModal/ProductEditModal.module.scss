@@ -1,0 +1,117 @@
+.editForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 500px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.header {
+    h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #333;
+    }
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+        font-weight: 500;
+        color: #555;
+        font-size: 0.9rem;
+    }
+
+    input,
+    textarea {
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-family: inherit;
+
+        &:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        &:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 60px;
+    }
+}
+
+.uploading {
+    font-size: 0.85rem;
+    color: #666;
+    font-style: italic;
+}
+
+.imagePreview {
+    margin-top: 0.5rem;
+
+    img {
+        max-width: 200px;
+        max-height: 200px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+}
+
+.footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+
+    button {
+        padding: 0.6rem 1.5rem;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+}
+
+.cancelBtn {
+    background-color: #f5f5f5;
+    color: #333;
+
+    &:hover:not(:disabled) {
+        background-color: #e0e0e0;
+    }
+}
+
+.submitBtn {
+    background-color: #4CAF50;
+    color: white;
+
+    &:hover:not(:disabled) {
+        background-color: #45a049;
+    }
+}

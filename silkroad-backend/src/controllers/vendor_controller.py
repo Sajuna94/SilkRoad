@@ -286,10 +286,17 @@ def update_products():
                 setattr(product, col_name, str(value).lower() == "true")
             elif "options" in col_name:
                 value_list = [v.strip() for v in str(value).split(",") if v.strip()]
-                option_obj = getattr(product, col_name.replace("_options", "_option"), None)
+
+                # 特別處理 size_options -> sizes_option (注意複數)
+                if col_name == "size_options":
+                    option_attr_name = "sizes_option"
+                else:
+                    option_attr_name = col_name.replace("_options", "_option")
+
+                option_obj = getattr(product, option_attr_name, None)
                 if not option_obj:
                     return jsonify({
-                        "message": f"Product {product_id} has no {col_name}",
+                        "message": f"Product {product_id} has no {option_attr_name}",
                         "success": False
                     }), 400
                 option_obj.set_options_list(value_list)

@@ -1,19 +1,22 @@
-import { useAddProduct, useUpdateProductsListed, useVendorProducts } from "@/hooks/auth/vendor";
+import { useAddProduct, useUpdateProductsListed, useVendorProducts, useUpdateProduct } from "@/hooks/auth/vendor";
 import styles from "./Product.module.scss";
 // import { products } from "@/types/data/product";
 import type { Product } from "@/types/store";
 import React from "react";
 import { useCloudinaryUpload } from "@/hooks/utils/cloudinary";
 import { ProductModal, type ProductModalRef } from "@/components/molecules/ProductModal";
+import { ProductEditModal, type ProductEditModalRef, type ProductEditFormData } from "@/components/molecules/ProductEditModal";
 
 export default function ProductTab() {
     const cloudinaryUploadMutation = useCloudinaryUpload();
     const addProductMutation = useAddProduct();
     const vendorProductsQuery = useVendorProducts();
     const updateProductsMutation = useUpdateProductsListed();
+    const updateProductMutation = useUpdateProduct();
 
     const [products, setProducts] = React.useState<Product[]>([]);
     const modalRef = React.useRef<ProductModalRef>(null);
+    const editModalRef = React.useRef<ProductEditModalRef>(null);
 
     React.useEffect(() => {
         if (vendorProductsQuery.isSuccess) {
@@ -71,12 +74,43 @@ export default function ProductTab() {
         })));
     };
 
+    const handleEditProduct = async (productId: number, formData: ProductEditFormData) => {
+        await updateProductMutation.mutateAsync({
+            product_id: productId,
+            name: formData.name,
+            price: formData.price,
+            description: formData.description,
+            image_url: formData.image_url,
+            size: formData.size,
+            sugar: formData.sugar,
+            ice: formData.ice,
+        });
+    };
+
+    const handleEditUpload = async (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            cloudinaryUploadMutation.mutate(file, {
+                onSuccess: (data) => {
+                    resolve(data.secure_url);
+                },
+                onError: (error) => {
+                    reject(error);
+                },
+            });
+        });
+    };
+
     return (
         <section className={styles["container"]}>
             <ProductModal
                 ref={modalRef}
                 submitText="關閉預覽"
                 onSubmit={async () => { modalRef.current?.close(); }}
+            />
+            <ProductEditModal
+                ref={editModalRef}
+                onSubmit={handleEditProduct}
+                onUpload={handleEditUpload}
             />
 
             <div className={styles["info"]}>
@@ -88,6 +122,7 @@ export default function ProductTab() {
                             products={products.filter((p) => p.is_listed)}
                             onToggle={toggleListed}
                             onOpenModal={(product) => modalRef.current?.open(product)}
+                            onEdit={(product) => editModalRef.current?.open(product)}
                         />
                     </div>
                     <div style={{ flex: 1 }}>
@@ -96,6 +131,7 @@ export default function ProductTab() {
                             products={products.filter((p) => !p.is_listed)}
                             onToggle={toggleListed}
                             onOpenModal={(product) => modalRef.current?.open(product)}
+                            onEdit={(product) => editModalRef.current?.open(product)}
                         />
                     </div>
                 </div>
@@ -174,10 +210,12 @@ function ProductTable({
     products,
     onToggle,
     onOpenModal,
+    onEdit,
 }: {
     products: Product[];
     onToggle: (id: number) => void;
     onOpenModal: (product: Product) => void;
+    onEdit: (product: Product) => void;
 }) {
     return (
         <div className={styles["table-wrapper"]}>
@@ -186,7 +224,8 @@ function ProductTable({
                     <tr>
                         <th>名稱</th>
                         <th style={{ width: "90px" }}>上/下架</th>
-                        <th style={{ width: "90px" }}>idk</th>
+                        <th style={{ width: "90px" }}>編輯</th>
+                        <th style={{ width: "90px" }}>預覽</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -196,6 +235,11 @@ function ProductTable({
                             <td style={{ width: "90px" }}>
                                 <button onClick={() => onToggle(p.id)}>
                                     {p.is_listed ? "下架" : "上架"}
+                                </button>
+                            </td>
+                            <td style={{ width: "90px" }}>
+                                <button onClick={() => onEdit(p)}>
+                                    編輯
                                 </button>
                             </td>
                             <td style={{ width: "90px" }}>
