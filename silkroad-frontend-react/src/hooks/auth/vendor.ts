@@ -149,3 +149,22 @@ export const useProductDetail = (vendorId: number | undefined, productId: number
 		retry: false,
 	});
 }
+
+type UpdateVendorDescriptionReq = {
+	description: string;
+};
+
+export const useUpdateVendorDescription = () => {
+	const qc = useQueryClient();
+
+	return useMutation<any, ApiErrorBody, UpdateVendorDescriptionReq>({
+		mutationFn: async (payload) => {
+			const res = await api.patch("/vendor/description", payload);
+			return res.data;
+		},
+		onSuccess: () => {
+			// 刷新當前用戶資料
+			qc.invalidateQueries({ queryKey: ["user"] });
+		},
+	});
+};

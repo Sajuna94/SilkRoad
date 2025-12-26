@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useCurrentUser, useLogout } from "@/hooks/auth/user";
+import { useCurrentUser, useLogout, useUpdateUser } from "@/hooks/auth/user";
+import { useUpdateVendorDescription } from "@/hooks/auth/vendor";
 import { useNavigate } from "react-router-dom";
 import styles from "./Profile.module.scss";
 
@@ -13,6 +14,8 @@ export default function Profile() {
   const logout = useLogout();
 
   const userQuery = useCurrentUser();
+  const updateUserMutation = useUpdateUser();
+  const updateVendorDescMutation = useUpdateVendorDescription();
 
   const user = userQuery.data as User;
 
@@ -51,9 +54,38 @@ export default function Profile() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    console.log(`[${user.role}] 儲存資料:`, formData);
-    alert("資料已更新 (模擬)");
+  const handleSave = async () => {
+    if (!user) return;
+
+    try {
+      // 1. 更新基本資料（所有角色）
+      const basicData: { name?: string; phone_number?: string; address?: string } = {
+        name: formData.name,
+        phone_number: formData.phone_number,
+      };
+
+      // 2. Customer/Vendor 需要更新 address
+      if (user.role === UserRole.CUSTOMER || user.role === UserRole.VENDOR) {
+        basicData.address = formData.address;
+      }
+
+      await updateUserMutation.mutateAsync(basicData);
+
+      // 3. Vendor 需要另外更新 description
+      if (user.role === UserRole.VENDOR) {
+        const vendorUser = user as any;
+        if (formData.description !== (vendorUser.description || "")) {
+          await updateVendorDescMutation.mutateAsync({
+            description: formData.description,
+          });
+        }
+      }
+
+      alert("資料更新成功！");
+    } catch (err: any) {
+      console.error("更新失敗:", err);
+      alert(`更新失敗: ${err.response?.data?.message || "未知錯誤"}`);
+    }
   };
 
   const handleBlockedLogout = () => {
@@ -90,6 +122,24 @@ export default function Profile() {
 
       <section className={styles.profileContainer}>
         <div className={styles.leftPanel}>
+          {/* 錯誤提示 */}
+          {(updateUserMutation.isError || updateVendorDescMutation.isError) && (
+            <div
+              style={{
+                backgroundColor: "#fee",
+                border: "1px solid #fcc",
+                borderRadius: "4px",
+                padding: "12px",
+                marginBottom: "16px",
+                color: "#c00",
+              }}
+            >
+              {updateUserMutation.error?.response?.data?.message ||
+                updateVendorDescMutation.error?.response?.data?.message ||
+                "更新失敗，請稍後再試"}
+            </div>
+          )}
+
           <div className={styles.avatarWrapper}>
             <img src={getAvatarSrc()} alt="Avatar" />
           </div>
@@ -160,8 +210,17 @@ export default function Profile() {
             </div>
           )}
 
-          <button className={styles.saveBtn} onClick={handleSave}>
-            儲存修改
+          <button
+            className={styles.saveBtn}
+            onClick={handleSave}
+            disabled={
+              updateUserMutation.isPending ||
+              updateVendorDescMutation.isPending
+            }
+          >
+            {updateUserMutation.isPending || updateVendorDescMutation.isPending
+              ? "儲存中..."
+              : "儲存修改"}
           </button>
         </div>
 

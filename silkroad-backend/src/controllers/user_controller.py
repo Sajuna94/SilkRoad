@@ -522,9 +522,75 @@ def delete_user(user_id):
         }), 500
     
 def current_user():
-    if not session.get('user_id'):
+    """
+    取得當前登入用戶的最新資料
+    從資料庫查詢以確保資料是最新的
+    """
+    user_id = session.get('user_id')
+    if not user_id:
         return jsonify({"success": False, "message": "Not logged in"}), 401
-    return jsonify({"success": True, "data": session.get('user')}), 200
+
+    # 從資料庫查詢最新用戶資料
+    user = User.query.get(user_id)
+    if not user:
+        # 用戶已被刪除,清除 session
+        session.clear()
+        return jsonify({"success": False, "message": "User not found"}), 404
+
+    # 根據角色組裝回傳資料 (與 login_user 相同邏輯)
+    response_data = {}
+
+    # 基礎資料 (所有角色都有)
+    base_info = {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role,
+        "phone_number": user.phone_number,
+        "created_at": user.created_at
+    }
+
+    # Customer 特有資料
+    if user.role == 'customer':
+        response_data = {
+            **base_info,
+            "address": getattr(user, 'address', None),
+            "membership_level": getattr(user, 'membership_level', 0),
+            "is_active": getattr(user, 'is_active', True),
+            "stored_balance": getattr(user, 'stored_balance', 0)
+        }
+
+    # Vendor 特有資料
+    elif user.role == 'vendor':
+        manager_info = None
+
+        # 獲取經理資料
+        mgr_id = getattr(user, 'vendor_manager_id', None)
+        if mgr_id:
+            manager = Vendor_Manager.query.get(mgr_id)
+            if manager:
+                manager_info = {
+                    "id": manager.id,
+                    "name": manager.name,
+                    "email": manager.email,
+                    "phone_number": manager.phone_number
+                }
+
+        response_data = {
+            **base_info,
+            "address": getattr(user, 'address', None),
+            "is_active": getattr(user, 'is_active', True),
+            "description": getattr(user, 'description', ""),
+            "logo_url": getattr(user, 'logo_url', None),
+            "revenue": getattr(user, 'revenue', 0),
+            "manager": manager_info
+        }
+
+    # Admin 或其他角色
+    else:
+        response_data = base_info
+
+    return jsonify({"success": True, "data": response_data}), 200
 
 def get_all_announcements():
     """

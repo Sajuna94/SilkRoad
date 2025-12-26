@@ -109,3 +109,25 @@ export const useTopUp = () => {
     },
   });
 };
+
+type UpdateUserReq = {
+  name?: string;
+  phone_number?: string;
+  address?: string;
+};
+
+export const useUpdateUser = () => {
+  const qc = useQueryClient();
+
+  return useMutation<User, ApiErrorBody, UpdateUserReq>({
+    mutationFn: async (payload) => {
+      const res = await api.patch("/user/me", payload);
+      return res.data.data[0];
+    },
+    onSuccess: (userData) => {
+      // 更新 user query cache
+      qc.setQueryData(["user"], userData);
+      qc.invalidateQueries({ queryKey: ["user"] });
+    },
+  });
+};
