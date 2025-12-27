@@ -67,3 +67,48 @@ export interface UpdateOrderInput {
   is_completed?: boolean;
   is_delivered?: boolean;
 }
+
+// --- 5. 折價券相關類型 ---
+export type DiscountType = "percent" | "fixed";
+
+export interface DiscountPolicy {
+  policy_id: number;
+  vendor_id: number;
+  code: string | null;
+  is_available: boolean;
+  type: DiscountType;
+  value: number;
+  min_purchase: number;
+  max_discount: number | null;
+  membership_limit: number;
+  start_date: string | null; // "YYYY-MM-DD"
+  expiry_date: string | null; // "YYYY-MM-DD"
+}
+
+export interface AddDiscountPolicyInput {
+  vendor_id: number;
+  code?: string;
+  type: DiscountType;
+  value: number;
+  min_purchase?: number;
+  max_discount?: number;
+  membership_limit: number;
+  start_date?: string; // "YYYY-MM-DD"
+  expiry_date?: string; // "YYYY-MM-DD"
+}
+
+export interface ViewDiscountPoliciesInput {
+  vendor_id: number;
+}
+
+export interface ViewDiscountPoliciesResponse {
+  data: DiscountPolicy[];
+  policy_amount: number;
+  message: string;
+  success: boolean;
+}
+
+export interface InvalidDiscountPolicyInput {
+  policy_id: number;
+  vendor_id: number;
+}

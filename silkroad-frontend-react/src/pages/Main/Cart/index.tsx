@@ -12,7 +12,8 @@ import {
     createOrder,
     getAvailablePolicies,
 } from "@/api/instance";
-import { useCartItems, useRemoveFromCart, type CartItemData } from "@/hooks/order/cart";
+import { useCartItems, useRemoveFromCart, useUpdateCartItem, type CartItemData } from "@/hooks/order/cart";
+import type { Product } from "@/types/store";
 
 // 1. 定義商品型別，對齊後端 cart/view 輸出
 // interface CartItemFromBackend {
@@ -48,6 +49,7 @@ export default function Cart() {
     //   const currentCustomerId = 1;
     const cartItemsQuery = useCartItems();
     const removeFromCartMutation = useRemoveFromCart();
+    const updateCartItemMutation = useUpdateCartItem();
 
     // B. 資料抓取邏輯：封裝成獨立函式，以便在刪除後重複呼叫
     // const fetchCart = async () => {
@@ -123,7 +125,11 @@ export default function Cart() {
 
             <main>
                 {/* 將 items 與 handleRemoveItem 傳入 */}
-                <CartList items={items} onRemove={handleRemoveItem} />
+                <CartList
+                    items={items}
+                    onRemove={handleRemoveItem}
+                    updateMutation={updateCartItemMutation}
+                />
 
                 <Sidebar
                     note={note}
@@ -155,11 +161,63 @@ export default function Cart() {
 function CartList({
     items,
     onRemove,
+    updateMutation,
 }: {
     items: CartItemData[];
     onRemove: (id: number) => void;
+    updateMutation: ReturnType<typeof useUpdateCartItem>;
 }) {
     const modalRef = useRef<ProductModalRef>(null);
+    const [editingCartItemId, setEditingCartItemId] = useState<number | null>(null);
+
+    // Handle cart item click - open modal for editing
+    const handleItemClick = (item: CartItemData) => {
+        setEditingCartItemId(item.cart_item_id);
+
+        // Convert CartItemData to Product type for modal
+        const product: Product = {
+            id: item.product_id,
+            vendor_id: item.vendor_id, // Use actual vendor_id to fetch product details
+            name: item.product_name,
+            price: item.price,
+            description: "",
+            options: {
+                size: [],
+                sugar: [],
+                ice: [],
+            },
+            image_url: item.product_image,
+            is_listed: true,
+        };
+
+        // Open modal with current quantity and selections
+        modalRef.current?.open(product, item.quantity, {
+            size: item.selected_size,
+            ice: item.selected_ice,
+            sugar: item.selected_sugar,
+        });
+    };
+
+    // Handle modal submit - update cart item
+    const handleUpdateSubmit = async (product: Product, form: { size: string; ice: string; sugar: string; quantity: number }) => {
+        if (!editingCartItemId) return;
+
+        try {
+            await updateMutation.mutateAsync({
+                cart_item_id: editingCartItemId,
+                quantity: form.quantity,
+                selected_size: form.size,
+                selected_ice: form.ice,
+                selected_sugar: form.sugar,
+            });
+            alert("購物車項目已更新");
+            setEditingCartItemId(null);
+        } catch (err) {
+            console.error("更新失敗", err);
+            alert("更新失敗，請稍後再試");
+            throw err; // Re-throw to prevent modal from closing
+        }
+    };
 
     if (items.length === 0)
         return <p className={styles["empty"]}>您的購物車目前空空如也。</p>;
@@ -168,7 +226,12 @@ function CartList({
         <>
             <ul className={styles["list"]}>
                 {items.map((item) => (
-                    <li key={item.cart_item_id} className={styles["item"]}>
+                    <li
+                        key={item.cart_item_id}
+                        className={styles["item"]}
+                        onClick={() => handleItemClick(item)}
+                        style={{ cursor: "pointer" }}
+                    >
                         <div className={styles["area"]}>
                             <FadeInImage fullSrc={item.product_image} />
                         </div>
@@ -206,7 +269,7 @@ function CartList({
                     </li>
                 ))}
             </ul>
-            <ProductModal ref={modalRef} submitText="確認修改" />
+            <ProductModal ref={modalRef} submitText="確認修改" onSubmit={handleUpdateSubmit} />
         </>
     );
 }
