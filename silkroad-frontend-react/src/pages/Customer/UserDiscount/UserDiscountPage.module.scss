@@ -1,0 +1,321 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: sans-serif;
+}
+
+.pageHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    color: #333;
+    margin-bottom: 0.5rem;
+  }
+  p {
+    color: #666;
+  }
+}
+
+.filterSection {
+  background: #f9fafb;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 150px;
+  max-width: 100%;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+    margin-left: 4px;
+  }
+}
+
+.input,
+.select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  background-color: white;
+  color: #333;
+  outline: none;
+  transition: all 0.2s;
+
+  &:focus {
+    border-color: #8a3e3e;
+    box-shadow: 0 0 0 3px rgba(138, 62, 62, 0.1);
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+}
+
+.select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem top 50%;
+  background-size: 0.65rem auto;
+  padding-right: 2.5rem;
+}
+
+@media (max-width: 768px) {
+  .filterSection {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .filterGroup {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.couponCard {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.2s;
+  border: 1px solid #eee;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  &.expired {
+    filter: grayscale(1);
+    opacity: 0.7;
+    pointer-events: none;
+
+    .copyBtn {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.leftSide {
+  background: linear-gradient(135deg, #8a3e3e, #a05757);
+  color: white;
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 0.5rem;
+  text-align: center;
+
+  .value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .symbol {
+    font-size: 1rem;
+    vertical-align: super;
+  }
+
+  .off {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .typeLabel {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    opacity: 0.9;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+}
+
+.middleSide {
+  flex: 1;
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 2px dashed #eee; /* 撕線效果 */
+}
+
+.vendorName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.conditions {
+  p {
+    margin: 2px 0;
+    font-size: 0.85rem;
+    color: #666;
+  }
+}
+
+.expiry {
+  margin-top: 0.8rem;
+  font-size: 0.8rem;
+  color: #a05757;
+  font-weight: 600;
+  background: #fff0f0;
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+.rightSide {
+  width: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem;
+  background: #fafafa;
+}
+
+.codeLabel {
+  font-size: 0.7rem;
+  color: #999;
+  letter-spacing: 1px;
+}
+
+.code {
+  font-family: monospace;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #333;
+  margin: 0.2rem 0 0.5rem 0;
+  word-break: break-all;
+  text-align: center;
+}
+
+.copyBtn {
+  background: #8a3e3e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #6e2e2e;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.circle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #fafafa;
+  border-radius: 50%;
+  right: 80px;
+  z-index: 10;
+}
+
+.top {
+  top: -10px;
+  background-color: white;
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bottom {
+  bottom: -10px;
+  background-color: white;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+  font-size: 1.1rem;
+  border: 2px dashed #eee;
+  border-radius: 12px;
+}
+
+@media (max-width: 480px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .couponCard {
+    flex-direction: column;
+  }
+
+  .leftSide {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+  }
+
+  .middleSide {
+    border-right: none;
+    border-bottom: 2px dashed #eee;
+  }
+
+  .rightSide {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 1rem;
+
+    .code {
+      margin: 0 1rem;
+    }
+    .copyBtn {
+      width: auto;
+    }
+  }
+
+  .circle {
+    display: none;
+  }
+}

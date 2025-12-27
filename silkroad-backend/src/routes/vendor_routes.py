@@ -11,6 +11,7 @@ from controllers import (
     invalid_discount_policy,
     get_public_vendors,
     update_vendor_description,
+    update_vendor_manager_info,
     get_info
 )
 vendor_routes = Blueprint('vendor', __name__)
@@ -313,4 +314,35 @@ else:
 }
 """
 
+vendor_routes.route('/manager', methods=['PATCH'])(update_vendor_manager_info)
+"""
+Update Vendor Manager Info
+URL: /api/vendor/manager
+Method: PATCH
+Header: Cookie (Session required, Role: 'vendor')
+Body:
+{
+    "name": string,
+    "email": string,
+    "phone_number": string
+}
+Return:
+{
+    "success": true,
+    "message": "Manager information updated successfully",
+    "data": {
+        "manager": {
+            "id": int,
+            "name": string,
+            "email": string,
+            "phone_number": string
+        }
+    }
+}
+else:
+{
+    "message": "Unauthorized" | "Missing manager info..." | "Vendor not found",
+    "success": False
+}
+"""
 vendor_routes.route('/<int:vendor_id>', methods=['GET'])(get_info)

@@ -1,48 +1,63 @@
-export interface OrderItem {
-	order_id: number;
-	product_id: number;
-	quantity: number;
-	options: {
-		size: string;
-		sugar: string;
-		ice: string;
-	};
+// types/order.ts
+
+// --- 1. 用於 /trans (建立訂單) 的 Input ---
+export interface CreateOrderInput {
+  customer_id: number;
+  vendor_id: number;
+  policy_id: number; // 假設這是後端需要的欄位
+  note: string;
+  payment_methods: string; // Enum string
 }
 
-export interface Order {
-	id: number;
-	customer_id: number;
-	vendor_id: number;
-	created_at: string;
-	total: number;
-	items: OrderItem[];
+// --- 2. 用於 /view_user_orders (訂單列表) 的回傳結構 ---
+export interface OrderSummary {
+  order_id: number;
+  vendor_id: number;
+  total_price: number;
+  discount_amount: number;
+  is_completed: boolean;
+  is_delivered: boolean;
+  payment_methods: string;
+  created_at: string; // "YYYY-MM-DD HH:mm:ss"
+  note: string;
 }
 
-export type InsertOrderInput = Omit<Order, "id">;
-
-export interface Cart {
-	customer_id: number; // PK + ref
-	vendor_id: number;
-	created_at: string;
-	note: string;
-	items?: CartItem[];
+// --- 3. 用於 /view (單筆訂單詳細) 的回傳結構 ---
+export interface OrderDetailInfo {
+  note: string;
+  payment_methods: string;
+  refund_status: string;
+  refund_at: string | null;
+  is_completed: boolean;
+  is_delivered: boolean;
+  total_price: number;
 }
 
-export interface CartItem {
-	cart_id: number; // PK + ref
-	product_id: number; // PK + ref
-	quantity: number;
-	options: {
-		size: string;
-		sugar: string;
-		ice: string;
-	};
+export interface OrderDetailItem {
+  order_item_id: number;
+  order_id: number;
+  product_id: number;
+  product_name: string;
+  product_image: string;
+  price: number;
+  quantity: number;
+  subtotal: number;
+  selected_sugar: string;
+  selected_ice: string;
+  selected_size: string;
 }
 
-// // all fields except cart_id are required to insert a new cart item
-// export type InsertCartItemInput = Omit<CartItem, "cart_id">;
-//
-// // requires cart_id and product_id to identify which cart item to update
-// export type UpdateCartItemInput = Partial<
-// 	Omit<CartItem, "cart_id" | "product_id">
-// > & { cart_id: number; product_id: number };
+// 整合單筆訂單的完整回應
+export interface OrderDetailResponse {
+  order_info: OrderDetailInfo;
+  data: OrderDetailItem[];
+}
+
+// --- 4. 用於 /update (更新訂單) 的 Input ---
+export interface UpdateOrderInput {
+  order_id: number;
+  refund_status?: string;
+  refund_at?: string;
+  is_completed?: boolean;
+  is_delivered?: boolean;
+}

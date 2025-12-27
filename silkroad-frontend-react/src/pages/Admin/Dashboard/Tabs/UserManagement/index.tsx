@@ -4,90 +4,94 @@ import styles from "./UserManagement.module.scss";
 import { useCurrentUser } from "@/hooks/auth/user";
 import {
   useAllCustomers,
+  useAllVendors,
   useBlockUser,
   useUnblockUser,
-  type Customer,
 } from "@/hooks/auth/admin";
 
+import type { Customer, Vendor } from "@/types/user";
+
+type TabType = "customer" | "vendor";
+
 export default function UserManagement() {
+  const [activeTab, setActiveTab] = useState<TabType>("customer");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "blocked" | "active"
+    "all" | "active" | "blocked"
   >("all");
-
-  const {
-    data: customersData,
-    isLoading,
-    isError,
-    refetch,
-  } = useAllCustomers();
-
-  const blockUserMutation = useBlockUser();
-  const unblockUserMutation = useUnblockUser();
 
   const { data: user } = useCurrentUser();
   const adminId = user?.id;
 
-  const handleToggleBlock = (customer: Customer) => {
-    if (!adminId) {
-      alert("無法取得管理員身分，請重新登入");
-      return;
-    }
+  const {
+    data: customersData,
+    isLoading: isCustomerLoading,
+    refetch: refetchCustomers,
+  } = useAllCustomers();
 
-    if (customer.is_active) {
+  const {
+    data: vendorsData,
+    isLoading: isVendorLoading,
+    refetch: refetchVendors,
+  } = useAllVendors();
+
+  const blockUserMutation = useBlockUser();
+  const unblockUserMutation = useUnblockUser();
+
+  const handleToggleBlock = (targetUser: Customer | Vendor) => {
+    if (!adminId) return alert("無法取得管理員身分，請重新登入");
+
+    const isBlocked = !targetUser.is_active;
+    const userType = activeTab === "customer" ? "客戶" : "商家";
+
+    if (!isBlocked) {
       const reason = window.prompt(
-        `請輸入封鎖顧客 ${customer.name} 的理由：`,
-        "違反顧客規範"
+        `請輸入封鎖${userType} ${targetUser.name} 的理由：`,
+        `違反${userType}規範`
       );
-
       if (!reason) return;
 
       blockUserMutation.mutate(
         {
           admin_id: adminId,
-          target_user_id: customer.id,
-          reason: reason,
+          target_user_id: targetUser.id,
+          reason,
         },
         {
           onSuccess: () => {
-            alert(`已成功封鎖顧客：${customer.name}`);
-            refetch();
+            alert(`已封鎖${userType}：${targetUser.name}`);
+            activeTab === "customer" ? refetchCustomers() : refetchVendors();
           },
-          onError: (err) => {
-            alert("封鎖失敗：" + (err.message || "未知錯誤"));
-          },
+          onError: (err) => alert("封鎖失敗：" + err.message),
         }
       );
     } else {
-      if (!window.confirm(`確定要解鎖 ${customer.name} 嗎？`)) return;
+      if (!window.confirm(`確定要解鎖 ${targetUser.name} 嗎？`)) return;
 
       unblockUserMutation.mutate(
-        {
-          admin_id: adminId,
-          target_user_id: customer.id,
-        },
+        { admin_id: adminId, target_user_id: targetUser.id },
         {
           onSuccess: () => {
-            alert(`已成功解鎖顧客：${customer.name}`);
-            refetch();
+            alert(`已解鎖${userType}：${targetUser.name}`);
+            activeTab === "customer" ? refetchCustomers() : refetchVendors();
           },
-          onError: (err) => {
-            alert("解鎖失敗：" + (err.message || "未知錯誤"));
-          },
+          onError: (err) => alert("解鎖失敗：" + err.message),
         }
       );
     }
   };
 
-  const customers = customersData || [];
+  const currentData =
+    activeTab === "customer" ? customersData || [] : vendorsData || [];
+  const isLoading =
+    activeTab === "customer" ? isCustomerLoading : isVendorLoading;
 
-  const filteredCustomers = customers.filter((c) => {
+  const filteredData = currentData.filter((item) => {
     const matchesSearch =
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.email.toLowerCase().includes(searchTerm.toLowerCase());
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const isBlocked = !c.is_active;
-
+    const isBlocked = !item.is_active;
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "blocked" && isBlocked) ||
@@ -97,65 +101,78 @@ export default function UserManagement() {
   });
 
   if (isLoading) return <div className={styles.container}>資料載入中...</div>;
-  if (isError)
-    return <div className={styles.container}>無法讀取資料，請稍後再試。</div>;
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Customer Management / 客戶管理</h2>
-
+      <h2 className={styles.title}>使用者管理 / User Management</h2>
       <div className={styles.filters}>
+        <select
+          value={activeTab}
+          onChange={(e) => setActiveTab(e.target.value as TabType)}
+          className={styles.select}
+          style={{ minWidth: "150px" }}
+        >
+          <option value="customer">客戶列表 (Customer)</option>
+          <option value="vendor">商家列表 (Vendor)</option>
+        </select>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as any)}
+          className={styles.select}
+        >
+          <option value="all">全部狀態 (All)</option>
+          <option value="active">正常/營業中 (Active)</option>
+          <option value="blocked">已封鎖/停權 (Blocked)</option>
+        </select>
+
         <input
           type="text"
           placeholder="搜尋姓名或 Email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className={styles.input}
+          style={{ flex: 1 }}
         />
-
-        <select
-          value={statusFilter}
-          onChange={(e) =>
-            setStatusFilter(e.target.value as "all" | "blocked" | "active")
-          }
-          className={styles.select}
-        >
-          <option value="all">全部 (All)</option>
-          <option value="active">啟用中 (Active)</option>
-          <option value="blocked">已封鎖 (Blocked)</option>
-        </select>
       </div>
 
       <table className={styles.table}>
         <thead className={styles.thead}>
           <tr>
-            <th className={styles.th}>User ID</th>
-            <th className={styles.th}>姓名 (Name)</th>
+            <th className={styles.th}>ID</th>
+            <th className={styles.th}>Name</th>
             <th className={styles.th}>Email</th>
-            <th className={styles.th}>狀態 (Status)</th>
-            <th className={styles.th}>操作 (Action)</th>
+            {activeTab === "vendor" && <th className={styles.th}>Phone</th>}
+            {activeTab === "vendor" && <th className={styles.th}>Address</th>}
+            <th className={styles.th}>Status</th>
+            <th className={styles.th}>Action</th>
           </tr>
         </thead>
         <tbody>
-          {filteredCustomers.map((c) => {
-            const isBlocked = !c.is_active;
+          {filteredData.map((item) => {
+            const isBlocked = !item.is_active;
             const isProcessing =
               blockUserMutation.isPending || unblockUserMutation.isPending;
 
             return (
-              <tr key={c.id} className={styles.tr}>
-                <td className={styles.td}>{c.id}</td>
-                <td className={styles.td}>{c.name}</td>
-                <td className={styles.td}>{c.email}</td>
+              <tr key={item.id} className={styles.tr}>
+                <td className={styles.td}>#{item.id}</td>
                 <td className={styles.td}>
-                  <span
-                    style={{
-                      color: isBlocked ? "#e74c3c" : "#2ecc71",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {isBlocked ? "已封鎖" : "正常"}
-                  </span>
+                  <strong>{item.name}</strong>
+                </td>
+                <td className={styles.td}>{item.email}</td>
+
+                {activeTab === "vendor" && (
+                  <>
+                    <td className={styles.td}>
+                      {(item as Vendor).phone_number}
+                    </td>
+                    <td className={styles.td}>{(item as Vendor).address}</td>
+                  </>
+                )}
+
+                <td className={styles.td}>
+                  <span>{isBlocked ? "Blocked" : "Active"}</span>
                 </td>
                 <td className={styles.td}>
                   <button
@@ -163,21 +180,22 @@ export default function UserManagement() {
                     className={`${styles.toggleButton} ${
                       isBlocked ? styles.blocked : styles.active
                     }`}
-                    onClick={() => handleToggleBlock(c)}
+                    onClick={() => handleToggleBlock(item)}
                   >
-                    {isBlocked ? "解鎖 (Unblock)" : "封鎖 (Block)"}
+                    {isBlocked ? "解鎖" : "封鎖"}
                   </button>
                 </td>
               </tr>
             );
           })}
-          {filteredCustomers.length === 0 && (
+
+          {filteredData.length === 0 && (
             <tr>
               <td
-                colSpan={5}
+                colSpan={activeTab === "vendor" ? 7 : 5}
                 style={{ textAlign: "center", padding: "20px", color: "#666" }}
               >
-                沒有符合條件的客戶。
+                沒有符合條件的資料。
               </td>
             </tr>
           )}

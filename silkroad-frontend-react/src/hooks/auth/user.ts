@@ -88,3 +88,46 @@ export const useCurrentUser = () => {
 		refetchOnWindowFocus: false,
 	});
 }
+
+type TopUpReq = { amount: number };
+type TopUpRes = { new_balance: number; added_amount: number };
+
+export const useTopUp = () => {
+  const qc = useQueryClient();
+
+  return useMutation<TopUpRes, ApiErrorBody, TopUpReq>({
+    mutationFn: async (payload) => {
+      const res = await api.post("/user/topup", payload);
+      return res.data.data;
+    },
+    onSuccess: (data) => {
+      // 更新 user query cache 中的 stored_balance
+      qc.setQueryData<User>(["user"], (old) => {
+        if (!old || old.role !== "customer") return old;
+        return { ...old, stored_balance: data.new_balance };
+      });
+    },
+  });
+};
+
+type UpdateUserReq = {
+  name?: string;
+  phone_number?: string;
+  address?: string;
+};
+
+export const useUpdateUser = () => {
+  const qc = useQueryClient();
+
+  return useMutation<User, ApiErrorBody, UpdateUserReq>({
+    mutationFn: async (payload) => {
+      const res = await api.patch("/user/me", payload);
+      return res.data.data[0];
+    },
+    onSuccess: (userData) => {
+      // 更新 user query cache
+      qc.setQueryData(["user"], userData);
+      qc.invalidateQueries({ queryKey: ["user"] });
+    },
+  });
+};

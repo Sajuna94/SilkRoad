@@ -107,7 +107,7 @@ export default function SystemDashboard() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>系統公告 / System Announcements</h2>
+      <h2 className={styles.title}>系統公告</h2>
 
       <div
         className={styles.createSection}
@@ -124,7 +124,6 @@ export default function SystemDashboard() {
         <button
           onClick={handlePost}
           disabled={postMutation.isPending}
-          className={styles.actionBtn}
           style={{ cursor: "pointer", padding: "0 20px" }}
         >
           {postMutation.isPending ? "..." : "發布"}
@@ -150,6 +149,7 @@ export default function SystemDashboard() {
       <table className={styles.table}>
         <thead className={styles.thead}>
           <tr>
+            <th className={styles.th}>Announcement ID</th>
             <th className={styles.th}>Message</th>
             <th className={styles.th} style={{ width: "120px" }}>
               Date
@@ -173,9 +173,9 @@ export default function SystemDashboard() {
               return (
                 <tr key={item.id} className={styles.tr}>
                   <td className={styles.td}>
-                    <div style={{ fontSize: "12px", color: "#888" }}>
-                      #{item.id}
-                    </div>
+                    <div>#{item.id}</div>
+                  </td>
+                  <td className={styles.td}>
                     {isEditing ? (
                       <input
                         type="text"
@@ -199,23 +199,13 @@ export default function SystemDashboard() {
                           <button
                             onClick={() => saveEdit(item.id)}
                             disabled={updateMutation.isPending}
-                            style={{
-                              color: "green",
-                              cursor: "pointer",
-                              border: "none",
-                              background: "none",
-                            }}
+                            className={`${styles.actionBtn} ${styles.save}`}
                           >
                             儲存
                           </button>
                           <button
                             onClick={cancelEdit}
-                            style={{
-                              color: "#666",
-                              cursor: "pointer",
-                              border: "none",
-                              background: "none",
-                            }}
+                            className={`${styles.actionBtn} ${styles.cancel}`}
                           >
                             取消
                           </button>
@@ -224,24 +214,14 @@ export default function SystemDashboard() {
                         <>
                           <button
                             onClick={() => startEdit(item.id, item.message)}
-                            style={{
-                              color: "blue",
-                              cursor: "pointer",
-                              border: "none",
-                              background: "none",
-                            }}
+                            className={`${styles.actionBtn} ${styles.edit}`}
                           >
                             編輯
                           </button>
                           <button
                             onClick={() => handleDelete(item.id)}
                             disabled={deletingId === item.id}
-                            style={{
-                              color: "red",
-                              cursor: "pointer",
-                              border: "none",
-                              background: "none",
-                            }}
+                            className={`${styles.actionBtn} ${styles.delete}`}
                           >
                             {deletingId === item.id ? "..." : "刪除"}
                           </button>
