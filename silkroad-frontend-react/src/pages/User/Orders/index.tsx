@@ -1,45 +1,32 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
-// 1. 引入我們剛剛寫好的 Hook
-import { useUserOrders, useOrderDetails } from "@/hooks/order/order";
+// 1. 只引入列表 Hook，不需要詳細 Hook 了
+import { useUserOrders } from "@/hooks/order/order";
 import styles from "./Orders.module.scss";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
-// 移除本地 products 引用，因為現在 API 會直接回傳商品名稱與圖片
-// import { products } from "@/types/data/product"; 
+// 引入 Type 定義
+import type { OrderDetailItem } from "@/types/order";
 
 const CAROUSEL_RADIUS = 800;
-const ANGLE = 18; // 將常數提取出來
+const ANGLE = 18;
 
-// --- 新增：子組件，負責抓取並顯示單筆訂單的商品細項 ---
-const OrderCardDetails = ({ 
-    orderId, 
-    userId, 
-    vendorId, 
-    active 
-}: { 
-    orderId: number; 
-    userId: number; 
-    vendorId: number; 
-    active: boolean;
-}) => {
-    // 使用詳細資料 Hook
-    // 效能優化：只有當 active (選中) 時才去 fetch，或者你可以拿掉 `enabled: active` 讓它預載
-    const { data: detailData, isLoading } = useOrderDetails(orderId, userId, vendorId);
-
-    if (isLoading) return <div className={styles.loadingItems}>載入商品中...</div>;
+// --- 子組件：改為純展示組件 (Presentational Component) ---
+// 它只負責顯示傳進來的 items，不負責抓資料
+const OrderCardDetails = ({ items }: { items: OrderDetailItem[] }) => {
     
-    // 如果沒有資料或是 items 為空
-    if (!detailData || !detailData.data) return null;
+    // 檢查是否有資料
+    if (!items || items.length === 0) {
+        return <div className={styles.detailPlaceholder}>此訂單尚無商品內容</div>;
+    }
 
     return (
         <div className={styles.detailWrapper}>
-            {detailData.data.map((item) => (
+            {items.map((item) => (
                 <div key={item.order_item_id} className={styles.item}>
                     <div className={styles.area}>
-                        {/* API 直接回傳了 product_image */}
+                        {/* API 回傳的 product_image */}
                         <FadeInImage fullSrc={item.product_image || ""} />
                     </div>
                     <div className={styles.options}>
-                        {/* API 直接回傳了 product_name */}
                         <h3>{item.product_name}</h3>
                         <div>{item.selected_size}</div>
                         <div>{item.selected_ice}</div>
@@ -56,9 +43,10 @@ const OrderCardDetails = ({
 };
 
 export default function History() {
-    const customerId = 1; // 假設目前寫死 ID，之後可改從 Context/Auth 拿
+    // 根據你提供的後端資料，user_id = 2 才有那筆測試訂單
+    const customerId = 2; 
 
-    // 2. 改用 useUserOrders 取得列表摘要
+    // 2. 使用 API Hook 取得訂單列表 (包含 items)
     const { data: orders, isLoading, error } = useUserOrders(customerId);
     
     const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
@@ -66,18 +54,19 @@ export default function History() {
 
     const carouselOrders = useMemo(() => orders || [], [orders]);
 
+    // 計算目前的旋轉索引
     const currentRotationIndex = useMemo(() => {
         if (carouselOrders.length === 0) return 0;
         return Math.round(-rotateY / ANGLE) % carouselOrders.length;
     }, [rotateY, carouselOrders.length]);
 
+    // 當旋轉改變時，同步更新選中的 Order ID
     useEffect(() => {
         if (carouselOrders.length > 0) {
             let index = currentRotationIndex;
             if (index < 0) index = carouselOrders.length + index;
 
             const newSelectedOrder = carouselOrders[index];
-            // 注意：API 回傳的 key 是 order_id 不是 id
             setSelectedOrderId(newSelectedOrder?.order_id || null);
         }
     }, [carouselOrders, currentRotationIndex]);
@@ -98,27 +87,22 @@ export default function History() {
             const currentIndex = Math.round(-rotateY / ANGLE);
             let newIndex = currentIndex + direction;
 
-            // 修正索引計算邏輯
-            // if (newIndex < 0) ... 邏輯對於無限旋轉可能需要調整，這裡維持你原本的邏輯
             if (newIndex < 0) newIndex = total - 1; 
-            else if (newIndex >= total) newIndex = 0; // 簡易循環
+            else if (newIndex >= total) newIndex = 0; 
 
-            // 更好的無限旋轉邏輯通常是不重置 index，而是讓 rotateY 繼續加減
-            // 但為了保持你的 layout 不變，這裡沿用原本邏輯
-             handleCardClick(newIndex);
+            handleCardClick(newIndex);
         },
         [rotateY, carouselOrders.length, handleCardClick]
     );
 
-    // 初始載入選中第一張
+    // 初始載入時選中第一張
     useEffect(() => {
         if (carouselOrders.length > 0) {
-            // 這裡不需要再次 call handleCardClick(0) 因為初始 state rotateY 就是 0
-            // 只需要設定 selectedOrderId
             setSelectedOrderId(carouselOrders[0].order_id);
         }
-    }, [carouselOrders]); // 移除 handleCardClick 依賴避免迴圈
+    }, [carouselOrders]); 
 
+    // --- 狀態處理 ---
     if (isLoading) return <p style={{textAlign:'center', marginTop: '100px'}}>載入訂單中...</p>;
     if (error) return <p style={{textAlign:'center', marginTop: '100px'}}>發生錯誤：{error.message}</p>;
     if (!orders || orders.length === 0) return <p style={{textAlign:'center', marginTop: '100px'}}>目前沒有訂單紀錄</p>;
@@ -136,7 +120,6 @@ export default function History() {
                 >
                     {carouselOrders.map((order, index) => {
                         const cardAngle = ANGLE * index;
-                        // 使用 order_id 比對
                         const isSelected = selectedOrderId === order.order_id;
 
                         return (
@@ -153,7 +136,6 @@ export default function History() {
                                 <div className={styles.orderInfo}>
                                     <h3>訂單 #{order.order_id}</h3>
                                     <p>{order.created_at}</p>
-                                    {/* 使用 API 回傳的 total_price */}
                                     <div className={styles.orderTotal}>NT$ {order.total_price}</div>
                                     <div style={{fontSize: '0.8rem', color: '#888'}}>
                                         {order.is_completed ? "已完成" : "製作中"} 
@@ -161,17 +143,11 @@ export default function History() {
                                     </div>
                                 </div>
 
-                                {/* 3. 使用子組件來抓取並顯示細項 
-                                    只有當卡片被選中(Active)時才顯示詳細內容，避免一次發送太多 API 請求
-                                    如果你希望旁邊的卡片也顯示內容，可以把 active={true} 傳進去
+                                {/* ★ 修改重點：
+                                    直接把 API 回傳的 order.items 傳進去，不需要再 Call API
                                 */}
                                 {isSelected ? (
-                                    <OrderCardDetails 
-                                        orderId={order.order_id} 
-                                        userId={customerId}
-                                        vendorId={order.vendor_id}
-                                        active={isSelected}
-                                    />
+                                    <OrderCardDetails items={order.items} />
                                 ) : (
                                     <div className={styles.detailPlaceholder}>
                                         點擊查看詳情

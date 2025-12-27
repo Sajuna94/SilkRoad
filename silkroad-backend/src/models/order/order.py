@@ -18,5 +18,5 @@ class Order(db.Model):
     is_delivered    = db.Column(db.Boolean, nullable=False)
     created_at      = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     updated_at      = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
-
+    discount_amount = db.Column(db.Integer, nullable=False, default=0)
     items = db.relationship("Order_Item", back_populates="order", cascade="all, delete-orphan")

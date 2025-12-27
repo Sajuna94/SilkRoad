@@ -16,10 +16,14 @@ export interface OrderSummary {
   total_price: number;
   discount_amount: number;
   is_completed: boolean;
-  is_delivered: boolean;
-  payment_methods: string;
-  created_at: string; // "YYYY-MM-DD HH:mm:ss"
-  note: string;
+  // is_delivered 雖然 JSON 沒看到，但如果後端有回傳就留著，若無可設為 optional
+  is_delivered?: boolean; 
+  payment_methods?: string; // JSON 沒看到這個，設為 optional
+  created_at: string;
+  note?: string;
+  
+  // ★ 新增這行：後端回傳了 items 陣列
+  items: OrderDetailItem[]; 
 }
 
 // --- 3. 用於 /view (單筆訂單詳細) 的回傳結構 ---
@@ -46,6 +50,8 @@ export interface OrderDetailItem {
   selected_ice: string;
   selected_size: string;
 }
+
+
 
 // 整合單筆訂單的完整回應
 export interface OrderDetailResponse {
