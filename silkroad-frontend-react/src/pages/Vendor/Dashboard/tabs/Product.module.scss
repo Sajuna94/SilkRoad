@@ -4,212 +4,287 @@ $vendor-red: #8a3e3e;
 $vendor-red-dark: #6f2c2c;
 $vendor-red-light: #a05757;
 $vendor-border: rgba(255, 255, 255, 0.2);
-$vendor-text: #ffffff; // 白色文字
+$vendor-text: #ffffff;
 $vendor-dark-text: #333333; // 深灰色文字 (用於淺色背景)
-$container-bg: #f8f0f0; // 外部容器使用非常淺的酒紅色
+$container-bg: #f8f0f0;
 $content-bg: #fff8f8; // info/add 區塊使用淺米白色
+$input-border: #ddd;
+$input-bg: #fff;
 
 .container {
-	display: flex;
-	gap: 20px;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
+  background-color: $container-bg;
+  border-radius: 8px;
+  color: $vendor-dark-text;
 
-	padding: 20px;
-	box-sizing: border-box;
+  .info,
+  .add {
+    display: flex;
+    flex-direction: column;
 
-	min-height: 0;
-	overflow: hidden;
+    flex: 1 1 0;
+    padding: 20px;
 
-	background-color: $container-bg;
-	border-radius: 8px;
+    background-color: $content-bg;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
-	color: $vendor-dark-text;
+    max-height: 100%;
+    min-height: 0;
 
-	/* 兩側欄位共用樣式 */
-	.info,
-	.add {
-		display: flex;
-		flex-direction: column;
+    header {
+      font-size: 1.4rem;
+      font-weight: 700;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #ddd;
+      margin-bottom: 12px;
+    }
 
-		flex: 1 1 0;
-		padding: 20px;
+    footer {
+      text-align: right;
+      padding-top: 12px;
+      border-top: 2px solid #ddd;
+      margin-top: 12px;
+      z-index: 10;
 
-		background-color: $content-bg;
-		border-radius: 10px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      button {
+        padding: 8px 16px;
+        border-radius: 6px;
+        border: none;
+        background-color: $vendor-red;
+        color: $vendor-text;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s;
 
-		max-height: 100%;
-		min-height: 0;
+        &:hover {
+          background-color: $vendor-red-dark;
+        }
+      }
+    }
 
-		header {
-			font-size: 1.4rem;
-			font-weight: 700;
-			padding-bottom: 12px;
-			border-bottom: 2px solid #ddd;
-			margin-bottom: 12px;
-		}
+    .content {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      min-height: 0;
 
-		footer {
-			text-align: right;
-			padding-top: 12px;
-			border-top: 2px solid #ddd;
-			margin-top: 12px;
-			z-index: 10;
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
 
-			button {
-				padding: 8px 16px;
-				border-radius: 6px;
-				border: none;
-				background-color: $vendor-red;
-				color: $vendor-text;
-				cursor: pointer;
-				font-size: 1rem;
-				transition: background-color 0.2s;
+      &::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 10px;
+      }
+    }
+  }
 
-				&:hover {
-					background-color: $vendor-red-dark;
-				}
-			}
-		}
+  .info {
+    flex: 2;
+    .content {
+      flex: 1;
+      display: flex;
+      gap: 24px;
+      overflow: hidden;
+      min-height: 0;
 
-		.content {
-			flex: 1 1 auto;
-			overflow-y: auto;
-			min-height: 0;
+      > div {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
 
-			&::-webkit-scrollbar {
-				width: 6px;
-			}
+        .table-title {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-bottom: 12px;
+          color: $vendor-red;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
 
-			&::-webkit-scrollbar-thumb {
-				background-color: #ccc;
-				border-radius: 10px;
-			}
-		}
-	}
+          &::before {
+            content: "";
+            display: block;
+            width: 4px;
+            height: 16px;
+            background-color: $vendor-red;
+            border-radius: 2px;
+          }
+        }
 
-	/* 左側 info 區塊 */
-	.info {
-		.content {
-			display: flex;
-			gap: 20px;
+        .table-wrapper {
+          flex: 1;
+          height: 100%;
+          max-height: 500px;
+          overflow-y: auto;
+          border: 1px solid #eee;
+          border-radius: 6px;
 
-			>div {
-				flex: 1;
-				//display: flex; // 使用 flex 讓標題和表格垂直排列
-				//flex-direction: column;
+          &::-webkit-scrollbar {
+            width: 6px;
+          }
 
-				.table-title {
-					font-size: 1.1rem;
-					font-weight: 600;
-					margin-bottom: 8px;
-					margin-top: 0;
-					color: $vendor-red-dark;
-				}
+          &::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 3px;
+          }
 
-				.table-wrapper {
-					flex: 1 1 auto;
-					max-height: 400px;
-					overflow-y: auto;
-					border: 1px solid #eee;
-					border-radius: 6px;
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
 
-					&::-webkit-scrollbar {
-						width: 6px;
-					}
+            thead {
+              background-color: $vendor-red;
+              border-bottom: 2px solid $vendor-border;
+              position: sticky;
+              top: 0;
+              z-index: 5;
 
-					&::-webkit-scrollbar-thumb {
-						background-color: #888;
-					}
+              th {
+                padding: 10px;
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: $vendor-text;
+              }
+            }
 
-					table {
-						width: 100%;
-						border-collapse: collapse;
-						text-align: center;
+            tbody {
+              tr {
+                transition: background-color 0.15s;
 
-						thead {
-							background-color: $vendor-red;
-							border-bottom: 2px solid $vendor-border;
-							position: sticky;
-							top: 0;
-							z-index: 5;
+                &:nth-child(even) {
+                  background-color: $vendor-red-light;
+                  color: $vendor-text;
+                }
 
-							th {
-								padding: 10px;
-								font-size: 1.1rem;
-								font-weight: 600;
-								color: $vendor-text;
-							}
-						}
+                &:nth-child(odd) {
+                  background-color: $vendor-red;
+                  color: $vendor-text;
+                }
 
-						tbody {
-							tr {
-								transition: background-color 0.15s;
+                &:hover {
+                  background-color: $vendor-red-dark;
+                }
+              }
 
-								&:nth-child(even) {
-									background-color: $vendor-red-light;
-									color: $vendor-text;
-								}
+              td {
+                padding: 12px 8px;
+                border-bottom: 1px solid $vendor-border;
 
-								&:nth-child(odd) {
-									background-color: $vendor-red;
-									color: $vendor-text;
-								}
+                button {
+                  padding: 6px 10px;
+                  border-radius: 6px;
+                  border: none;
+                  font-size: 0.9rem;
+                  cursor: pointer;
+                  background-color: $vendor-text;
+                  color: $vendor-red-dark;
+                  transition: background-color 0.2s;
 
-								&:hover {
-									background-color: $vendor-red-dark;
-								}
-							}
+                  &:hover {
+                    background-color: color.adjust($vendor-text, $alpha: -0.2);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
-							td {
-								padding: 12px 8px;
-								border-bottom: 1px solid $vendor-border;
+  .add {
+    flex: 1;
+    min-width: 320px;
+    max-width: 400px;
 
-								button {
-									padding: 6px 10px;
-									border-radius: 6px;
-									border: none;
-									font-size: 0.9rem;
-									cursor: pointer;
-									background-color: $vendor-text;
-									color: $vendor-red-dark;
-									transition: background-color 0.2s;
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+      padding-right: 4px; // 預留捲軸空間
 
-									&:hover {
-										background-color: color.adjust($vendor-text, $alpha: -0.2);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+      /* 自訂捲軸 */
+      &::-webkit-scrollbar {
+        width: 4px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba($vendor-red, 0.2);
+        border-radius: 2px;
+      }
 
-	/* 右側新增商品欄 */
-	.add {
-		flex: 0 0 360px;
+      > div {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
 
-		.content {
-			display: flex;
-			flex-direction: column;
-			gap: 12px;
+        label {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: $vendor-red-dark;
+        }
 
-			// 調整內部區塊背景，讓它與 info/add 背景做出區隔
-			>div>div {
-				background-color: #f1e6e6;
-				border-radius: 8px;
-				height: 120px;
-			}
-		}
-	}
+        input {
+          padding: 10px 12px;
+          border: 1px solid $input-border;
+          border-radius: 6px;
+          font-size: 1rem;
+          background-color: $input-bg;
+          transition: border-color 0.2s, box-shadow 0.2s;
+          color: $vendor-dark-text;
 
-	@media (max-width: 860px) {
-		flex-direction: column;
+          &::placeholder {
+            color: #aaa;
+          }
 
-		.add {
-			flex: none;
-			width: 100%;
-		}
-	}
+          &:focus {
+            outline: none;
+            border-color: $vendor-red;
+            box-shadow: 0 0 0 3px rgba($vendor-red, 0.1);
+          }
+        }
+
+        input[type="file"] {
+          padding: 8px;
+          background-color: white;
+          font-size: 0.9rem;
+          cursor: pointer;
+
+          &::file-selector-button {
+            margin-right: 10px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid $vendor-red;
+            background-color: white;
+            color: $vendor-red;
+            cursor: pointer;
+            transition: all 0.2s;
+
+            &:hover {
+              background-color: $vendor-red;
+              color: white;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 860px) {
+    flex-direction: column;
+
+    .add {
+      flex: none;
+      width: 100%;
+    }
+  }
 }
