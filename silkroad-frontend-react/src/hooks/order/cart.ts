@@ -6,6 +6,7 @@ import { api, type ApiErrorBody } from "@/api/instance";
 export type CartItemData = {
 	cart_item_id: number;
 	product_id: number;
+	vendor_id: number;
 	product_name: string;
 	product_image: string;
 	price: number;
@@ -36,6 +37,15 @@ export type AddToCartReq = {
 // Remove from cart request payload
 export type RemoveFromCartReq = {
 	cart_item_id: number;
+};
+
+// Update cart item request payload
+export type UpdateCartItemReq = {
+	cart_item_id: number;
+	quantity?: number;
+	selected_sugar?: string;
+	selected_ice?: string;
+	selected_size?: string;
 };
 
 /**
@@ -85,8 +95,8 @@ export const useAddToCart = () => {
  * Hook to remove an item from the cart
  * Supports both logged-in users and guests (session-based cart)
  * @NOTE
- *    this hook does not pass any test 
- *    because the there is no any valid product to add to cart so 
+ *    this hook does not pass any test
+ *    because the there is no any valid product to add to cart so
  *    I can't test it
  *    by Etho 25/12/21
  */
@@ -104,6 +114,25 @@ export const useRemoveFromCart = () => {
 		onSuccess: () => {
 			// Invalidate the cart query to refetch updated cart data
 			// Use the same query key as useCartItems hook
+			qc.invalidateQueries({ queryKey: ["cartItems"] });
+		},
+	});
+};
+
+/**
+ * Hook to update an existing cart item
+ * Updates quantity and/or customization options (sugar, ice, size)
+ */
+export const useUpdateCartItem = () => {
+	const qc = useQueryClient();
+
+	return useMutation<any, ApiErrorBody, UpdateCartItemReq>({
+		mutationFn: async (payload) => {
+			const res = await api.post("/cart/update", payload);
+			return res.data;
+		},
+		onSuccess: () => {
+			// Invalidate the cart query to refetch updated cart data
 			qc.invalidateQueries({ queryKey: ["cartItems"] });
 		},
 	});

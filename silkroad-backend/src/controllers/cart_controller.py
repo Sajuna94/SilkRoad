@@ -170,14 +170,15 @@ def view_cart(cart_id : int):
 
         for item in cart_items:
             product = item.product
-            
+
             if product:
                 item_sub_price = product.price * item.quantity
                 total_price += item_sub_price
-                
+
                 result_list.append({
                     "cart_item_id": item.id,
                     "product_id": item.product_id,
+                    "vendor_id": product.vendor_id,
 
                     "product_name": product.name,
                     "product_image": product.image_url,
@@ -274,16 +275,120 @@ def remove_from_cart_guest():
             "success": False
         }), 404
     
+@require_login(["customer"])
+def update_cart_item():
+    """
+    Update an existing cart item's quantity and/or customization options.
+
+    Expected payload:
+    {
+        "cart_item_id": int (required),
+        "quantity": int (optional),
+        "selected_sugar": str (optional),
+        "selected_ice": str (optional),
+        "selected_size": str (optional)
+    }
+
+    Returns:
+    {
+        "message": str,
+        "success": bool
+    }
+    """
+    data = request.get_json()
+
+    # Get customer ID from session
+    customer_id = session.get("user_id")
+    if not customer_id:
+        return jsonify({
+            "message": "無法取得 user_id，尚未登入?",
+            "success": False
+        }), 400
+
+    # Get cart_item_id (required)
+    cart_item_id = data.get("cart_item_id")
+    if not cart_item_id:
+        return jsonify({
+            "message": "缺少 cart_item_id",
+            "success": False
+        }), 400
+
+    # Get optional update fields
+    quantity = data.get("quantity")
+    selected_sugar = data.get("selected_sugar")
+    selected_ice = data.get("selected_ice")
+    selected_size = data.get("selected_size")
+
+    # At least one field should be provided for update
+    if not any([quantity, selected_sugar, selected_ice, selected_size]):
+        return jsonify({
+            "message": "至少需要提供一個更新欄位 (quantity, selected_sugar, selected_ice, selected_size)",
+            "success": False
+        }), 400
+
+    try:
+        # Find the cart item
+        cart_item = Cart_Item.query.get(cart_item_id)
+
+        if not cart_item:
+            return jsonify({
+                "message": "找不到該購物車項目",
+                "success": False
+            }), 404
+
+        # Verify the cart item belongs to the current user
+        if cart_item.cart_id != customer_id:
+            return jsonify({
+                "message": "您沒有權限修改此購物車項目",
+                "success": False
+            }), 403
+
+        # Validate quantity if provided
+        if quantity is not None:
+            if not isinstance(quantity, int) or quantity <= 0:
+                return jsonify({
+                    "message": "數量必須為正整數",
+                    "success": False
+                }), 400
+            cart_item.quantity = quantity
+
+        # Update customization options if provided
+        if selected_sugar is not None:
+            cart_item.selected_sugar = selected_sugar
+
+        if selected_ice is not None:
+            cart_item.selected_ice = selected_ice
+
+        if selected_size is not None:
+            cart_item.selected_size = selected_size
+
+        # Commit changes
+        db.session.commit()
+
+        return jsonify({
+            "message": "購物車項目更新成功",
+            "success": True
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating cart item: {e}")
+        return jsonify({
+            "message": "系統錯誤，更新失敗",
+            "error": str(e),
+            "success": False
+        }), 500
+
 def view_cart_guest(*args, **kwargs):
     if "cart" not in session or session["cart"]["items"] == []:
         return jsonify({
             "data": [],
             "message": "cart is empty",
-            "success": True,                           
+            "success": True,
             "total_amount": 0
         }), 200
-    
-    total_price = 0    
+
+    total_price = 0
     result = []
     # try:
     for item in session["cart"]["items"]:
@@ -294,17 +399,18 @@ def view_cart_guest(*args, **kwargs):
                 "message": str(e),
                 "success": False
             }), 500
-        
+
         if not product:
             # Should not happen, but handle it gracefully
             continue
-            
+
         item_sub_price = product.price * item["quantity"]
-        total_price += item_sub_price    
-            
+        total_price += item_sub_price
+
         result.append({
             "cart_item_id": item["tmp_cart_item_id"],
             "product_id": item["product_id"],
+            "vendor_id": product.vendor_id,
 
             "product_name": product.name,
             "product_image": product.image_url,
@@ -317,7 +423,7 @@ def view_cart_guest(*args, **kwargs):
             "selected_ice": item["selected_ice"],
             "selected_size": item["selected_size"]
         })
-        
+
     return jsonify({
         "message": "success",
         "success": True,
@@ -329,4 +435,4 @@ def view_cart_guest(*args, **kwargs):
     #         "message": str(e),
     #         "success": False
     #     }), 500
-    
+

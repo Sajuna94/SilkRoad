@@ -6,7 +6,7 @@ import { QuantityInput } from "@/components/atoms/QuantityInput";
 import { useProductDetail } from "@/hooks/auth/vendor";
 
 export interface ProductModalRef {
-    open: (product: Product, quantity?: number) => void;
+    open: (product: Product, quantity?: number, initialFormState?: Partial<FormState>) => void;
     close: () => void;
     getForm: () => FormState;
 }
@@ -25,6 +25,7 @@ interface ProductModalProps {
 
 export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ onSubmit, submitText }, ref) => {
     const dialogRef = useRef<DialogRef>(null);
+    const initialFormStateRef = useRef<Partial<FormState> | undefined>(undefined);
     const [product, setProduct] = useState<Product>({} as Product);
     const [form, setForm] = useState<FormState>({
         size: "", ice: "", sugar: "", quantity: 1,
@@ -32,42 +33,54 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ on
     const [pending, setPending] = useState(false);
     const [vendorId, setVendorId] = useState<number | undefined>(undefined);
     const [productId, setProductId] = useState<number | undefined>(undefined);
+    const [modalOpenTrigger, setModalOpenTrigger] = useState(0);
 
     // Fetch product detail when modal opens
     const { data: productDetail, isLoading: isLoadingDetail } = useProductDetail(vendorId, productId);
 
-    // Update product and form when product detail is loaded
+    // Update product and form when product detail is loaded OR when modal is opened
     useEffect(() => {
-        if (productDetail) {
+        if (productDetail && modalOpenTrigger > 0) {
             setProduct(productDetail);
+            // Use initialFormState from ref if provided, otherwise use first options
+            const initial = initialFormStateRef.current;
             setForm(prevForm => ({
-                size: productDetail?.options?.size[0] || "",
-                ice: productDetail?.options?.ice[0] || "",
-                sugar: productDetail?.options?.sugar[0] || "",
+                size: initial?.size || productDetail?.options?.size[0] || "",
+                ice: initial?.ice || productDetail?.options?.ice[0] || "",
+                sugar: initial?.sugar || productDetail?.options?.sugar[0] || "",
                 quantity: prevForm.quantity, // Keep the quantity from initial open
             }));
+            // Clear the ref after using it
+            initialFormStateRef.current = undefined;
         }
-    }, [productDetail]);
+    }, [productDetail, modalOpenTrigger]);
 
     useImperativeHandle(ref, () => ({
-        open: (newProduct: Product, newQuantity = 1) => {
+        open: (newProduct: Product, newQuantity = 1, formState?: Partial<FormState>) => {
+            // Save initialFormState to ref for use in useEffect
+            initialFormStateRef.current = formState;
+
+            // Increment trigger to force useEffect to run
+            setModalOpenTrigger(prev => prev + 1);
+
             // Set initial product and IDs for fetching detail
             setProduct(newProduct);
             setVendorId(newProduct.vendor_id);
             setProductId(newProduct.id);
             setForm({
-                size: newProduct?.options?.size[0] || "",
-                ice: newProduct?.options?.ice[0] || "",
-                sugar: newProduct?.options?.sugar[0] || "",
+                size: formState?.size || newProduct?.options?.size[0] || "",
+                ice: formState?.ice || newProduct?.options?.ice[0] || "",
+                sugar: formState?.sugar || newProduct?.options?.sugar[0] || "",
                 quantity: newQuantity,
             });
             dialogRef.current?.open();
         },
         close: () => {
             dialogRef.current?.close();
-            // Reset IDs when closing
+            // Reset IDs and initialFormState when closing
             setVendorId(undefined);
             setProductId(undefined);
+            initialFormStateRef.current = undefined;
         },
         getForm: () => form,
     }));

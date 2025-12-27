@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import styles from "./DiscountManagement.module.scss";
 import PostDiscount, { type DiscountForm } from "./DiscountFormModal";
-import { useViewDiscountPolicies, useAddDiscountPolicy, useInvalidDiscountPolicy } from "@/hooks/order/discount";
+import { useViewDiscountPolicies, useAddDiscountPolicy, useInvalidDiscountPolicy, useUpdateDiscountPolicy } from "@/hooks/order/discount";
 import { useCurrentUser } from "@/hooks/auth/user";
 import type { DiscountPolicy } from "@/types/order";
 
@@ -97,6 +97,7 @@ export default function DiscountManagement() {
   // API hooks（必须在顶部调用）
   const discountPoliciesQuery = useViewDiscountPolicies(vendorId);
   const addDiscountMutation = useAddDiscountPolicy();
+  const updateDiscountMutation = useUpdateDiscountPolicy();
   const invalidDiscountMutation = useInvalidDiscountPolicy();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -200,16 +201,37 @@ export default function DiscountManagement() {
 
     const payload = frontendToBackend(formData, vendorId);
 
-    addDiscountMutation.mutate(payload, {
-      onSuccess: () => {
-        alert(editingItem ? "✅ 折價券已更新" : "✅ 折價券新增成功");
-        setIsModalOpen(false);
-      },
-      onError: (error) => {
-        const errorMsg = extractErrorMessage(error);
-        alert(`❌ 操作失敗\n\n${errorMsg}`);
-      },
-    });
+    // 判斷是新增還是編輯
+    if (editingItem) {
+      // 編輯模式：使用 update API
+      const updatePayload = {
+        ...payload,
+        policy_id: parseInt(editingItem.id),
+      };
+
+      updateDiscountMutation.mutate(updatePayload, {
+        onSuccess: () => {
+          alert("✅ 折價券已更新");
+          setIsModalOpen(false);
+        },
+        onError: (error) => {
+          const errorMsg = extractErrorMessage(error);
+          alert(`❌ 更新失敗\n\n${errorMsg}`);
+        },
+      });
+    } else {
+      // 新增模式：使用 add API
+      addDiscountMutation.mutate(payload, {
+        onSuccess: () => {
+          alert("✅ 折價券新增成功");
+          setIsModalOpen(false);
+        },
+        onError: (error) => {
+          const errorMsg = extractErrorMessage(error);
+          alert(`❌ 新增失敗\n\n${errorMsg}`);
+        },
+      });
+    }
   };
 
   // 用户状态检查
@@ -262,7 +284,7 @@ export default function DiscountManagement() {
         <button
           className={styles.createBtn}
           onClick={handleCreate}
-          disabled={addDiscountMutation.isPending}
+          disabled={addDiscountMutation.isPending || updateDiscountMutation.isPending}
         >
           + 新增折扣
         </button>

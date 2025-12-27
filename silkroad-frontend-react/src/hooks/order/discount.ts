@@ -73,3 +73,22 @@ export const useInvalidDiscountPolicy = () => {
     },
   });
 };
+
+/**
+ * Hook to update an existing discount policy
+ * Invalidates the discount policies query on success
+ */
+export const useUpdateDiscountPolicy = () => {
+  const qc = useQueryClient();
+
+  return useMutation<AddDiscountPolicyResponse, ApiErrorBody, AddDiscountPolicyInput & { policy_id: number }>({
+    mutationFn: async (payload) => {
+      const res = await api.post("/vendor/update_discount", payload);
+      return res.data;
+    },
+    onSuccess: (_, variables) => {
+      // Invalidate the discount policies query to refetch updated data
+      qc.invalidateQueries({ queryKey: ["discountPolicies", variables.vendor_id] });
+    },
+  });
+};
