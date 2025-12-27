@@ -84,13 +84,46 @@ export default function PostDiscount({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. 驗證日期邏輯
+    // 1. 驗證折價碼長度
+    if (formData.code.length < 3) {
+      setError("折價碼長度至少需要 3 個字元");
+      return;
+    }
+    if (formData.code.length > 20) {
+      setError("折價碼長度不能超過 20 個字元");
+      return;
+    }
+
+    // 2. 驗證日期邏輯
+    if (!formData.start_date) {
+      setError("請選擇開始日期");
+      return;
+    }
     if (formData.expiry_date && formData.start_date > formData.expiry_date) {
       setError("結束日期不能早於開始日期");
       return;
     }
 
-    // 2. 驗證折扣碼重複 (如果是編輯模式，排除原本自己的 code)
+    // 3. 驗證折扣數值
+    if (formData.value <= 0) {
+      setError("折扣數值必須大於 0");
+      return;
+    }
+    if (formData.type === "PERCENTAGE" && formData.value >= 100) {
+      setError("百分比折扣不能大於或等於 100%");
+      return;
+    }
+
+    // 4. 驗證低消和折扣值的關係（固定金額類型）
+    if (formData.type === "FIXED" && formData.min_purchase) {
+      const minPurchase = parseInt(formData.min_purchase);
+      if (minPurchase <= formData.value) {
+        setError("低消限制必須大於折扣金額");
+        return;
+      }
+    }
+
+    // 5. 驗證折扣碼重複 (如果是編輯模式，排除原本自己的 code)
     const isDuplicate = existingCodes.includes(formData.code);
     const isEditingSelf = initialData && initialData.code === formData.code;
 
@@ -124,7 +157,12 @@ export default function PostDiscount({
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.inputGroup}>
-            <label htmlFor="code">折扣代碼</label>
+            <label htmlFor="code">
+              折扣代碼
+              <span style={{ fontSize: '0.85em', color: '#666', marginLeft: '8px' }}>
+                ({formData.code.length}/20 字元)
+              </span>
+            </label>
             <input
               id="code"
               type="text"
@@ -132,8 +170,10 @@ export default function PostDiscount({
               value={formData.code}
               onChange={handleChange}
               required
+              minLength={3}
+              maxLength={20}
               className={styles.input}
-              placeholder="例如: NEWOPEN88"
+              placeholder="例如: NEWOPEN88 (3-20字元)"
             />
           </div>
 

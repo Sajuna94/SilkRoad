@@ -478,11 +478,13 @@ def add_discount_policy():
     """
     預計傳給我{
     "vendor_id":XXX,
+    "code":XXX,
     "type":XXX,
     "value":XXX,
     "min_purchase":XXX,
     "max_discount":XXX,
     "membership_limit":XXX,
+    "start_date":XXX,
     "expiry_date":XXX,
     }
     """
@@ -504,6 +506,7 @@ def add_discount_policy():
             500,
         )
 
+    code = data.get("code")
     type_val = data.get("type")
     value = data.get("value")
     membership_limit = data.get("membership_limit")
@@ -617,6 +620,31 @@ def add_discount_policy():
                 400,
             )
 
+    # Validate code length and format
+    if code:
+        if len(code) > 20:
+            return jsonify({"message": "折價碼長度不能超過 20 個字元", "success": False}), 400
+        if len(code) < 3:
+            return jsonify({"message": "折價碼長度至少需要 3 個字元", "success": False}), 400
+
+        # Check if code already exists for this vendor
+        existing_code = Discount_Policy.query.filter_by(
+            vendor_id=vendor_id, code=code
+        ).first()
+        if existing_code:
+            return jsonify({"message": "折價碼已存在，請使用其他代碼", "success": False}), 400
+
+    # Parse start_date
+    start_date_str = data.get("start_date")
+    parsed_start_date = None
+
+    if start_date_str:
+        try:
+            parsed_start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"message": "開始日期格式錯誤", "success": False}), 400
+
+    # Parse expiry_date
     expiry_date_str = data.get("expiry_date")
     parsed_expiry_date = None
 
@@ -624,15 +652,22 @@ def add_discount_policy():
         try:
             parsed_expiry_date = datetime.strptime(expiry_date_str, "%Y-%m-%d").date()
         except ValueError:
-            return jsonify({"message": "日期格式錯誤", "success": False}), 400
+            return jsonify({"message": "結束日期格式錯誤", "success": False}), 400
+
+    # Validate date range
+    if parsed_start_date and parsed_expiry_date:
+        if parsed_expiry_date < parsed_start_date:
+            return jsonify({"message": "結束日期不能早於開始日期", "success": False}), 400
 
     try:
         add_discount_policy = Discount_Policy(
             vendor_id=vendor_id,
+            code=code,
             type=type_val,
             is_available=True,
             value=value,
             membership_limit=membership_limit,
+            start_date=parsed_start_date,
             expiry_date=parsed_expiry_date,
         )
 
@@ -655,9 +690,23 @@ def add_discount_policy():
             ),
             201,
         )
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({"message": f"資料驗證錯誤：{str(e)}", "success": False}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": f"資料庫錯誤: {str(e)}", "success": False}), 500
+        # 檢查是否是數據庫約束錯誤
+        error_msg = str(e).lower()
+        if "duplicate" in error_msg or "unique" in error_msg:
+            return jsonify({"message": "折價碼已存在，請使用其他代碼", "success": False}), 400
+        elif "data too long" in error_msg:
+            return jsonify({"message": "輸入的資料過長，請檢查所有欄位", "success": False}), 400
+        elif "foreign key" in error_msg:
+            return jsonify({"message": "商家 ID 無效", "success": False}), 400
+        else:
+            # 記錄詳細錯誤到伺服器日誌
+            print(f"Discount policy creation error: {str(e)}")
+            return jsonify({"message": "新增折價券失敗，請稍後再試", "success": False}), 500
 
 
 @require_login(role=["vendor", "customer"])
@@ -692,7 +741,10 @@ def view_discount_policy():
         policy_amount = len(policies)
 
         for policy in policies:
-            formatted_date = (
+            formatted_start_date = (
+                policy.start_date.isoformat() if policy.start_date else None
+            )
+            formatted_expiry_date = (
                 policy.expiry_date.isoformat() if policy.expiry_date else None
             )
 
@@ -700,13 +752,15 @@ def view_discount_policy():
                 {
                     "policy_id": policy.id,
                     "vendor_id": target_vendor_id,
+                    "code": policy.code,
                     "is_available": policy.is_available,
                     "type": str(policy.type),
                     "value": policy.value,
                     "min_purchase": policy.min_purchase,
                     "max_discount": policy.max_discount,
                     "membership_limit": policy.membership_limit,
-                    "expiry_date": formatted_date,
+                    "start_date": formatted_start_date,
+                    "expiry_date": formatted_expiry_date,
                 }
             )
 

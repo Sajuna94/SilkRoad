@@ -1,58 +1,104 @@
 import { useState, useMemo } from "react";
 import styles from "./DiscountManagement.module.scss";
 import PostDiscount, { type DiscountForm } from "./DiscountFormModal";
+import { useViewDiscountPolicies, useAddDiscountPolicy, useInvalidDiscountPolicy } from "@/hooks/order/discount";
+import { useCurrentUser } from "@/hooks/auth/user";
+import type { DiscountPolicy } from "@/types/order";
 
-const MOCK_DISCOUNTS: DiscountForm[] = [
-  {
-    id: "1",
-    code: "WELCOME50",
-    start_date: "2025-01-01",
-    expiry_date: "2025-12-31",
-    type: "FIXED",
-    value: 50,
-    min_purchase: "100",
-    max_discount: "",
-    membership_limit: "ALL",
-  },
-  {
-    id: "2",
-    code: "VIP88",
-    start_date: "2025-06-01",
-    expiry_date: "2025-06-30",
-    type: "PERCENTAGE",
-    value: 12,
-    min_purchase: "500",
-    max_discount: "100",
-    membership_limit: "GOLD",
-  },
-  {
-    id: "3",
-    code: "FUTURE2026",
-    start_date: "2026-01-01",
-    expiry_date: "2026-02-01",
-    type: "PERCENTAGE",
-    value: 20,
-    min_purchase: "",
-    max_discount: "",
-    membership_limit: "ALL",
-  },
-  {
-    id: "4",
-    code: "OLD2023",
-    start_date: "2023-01-01",
-    expiry_date: "2023-12-31",
-    type: "FIXED",
-    value: 100,
-    min_purchase: "",
-    max_discount: "",
-    membership_limit: "ALL",
-  },
-];
+// 錯誤信息提取辅助函數
+const extractErrorMessage = (error: any): string => {
+  // 優先使用後端返回的友好錯誤信息
+  if (error.response?.data?.message) {
+    return error.response.data.message;
+  }
+
+  // 如果是網絡錯誤
+  if (error.message === "Network Error") {
+    return "網絡連接失敗，請檢查您的網絡";
+  }
+
+  // 如果是超時錯誤
+  if (error.code === "ECONNABORTED") {
+    return "請求超時，請稍後再試";
+  }
+
+  // 根據狀態碼提供默認信息
+  const status = error.response?.status;
+  switch (status) {
+    case 400:
+      return "請求參數錯誤，請檢查輸入內容";
+    case 401:
+      return "您尚未登入，請重新登入";
+    case 403:
+      return "您沒有權限執行此操作";
+    case 404:
+      return "請求的資源不存在";
+    case 500:
+      return "伺服器錯誤，請稍後再試";
+    default:
+      return error.message || "操作失敗，請稍後再試";
+  }
+};
+
+// 類型轉換辅助函數
+const backendToFrontend = (policy: DiscountPolicy): DiscountForm => {
+  const membershipMap: Record<number, DiscountForm["membership_limit"]> = {
+    0: "ALL",
+    1: "BRONZE",
+    2: "SILVER",
+    3: "GOLD",
+  };
+
+  return {
+    id: policy.policy_id.toString(),
+    code: policy.code || "",
+    start_date: policy.start_date || "",
+    expiry_date: policy.expiry_date || "",
+    type: policy.type === "percent" ? "PERCENTAGE" : "FIXED",
+    value: policy.value,
+    min_purchase: policy.min_purchase?.toString() || "",
+    max_discount: policy.max_discount?.toString() || "",
+    membership_limit: membershipMap[policy.membership_limit] || "ALL",
+  };
+};
+
+const frontendToBackend = (form: DiscountForm, vendorId: number) => {
+  const membershipMap: Record<DiscountForm["membership_limit"], number> = {
+    ALL: 0,
+    BRONZE: 1,
+    SILVER: 2,
+    GOLD: 3,
+    DIAMOND: 4,
+  };
+
+  return {
+    vendor_id: vendorId,
+    code: form.code || undefined,
+    type: (form.type === "PERCENTAGE" ? "percent" : "fixed") as "percent" | "fixed",
+    value: form.value,
+    min_purchase: form.min_purchase ? parseInt(form.min_purchase) : undefined,
+    max_discount: form.max_discount ? parseInt(form.max_discount) : undefined,
+    membership_limit: membershipMap[form.membership_limit],
+    start_date: form.start_date || undefined,
+    expiry_date: form.expiry_date || undefined,
+  };
+};
 
 type TabStatus = "ALL" | "ACTIVE" | "SCHEDULED" | "EXPIRED";
 
 export default function DiscountManagement() {
-  const [discounts, setDiscounts] = useState<DiscountForm[]>(MOCK_DISCOUNTS);
+  // 獲取當前登錄用戶（vendor）
+  const currentUser = useCurrentUser();
+
+  const vendorId = currentUser.isSuccess && currentUser.data.role === "vendor"
+    ? currentUser.data.id
+    : 0;
+
+  // API hooks（必须在顶部调用）
+  const discountPoliciesQuery = useViewDiscountPolicies(vendorId);
+  const addDiscountMutation = useAddDiscountPolicy();
+  const invalidDiscountMutation = useInvalidDiscountPolicy();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<DiscountForm | null>(null);
 
@@ -62,6 +108,12 @@ export default function DiscountManagement() {
     "ALL"
   );
   const [filterMembership, setFilterMembership] = useState<string>("ALL");
+
+  // 將後端數據轉換為前端格式
+  const discounts = useMemo(() => {
+    if (!discountPoliciesQuery.data?.data) return [];
+    return discountPoliciesQuery.data.data.map(backendToFrontend);
+  }, [discountPoliciesQuery.data]);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -112,28 +164,93 @@ export default function DiscountManagement() {
     setEditingItem(null);
     setIsModalOpen(true);
   };
+
   const handleEdit = (item: DiscountForm) => {
     setEditingItem(item);
     setIsModalOpen(true);
   };
+
   const handleDelete = (id: string) => {
-    if (window.confirm("確定刪除此活動？"))
-      setDiscounts((prev) => prev.filter((d) => d.id !== id));
-  };
-  const handleSubmit = (formData: DiscountForm) => {
-    if (editingItem) {
-      setDiscounts((prev) =>
-        prev.map((d) =>
-          d.id === editingItem.id ? { ...formData, id: d.id } : d
-        )
-      );
-    } else {
-      setDiscounts((prev) => [
-        { ...formData, id: Date.now().toString() },
-        ...prev,
-      ]);
+    if (!vendorId || vendorId === 0) {
+      alert("無法獲取商家 ID，請重新登入");
+      return;
+    }
+
+    if (window.confirm("確定停用此活動？")) {
+      invalidDiscountMutation.mutate({
+        policy_id: parseInt(id),
+        vendor_id: vendorId,
+      }, {
+        onSuccess: () => {
+          alert("✅ 折價券已停用");
+        },
+        onError: (error) => {
+          const errorMsg = extractErrorMessage(error);
+          alert(`❌ 停用失敗\n\n${errorMsg}`);
+        },
+      });
     }
   };
+
+  const handleSubmit = (formData: DiscountForm) => {
+    if (!vendorId || vendorId === 0) {
+      alert("❌ 無法獲取商家 ID，請重新登入");
+      return;
+    }
+
+    const payload = frontendToBackend(formData, vendorId);
+
+    addDiscountMutation.mutate(payload, {
+      onSuccess: () => {
+        alert(editingItem ? "✅ 折價券已更新" : "✅ 折價券新增成功");
+        setIsModalOpen(false);
+      },
+      onError: (error) => {
+        const errorMsg = extractErrorMessage(error);
+        alert(`❌ 操作失敗\n\n${errorMsg}`);
+      },
+    });
+  };
+
+  // 用户状态检查
+  if (currentUser.isPending) {
+    return <div className={styles.container}>載入用戶資料中...</div>;
+  }
+
+  if (!currentUser.isSuccess || currentUser.data.role !== "vendor") {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorState}>
+          您不是商家，無法訪問此頁面
+        </div>
+      </div>
+    );
+  }
+
+  if (vendorId === 0) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorState}>
+          無法獲取商家 ID，請重新登入
+        </div>
+      </div>
+    );
+  }
+
+  // Loading and error states
+  if (discountPoliciesQuery.isLoading) {
+    return <div className={styles.container}>載入折價券資料中...</div>;
+  }
+
+  if (discountPoliciesQuery.isError) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorState}>
+          載入失敗: {discountPoliciesQuery.error.message || "未知錯誤"}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -142,7 +259,11 @@ export default function DiscountManagement() {
           <h1>折扣管理中心</h1>
           <p>管理您的促銷活動與優惠代碼</p>
         </div>
-        <button className={styles.createBtn} onClick={handleCreate}>
+        <button
+          className={styles.createBtn}
+          onClick={handleCreate}
+          disabled={addDiscountMutation.isPending}
+        >
           + 新增折扣
         </button>
       </header>
