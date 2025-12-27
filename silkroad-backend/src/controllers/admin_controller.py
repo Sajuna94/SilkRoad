@@ -305,7 +305,7 @@ def get_all_vendors():
         }), 500
 
 
-@require_login(role=["admin"])
+# @require_login(role=["admin"])
 def get_all_announcements():
     """
     列出所有系統公告 (建議依時間倒序排列)
@@ -332,3 +332,4 @@ def get_all_announcements():
             "message": f"Database error: {str(e)}",
             "success": False
         }), 500
+    

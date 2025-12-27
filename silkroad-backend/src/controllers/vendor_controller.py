@@ -334,9 +334,9 @@ def update_products():
 
 
 def view_vendor_products(vendor_id):
-    vendor = Vendor.query.get(vendor_id)
-    if not vendor:
-        return jsonify({"message": "Vendor not found", "success": False}), 404
+    # vendor = Vendor.query.get(vendor_id)
+    # if not vendor:
+        # return jsonify({"message": "Vendor not found", "success": False}), 404
 
     products = (
         Product.query

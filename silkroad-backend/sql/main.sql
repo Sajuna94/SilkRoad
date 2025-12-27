@@ -5,15 +5,7 @@ CREATE SCHEMA `auth`;
 CREATE SCHEMA `store`;
 
 -- order schema
-DROP TABLE IF EXISTS `order`.`cart_items`;
 
-DROP TABLE IF EXISTS `order`.`carts`;
-
-DROP TABLE IF EXISTS `order`.`order_items`;
-
-DROP TABLE IF EXISTS `order`.`orders`;
-
-DROP TABLE IF EXISTS `order`.`discount_policies`;
 
 -- store schema
 DROP TABLE IF EXISTS `store`.`reviews`;
@@ -144,6 +136,16 @@ CREATE TABLE `store`.`reviews` (
     UNIQUE KEY `customer_vendor_unique_idx` (`customer_id`, `vendor_id`)
 );
 
+DROP TABLE IF EXISTS `order`.`cart_items`;
+
+DROP TABLE IF EXISTS `order`.`carts`;
+
+DROP TABLE IF EXISTS `order`.`order_items`;
+
+DROP TABLE IF EXISTS `order`.`orders`;
+
+DROP TABLE IF EXISTS `order`.`discount_policies`;
+
 -- order tables
 CREATE TABLE `order`.`discount_policies` (
     `id` int PRIMARY KEY AUTO_INCREMENT,
@@ -169,6 +171,7 @@ CREATE TABLE `order`.`orders` (
     `total_price` int NOT NULL,
     `discount_amount` int NOT NULL DEFAULT 0,
     `note` text COMMENT '備註',
+    `code` VARCHAR(10) DEFAULT NULL,
     `payment_methods` ENUM('cash', 'credit') NOT NULL COMMENT '付款方式',
     `refund_status` ENUM('refunded', 'rejected') COMMENT '未退款為 NULL',
     `refund_at` timestamp COMMENT '未退款為 NULL',
