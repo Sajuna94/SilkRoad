@@ -1,9 +1,10 @@
 from controllers import (
-    add_to_cart, 
-    add_to_cart_guest, 
+    add_to_cart,
+    add_to_cart_guest,
     remove_from_cart_guest,
-    remove_from_cart, 
-    view_cart, 
+    remove_from_cart,
+    update_cart_item,
+    view_cart,
     view_cart_guest
 )
 from utils import switcher
@@ -53,7 +54,7 @@ cart_routes.route('/view/<int:cart_id>', methods=['GET'])(switcher(view_cart, vi
 {
     "data": [],
     "message": "cart is empty",
-    "success": True,                           
+    "success": True,
     "total_amount": 0
 }
 
@@ -82,4 +83,32 @@ data包含
     "selected_ice": item.selected_ice,
     "selected_size": item.selected_size
 }
+'''
+
+cart_routes.route('/update', methods=['POST'])(update_cart_item)
+'''
+更新購物車項目的數量和/或客製化選項
+
+需要{
+    "cart_item_id": int (必需),
+    "quantity": int (可選),
+    "selected_sugar": str (可選),
+    "selected_ice": str (可選),
+    "selected_size": str (可選)
+}
+
+可能會回傳:
+---成功---
+{
+    "message": "購物車項目更新成功",
+    "success": True
+}
+
+---失敗---
+{
+    "message": "錯誤訊息",
+    "success": False
+}
+
+注意: 至少需要提供一個更新欄位
 '''

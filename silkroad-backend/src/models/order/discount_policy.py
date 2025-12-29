@@ -8,19 +8,21 @@ class Discount_Policy(db.Model):
     #database
     id               = db.Column(db.Integer, primary_key=True, autoincrement=True)
     vendor_id        = db.Column(db.Integer, db.ForeignKey("auth.vendors.user_id"), nullable=False)
+    code             = db.Column(db.String(20))  # VARCHAR(20)
     is_available     = db.Column(db.Boolean, nullable = False)
     type             = db.Column(Enum('percent', 'fixed'), nullable=False)
     value            = db.Column(db.Integer, nullable=False)
     min_purchase     = db.Column(db.Integer, server_default=db.text("0"))
     max_discount     = db.Column(db.Integer)
     membership_limit = db.Column(db.Integer, nullable=False, server_default=db.text("0"))
+    start_date       = db.Column(db.Date, nullable=False, server_default=db.func.current_date())
     expiry_date      = db.Column(db.Date)
     created_at       = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
-    updated_at       = db.Column(db.DateTime, nullable=False, server_default=db.func.now())  
+    updated_at       = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     'TODO: Add ON UPDATE ON UPDATE CURRENT_TIMESTAMP (follow database aka main.sql)'
 
     #python
     # vendor = db.relationship("Vendor", back_populates="discount_policies")
 
     def __repr__(self):
-        return f"<DiscountPolicy {self.policy_name} - {self.discount_rate*100}%>"
+        return f"<DiscountPolicy id={self.id} code={self.code} type={self.type} value={self.value}>"

@@ -5,10 +5,10 @@
     =============================================================================
 """
 from werkzeug.security import generate_password_hash
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify,request
 from models import *
 from config import db
-
+from datetime import date, timedelta
 test_routes = Blueprint("test", __name__)
 
 # for frontend testing purpose
@@ -366,3 +366,145 @@ def test_get_reviews():
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@test_routes.route("/insert_order_to_customer", methods=["POST"])
+def insert_test_order():
+    """
+    建立一筆測試訂單給指定的 Customer
+    預設向 Vendor ID = 3 購買商品
+    """
+    data = request.get_json()
+    customer_id = data.get("customer_id")
+    vendor_id = data.get("vendor_id", 3)  # 預設為店家 3
+
+    if not customer_id:
+        return jsonify({"error": "Missing customer_id"}), 400
+
+    try:
+        # 1. 檢查 Customer 是否存在
+        customer = Customer.query.filter_by(user_id=customer_id).first() # 注意：如果是用 user_id 關聯
+        # 或者如果是直接查 User 表: customer = User.query.get(customer_id)
+        # 這裡假設你的 Customer 表主鍵是 id，或者有 user_id 欄位
+        
+        # 2. 建立訂單主體 (Order)
+        # 先設 total_price 為 0，稍後計算
+        new_order = Order(
+            user_id=customer_id,
+            vendor_id=vendor_id,
+            total_price=0, 
+            note="API 測試訂單 - 自動生成",
+            payment_methods="cash", # 根據你的 Enum: 'cash' 或 'credit'
+            is_delivered=False,
+            is_completed=False,
+            refund_status=None
+        )
+        
+        db.session.add(new_order)
+        db.session.flush() # 先 flush 以取得 new_order.id，但還不 commit
+
+        # 3. 建立訂單細項 (Order Items)
+        # 根據你提供的資料：Vendor 3 有商品 29 ($1) 和 35 ($100)
+        
+        # 模擬商品 1: 花椰菜奶昔 (ID 29)
+        product_a = Product.query.get(29)
+        item_a_price = product_a.price if product_a else 1
+        
+        item1 = Order_Item(
+            order_id=new_order.id,
+            product_id=29, # 花椰菜奶昔
+            quantity=1,
+            price=item_a_price, # 記錄當下價格
+            # 假設 Order_Item 有這些選項欄位，沒有的話請移除
+            selected_sugar="Half", 
+            selected_ice="No Ice",
+            selected_size="Regular"
+        )
+
+        # 模擬商品 2: sigmadrink (ID 35)
+        product_b = Product.query.get(35)
+        item_b_price = product_b.price if product_b else 100
+
+        item2 = Order_Item(
+            order_id=new_order.id,
+            product_id=35, # sigmadrink
+            quantity=2,    # 買 2 個
+            price=item_b_price,
+            selected_sugar="Regular",
+            selected_ice="Regular",
+            selected_size="Large"
+        )
+
+        db.session.add(item1)
+        db.session.add(item2)
+
+        # 4. 計算並更新總金額
+        # 1 * 1 + 2 * 100 = 201
+        total_amount = (item1.quantity * item1.price) + (item2.quantity * item2.price)
+        new_order.total_price = total_amount
+
+        # 5. 提交
+        db.session.commit()
+
+        return jsonify({
+            "message": "Order created successfully",
+            "order_id": new_order.id,
+            "total_price": new_order.total_price,
+            "items": [
+                {"product_id": 29, "name": "花椰菜奶昔", "qty": 1},
+                {"product_id": 35, "name": "sigmadrink", "qty": 2}
+            ]
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[Error] {str(e)}")
+        return jsonify({"error": str(e)}), 500
+    
+
+@test_routes.route("/insert_discount_policy", methods=["POST"])
+def insert_test_discount():
+    """
+    為指定店家 (預設 ID=3) 新增一個測試用的折扣政策
+    內容：滿 100 打 8 折 (20% off)，上限折抵 50 元，期限 30 天
+    """
+    data = request.get_json() or {}
+    
+    # 預設幫 Vendor ID = 3 新增，也可以透過參數修改
+    target_vendor_id = data.get("vendor_id", 3)
+
+    try:
+        # 計算到期日：今天是 + 30 天
+        expire_day = date.today() + timedelta(days=30)
+
+        new_policy = Discount_Policy(
+            vendor_id=target_vendor_id,
+            is_available=True,
+            type='percent',       # Enum: 'percent' 或 'fixed'
+            value=20,             # 20 代表 20% off (視你的商業邏輯定義)
+            min_purchase=100,     # 最低消費
+            max_discount=50,      # 最高折抵金額
+            membership_limit=0,   # 0 代表不限會員等級
+            expiry_date=expire_day
+        )
+
+        db.session.add(new_policy)
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "message": "Discount Policy created successfully",
+            "data": {
+                "policy_id": new_policy.id,
+                "vendor_id": new_policy.vendor_id,
+                "type": new_policy.type,
+                "value": new_policy.value,
+                "min_purchase": new_policy.min_purchase,
+                "expiry_date": str(new_policy.expiry_date)
+            }
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"[Error] {str(e)}")
+        return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500

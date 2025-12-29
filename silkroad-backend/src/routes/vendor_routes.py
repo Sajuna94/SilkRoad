@@ -9,6 +9,7 @@ from controllers import (
     view_vendor_product_detail,
     view_discount_policy,
     invalid_discount_policy,
+    update_discount_policy,
     get_public_vendors,
     update_vendor_description,
     update_vendor_manager_info,
@@ -246,7 +247,7 @@ vendor_routes.route("/invalid_discount", methods=["POST"])(invalid_discount_poli
 回傳
 
 失敗
-{"message": "錯誤回報", 
+{"message": "錯誤回報",
 "success": False}
 
 or
@@ -254,6 +255,41 @@ or
 成功
 {
     "message": "成功停用折價券",
+    "success": True}
+
+'''
+
+vendor_routes.route("/update_discount", methods=["POST"])(update_discount_policy)
+'''
+更新現有的折價券
+
+需要{
+"policy_id": int,
+"vendor_id": int,
+"code": string,
+"type": string,
+"value": int,
+"min_purchase": int,
+"max_discount": int,
+"membership_limit": int,
+"start_date": string,
+"expiry_date": string,
+}
+'''
+
+'''
+回傳
+
+失敗
+{"message": "錯誤回報",
+"success": False}
+
+or
+
+成功
+{
+    "policy_id": int,
+    "message": "更新折價券成功",
     "success": True}
 
 '''

@@ -478,11 +478,13 @@ def add_discount_policy():
     """
     預計傳給我{
     "vendor_id":XXX,
+    "code":XXX,
     "type":XXX,
     "value":XXX,
     "min_purchase":XXX,
     "max_discount":XXX,
     "membership_limit":XXX,
+    "start_date":XXX,
     "expiry_date":XXX,
     }
     """
@@ -504,6 +506,7 @@ def add_discount_policy():
             500,
         )
 
+    code = data.get("code")
     type_val = data.get("type")
     value = data.get("value")
     membership_limit = data.get("membership_limit")
@@ -617,6 +620,31 @@ def add_discount_policy():
                 400,
             )
 
+    # Validate code length and format
+    if code:
+        if len(code) > 20:
+            return jsonify({"message": "折價碼長度不能超過 20 個字元", "success": False}), 400
+        if len(code) < 3:
+            return jsonify({"message": "折價碼長度至少需要 3 個字元", "success": False}), 400
+
+        # Check if code already exists for this vendor
+        existing_code = Discount_Policy.query.filter_by(
+            vendor_id=vendor_id, code=code
+        ).first()
+        if existing_code:
+            return jsonify({"message": "折價碼已存在，請使用其他代碼", "success": False}), 400
+
+    # Parse start_date
+    start_date_str = data.get("start_date")
+    parsed_start_date = None
+
+    if start_date_str:
+        try:
+            parsed_start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"message": "開始日期格式錯誤", "success": False}), 400
+
+    # Parse expiry_date
     expiry_date_str = data.get("expiry_date")
     parsed_expiry_date = None
 
@@ -624,15 +652,22 @@ def add_discount_policy():
         try:
             parsed_expiry_date = datetime.strptime(expiry_date_str, "%Y-%m-%d").date()
         except ValueError:
-            return jsonify({"message": "日期格式錯誤", "success": False}), 400
+            return jsonify({"message": "結束日期格式錯誤", "success": False}), 400
+
+    # Validate date range
+    if parsed_start_date and parsed_expiry_date:
+        if parsed_expiry_date < parsed_start_date:
+            return jsonify({"message": "結束日期不能早於開始日期", "success": False}), 400
 
     try:
         add_discount_policy = Discount_Policy(
             vendor_id=vendor_id,
+            code=code,
             type=type_val,
             is_available=True,
             value=value,
             membership_limit=membership_limit,
+            start_date=parsed_start_date,
             expiry_date=parsed_expiry_date,
         )
 
@@ -655,9 +690,23 @@ def add_discount_policy():
             ),
             201,
         )
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({"message": f"資料驗證錯誤：{str(e)}", "success": False}), 400
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": f"資料庫錯誤: {str(e)}", "success": False}), 500
+        # 檢查是否是數據庫約束錯誤
+        error_msg = str(e).lower()
+        if "duplicate" in error_msg or "unique" in error_msg:
+            return jsonify({"message": "折價碼已存在，請使用其他代碼", "success": False}), 400
+        elif "data too long" in error_msg:
+            return jsonify({"message": "輸入的資料過長，請檢查所有欄位", "success": False}), 400
+        elif "foreign key" in error_msg:
+            return jsonify({"message": "商家 ID 無效", "success": False}), 400
+        else:
+            # 記錄詳細錯誤到伺服器日誌
+            print(f"Discount policy creation error: {str(e)}")
+            return jsonify({"message": "新增折價券失敗，請稍後再試", "success": False}), 500
 
 
 @require_login(role=["vendor", "customer"])
@@ -692,7 +741,10 @@ def view_discount_policy():
         policy_amount = len(policies)
 
         for policy in policies:
-            formatted_date = (
+            formatted_start_date = (
+                policy.start_date.isoformat() if policy.start_date else None
+            )
+            formatted_expiry_date = (
                 policy.expiry_date.isoformat() if policy.expiry_date else None
             )
 
@@ -700,13 +752,15 @@ def view_discount_policy():
                 {
                     "policy_id": policy.id,
                     "vendor_id": target_vendor_id,
+                    "code": policy.code,
                     "is_available": policy.is_available,
                     "type": str(policy.type),
                     "value": policy.value,
                     "min_purchase": policy.min_purchase,
                     "max_discount": policy.max_discount,
                     "membership_limit": policy.membership_limit,
-                    "expiry_date": formatted_date,
+                    "start_date": formatted_start_date,
+                    "expiry_date": formatted_expiry_date,
                 }
             )
 
@@ -771,6 +825,262 @@ def invalid_discount_policy():
             ),
             500,
         )
+
+
+@require_login(role=["vendor"])
+def update_discount_policy():
+    data = request.get_json()
+
+    """
+    預計傳給我{
+    "policy_id":XXX,
+    "vendor_id":XXX,
+    "code":XXX,
+    "type":XXX,
+    "value":XXX,
+    "min_purchase":XXX,
+    "max_discount":XXX,
+    "membership_limit":XXX,
+    "start_date":XXX,
+    "expiry_date":XXX,
+    }
+    """
+
+    if not data:
+        return jsonify({"message": "無效的請求數據", "success": False}), 400
+
+    policy_id = data.get("policy_id")
+    vendor_id = data.get("vendor_id")
+
+    if not policy_id:
+        return jsonify({"message": "缺少 policy_id", "success": False}), 400
+    if not vendor_id:
+        return jsonify({"message": "缺少 vendor_id", "success": False}), 400
+
+    try:
+        # 檢查 vendor 是否存在
+        vendor_exists = db.session.query(Vendor).get(vendor_id)
+        if vendor_exists is None:
+            return jsonify({"message": "無效的 vendor_id", "success": False}), 400
+
+        # 獲取要更新的折價券
+        policy = Discount_Policy.query.get(policy_id)
+        if policy is None:
+            return jsonify({"message": "找不到該折價券", "success": False}), 404
+
+        # 驗證折價券屬於該 vendor
+        if policy.vendor_id != vendor_id:
+            return jsonify({"message": "您沒有權限修改此折價券", "success": False}), 403
+
+        # 獲取更新的欄位
+        code = data.get("code")
+        type_val = data.get("type")
+        value = data.get("value")
+        membership_limit = data.get("membership_limit")
+        min_purchase = data.get("min_purchase")
+        max_discount = data.get("max_discount")
+
+        # 驗證必填欄位
+        if type_val is None or value is None or membership_limit is None:
+            return (
+                jsonify(
+                    {
+                        "message": "type, value, membership_limit 不可為空或 None",
+                        "success": False,
+                    }
+                ),
+                400,
+            )
+
+        # 驗證數據類型
+        try:
+            value = int(value)
+            membership_limit = int(membership_limit)
+        except (ValueError, TypeError):
+            return (
+                jsonify(
+                    {
+                        "message": "invalid value type for: 'value', 'membership_limit'",
+                        "success": False,
+                    }
+                ),
+                400,
+            )
+
+        # 驗證 type
+        if type_val != "percent" and type_val != "fixed":
+            return (
+                jsonify({"message": "invalid value type for: 'type'", "success": False}),
+                400,
+            )
+
+        # 驗證 value
+        if type_val == "percent":
+            if value < 0:
+                return (
+                    jsonify(
+                        {
+                            "message": "percent value must be greater than or equal to 0",
+                            "success": False,
+                        }
+                    ),
+                    400,
+                )
+            if value >= 100:
+                return (
+                    jsonify(
+                        {"message": "percent value must be less than 100", "success": False}
+                    ),
+                    400,
+                )
+
+        if type_val == "fixed":
+            if min_purchase is None:
+                return (
+                    jsonify(
+                        {
+                            "message": "min_purchase is required for fixed type",
+                            "success": False,
+                        }
+                    ),
+                    400,
+                )
+            try:
+                min_purchase = int(min_purchase)
+            except (ValueError, TypeError):
+                return (
+                    jsonify(
+                        {
+                            "message": "invalid value type for: 'min_purchase'",
+                            "success": False,
+                        }
+                    ),
+                    400,
+                )
+
+            if value < 0:
+                return (
+                    jsonify(
+                        {
+                            "message": "fixed value must be greater than or equal to 0",
+                            "success": False,
+                        }
+                    ),
+                    400,
+                )
+            if min_purchase < 0:
+                return (
+                    jsonify(
+                        {
+                            "message": "min_purchase must be greater than or equal to 0",
+                            "success": False,
+                        }
+                    ),
+                    400,
+                )
+            if min_purchase <= value:
+                return (
+                    jsonify(
+                        {
+                            "message": "min_purchase must be greater than fixed value",
+                            "success": False,
+                        }
+                    ),
+                    400,
+                )
+
+        # 驗證 code 長度
+        if code:
+            if len(code) > 20:
+                return jsonify({"message": "折價碼長度不能超過 20 個字元", "success": False}), 400
+            if len(code) < 3:
+                return jsonify({"message": "折價碼長度至少需要 3 個字元", "success": False}), 400
+
+            # 檢查 code 是否與其他折價券重複（排除自己）
+            if code != policy.code:
+                existing_code = Discount_Policy.query.filter_by(
+                    vendor_id=vendor_id, code=code
+                ).first()
+                if existing_code:
+                    return jsonify({"message": "折價碼已存在，請使用其他代碼", "success": False}), 400
+
+        # 解析日期
+        start_date_str = data.get("start_date")
+        parsed_start_date = None
+
+        if start_date_str:
+            try:
+                parsed_start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            except ValueError:
+                return jsonify({"message": "開始日期格式錯誤", "success": False}), 400
+
+        expiry_date_str = data.get("expiry_date")
+        parsed_expiry_date = None
+
+        if expiry_date_str:
+            try:
+                parsed_expiry_date = datetime.strptime(expiry_date_str, "%Y-%m-%d").date()
+            except ValueError:
+                return jsonify({"message": "結束日期格式錯誤", "success": False}), 400
+
+        # 驗證日期範圍
+        if parsed_start_date and parsed_expiry_date:
+            if parsed_expiry_date < parsed_start_date:
+                return jsonify({"message": "結束日期不能早於開始日期", "success": False}), 400
+
+        # 更新折價券
+        if code is not None:
+            policy.code = code
+        policy.type = type_val
+        policy.value = value
+        policy.membership_limit = membership_limit
+
+        if min_purchase is not None:
+            policy.min_purchase = min_purchase
+        else:
+            policy.min_purchase = 0
+
+        if max_discount is not None:
+            policy.max_discount = max_discount
+        else:
+            policy.max_discount = None
+
+        if parsed_start_date is not None:
+            policy.start_date = parsed_start_date
+
+        if parsed_expiry_date is not None:
+            policy.expiry_date = parsed_expiry_date
+
+        db.session.commit()
+
+        return (
+            jsonify(
+                {
+                    "policy_id": policy.id,
+                    "message": "更新折價券成功",
+                    "success": True,
+                }
+            ),
+            200,
+        )
+
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({"message": f"資料驗證錯誤：{str(e)}", "success": False}), 400
+    except Exception as e:
+        db.session.rollback()
+        # 檢查是否是數據庫約束錯誤
+        error_msg = str(e).lower()
+        if "duplicate" in error_msg or "unique" in error_msg:
+            return jsonify({"message": "折價碼已存在，請使用其他代碼", "success": False}), 400
+        elif "data too long" in error_msg:
+            return jsonify({"message": "輸入的資料過長，請檢查所有欄位", "success": False}), 400
+        elif "foreign key" in error_msg:
+            return jsonify({"message": "商家 ID 無效", "success": False}), 400
+        else:
+            # 記錄詳細錯誤到伺服器日誌
+            print(f"Discount policy update error: {str(e)}")
+            return jsonify({"message": "更新折價券失敗，請稍後再試", "success": False}), 500
 
 
 def get_public_vendors():
