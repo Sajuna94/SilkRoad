@@ -50,7 +50,7 @@ export default function TopUpPage() {
 
     if (isNaN(val)) return;
     if (val <= 0) return alert("金額必須大於 0");
-    if (val > 9999) return alert("單次上限為 9999");
+    if (val > 999999) return alert("單次上限為 999999");
 
     // 呼叫 API
     topUpMutation.mutate(
@@ -82,8 +82,8 @@ export default function TopUpPage() {
           <input
             type="number"
             min="0"
-            max="9999"
-            placeholder="輸入 0 - 9999"
+            max="999999"
+            placeholder="輸入 0 - 999999"
             value={manualAmount}
             onChange={(e) => setManualAmount(e.target.value)}
             className={styles.input}

@@ -15,9 +15,9 @@ def create_app():
     app.secret_key = os.getenv("SESSION_KEY")
 
     app.config["SESSION_COOKIE_NAME"] = "flask_session"
-    # app.config['SESSION_COOKIE_HTTPONLY'] = True  # 防止 JavaScript 存取 cookie
-    # app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # 跨域必須設為 None
-    # app.config['SESSION_COOKIE_SECURE'] = False  # 開發環境用 False,生產環境用 True(需要 HTTPS)
+    app.config['SESSION_COOKIE_HTTPONLY'] = True  # 防止 JavaScript 存取 cookie
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 開發環境用 Lax,跨域部署時用 None
+    app.config['SESSION_COOKIE_SECURE'] = False  # 開發環境用 False,生產環境用 True(需要 HTTPS)
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)  # Session 有效期
     #app.config['SQLALCHEMY_ECHO'] = True
     

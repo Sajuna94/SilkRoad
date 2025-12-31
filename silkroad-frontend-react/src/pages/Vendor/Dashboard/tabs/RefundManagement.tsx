@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useVendorOrders, useUpdateOrder } from "@/hooks/order/order";
-import type { VendorOrderSummary } from "@/types/order";
-import styles from "./Order.module.scss";
+import styles from "./RefundManagement.module.scss";
 
-export default function OrderTab() {
+export default function RefundManagement() {
     const { data: currentUser } = useCurrentUser();
     const vendorId = currentUser?.role === "vendor" && "id" in currentUser ? currentUser.id : undefined;
 
@@ -13,38 +12,41 @@ export default function OrderTab() {
 
     const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
 
+    // 只顯示有退款申請的訂單 (refund_status = 'pending')
+    const refundOrders = orders?.filter(order => order.refund_status === 'pending') || [];
+
     if (isLoading) {
         return <div className={styles.container}>載入中...</div>;
     }
 
-    if (isError || !orders) {
-        return <div className={styles.container}>無法載入訂單資料</div>;
+    if (isError) {
+        return <div className={styles.container}>無法載入退款申請</div>;
     }
 
     const handleToggleExpand = (orderId: number) => {
         setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
     };
 
-    const handleUpdateStatus = (
-        orderId: number,
-        field: "is_completed" | "is_delivered",
-        value: boolean
-    ) => {
+    const handleRefund = (orderId: number, status: "refunded" | "rejected") => {
+        const now = new Date();
+        const timestamp = now.toISOString().slice(0, 19).replace("T", " ");
+
         updateOrder.mutate({
             order_id: orderId,
-            [field]: value,
+            refund_status: status,
+            refund_at: status === "refunded" ? timestamp : undefined,
         });
     };
 
     return (
         <div className={styles.container}>
-            <h1>訂單管理</h1>
+            <h1>退款申請管理</h1>
 
-            {orders.length === 0 ? (
-                <div className={styles.empty}>暫無訂單</div>
+            {refundOrders.length === 0 ? (
+                <div className={styles.empty}>目前沒有待處理的退款申請</div>
             ) : (
                 <div className={styles.orderList}>
-                    {orders.map((order) => (
+                    {refundOrders.map((order) => (
                         <div key={order.order_id} className={styles.orderCard}>
                             {/* 訂單摘要 */}
                             <div
@@ -57,12 +59,8 @@ export default function OrderTab() {
                                 </div>
                                 <div className={styles.orderMeta}>
                                     <span className={styles.price}>${order.total_price}</span>
-                                    <span
-                                        className={`${styles.status} ${
-                                            order.is_completed ? styles.completed : styles.pending
-                                        }`}
-                                    >
-                                        {order.is_completed ? "已完成" : "處理中"}
+                                    <span className={`${styles.status} ${styles.pending}`}>
+                                        待處理
                                     </span>
                                 </div>
                             </div>
@@ -80,14 +78,10 @@ export default function OrderTab() {
                                                 {order.payment_methods === "cash" ? "現金" : "儲值餘額"}
                                             </div>
                                             {order.note && <div>備註：{order.note}</div>}
-                                            {order.refund_status && (
-                                                <div>
-                                                    退款狀態：
-                                                    {order.refund_status === "refunded"
-                                                        ? "已退款"
-                                                        : "退款被拒"}
-                                                </div>
-                                            )}
+                                            <div>
+                                                訂單狀態：
+                                                {order.is_completed ? "已完成" : "處理中"}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -113,10 +107,9 @@ export default function OrderTab() {
                                                         </div>
                                                     </div>
                                                     <div className={styles.itemPrice}>
-                                                        <div>單價：${item.price}</div>
                                                         <div>數量：{item.quantity}</div>
                                                         <div className={styles.subtotal}>
-                                                            小計：${item.subtotal}
+                                                            ${item.subtotal}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -124,44 +117,24 @@ export default function OrderTab() {
                                         </div>
                                     </div>
 
-                                    {/* 訂單操作 */}
+                                    {/* 退款操作 */}
                                     <div className={styles.section}>
-                                        <h3>訂單操作</h3>
-                                        <div className={styles.actions}>
-                                            {/* 自取訂單：商家可以標記完成 */}
-                                            {!order.is_delivered ? (
-                                                order.is_completed ? (
-                                                    <button className={`${styles.statusButton} ${styles.completed}`} disabled>
-                                                        ✓ 訂單已完成
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        className={`${styles.statusButton} ${styles.pending}`}
-                                                        onClick={() =>
-                                                            handleUpdateStatus(
-                                                                order.order_id,
-                                                                "is_completed",
-                                                                true
-                                                            )
-                                                        }
-                                                        disabled={updateOrder.isPending}
-                                                    >
-                                                        {updateOrder.isPending ? '處理中...' : '標記為完成'}
-                                                    </button>
-                                                )
-                                            ) : (
-                                                /* 外送訂單：顯示狀態但不可操作 */
-                                                <button
-                                                    className={`${styles.statusButton} ${
-                                                        order.is_completed ? styles.completed : styles.waiting
-                                                    }`}
-                                                    disabled
-                                                >
-                                                    {order.is_completed
-                                                        ? "✓ 顧客已確認送達"
-                                                        : "⏳ 等待顧客確認送達"}
-                                                </button>
-                                            )}
+                                        <h3>退款處理</h3>
+                                        <div className={styles.refundActions}>
+                                            <button
+                                                className={styles.approveBtn}
+                                                onClick={() => handleRefund(order.order_id, "refunded")}
+                                                disabled={updateOrder.isPending}
+                                            >
+                                                {updateOrder.isPending ? '處理中...' : '同意退款'}
+                                            </button>
+                                            <button
+                                                className={styles.rejectBtn}
+                                                onClick={() => handleRefund(order.order_id, "rejected")}
+                                                disabled={updateOrder.isPending}
+                                            >
+                                                {updateOrder.isPending ? '處理中...' : '拒絕退款'}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

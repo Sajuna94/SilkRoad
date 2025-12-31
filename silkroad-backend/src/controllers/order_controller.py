@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from config import db
-from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy, Customer
+from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy, Customer, Vendor
 from datetime import date, datetime
 
 def do_discount(total_price_accumulated, policy_id, user_id):
@@ -51,11 +51,12 @@ def do_discount(total_price_accumulated, policy_id, user_id):
     return max(final_price, 0)
 
 
-def generate_new_order(cart, policy_id, note, payment_methods):
+def generate_new_order(cart, policy_id, note, payment_methods, is_delivered):
     user_id = cart.customer_id
     vendor_id = cart.vendor_id
     total_price_accumulated = 0
-    
+
+
     try:
         new_order = Order(
             user_id = user_id,
@@ -68,7 +69,7 @@ def generate_new_order(cart, policy_id, note, payment_methods):
             refund_status = None,
             refund_at = None,
             is_completed = False,
-            is_delivered = False,
+            is_delivered = is_delivered,
         )
         
         db.session.add(new_order)
@@ -84,7 +85,20 @@ def generate_new_order(cart, policy_id, note, payment_methods):
         discount_applied = total_price_accumulated - final_price
         new_order.discount_amount = discount_applied
 
-        db.session.delete(cart) 
+        # 如果使用儲值餘額支付，扣除餘額
+        if payment_methods == 'button':
+            customer = Customer.query.filter_by(user_id=user_id).first()
+            if not customer:
+                raise ValueError("找不到顧客資訊")
+
+            # 檢查餘額是否足夠
+            if customer.stored_balance < final_price:
+                raise ValueError(f"儲值餘額不足！目前餘額：${customer.stored_balance}，訂單金額：${final_price}")
+
+            # 扣除餘額
+            customer.stored_balance -= final_price
+
+        db.session.delete(cart)
         db.session.commit()
         return jsonify({
                         "order_id": new_order.id,
@@ -134,35 +148,37 @@ def trans_to_order():
     "policy_id":XXX,
     "note":XXX,
     "payment_methods":XXX,
+    "is_delivered":XXX,
     }
     """
 
     if not data:
         return jsonify({'message': '無效的請求數據',
                         "success": False}), 400
-    
+
     customer_id = data.get("customer_id")
     vendor_id = data.get("vendor_id")
 
     if not customer_id or not vendor_id:
         return jsonify({"message": "缺少 customer_id 或 vendor_id ",
-                        "success": False}), 400   
-    
+                        "success": False}), 400
+
     cart = Cart.query.get(customer_id)
 
     if not cart:
         return jsonify({"message": "購物車中沒有商品",
                         "success": False}), 404
-    
+
     if vendor_id != cart.vendor_id:
         return jsonify({"message": "vendor_id 不符合",
                         "success": False}), 400
-    
+
     policy_id = data.get("policy_id")
     note = data.get("note")
     payment_methods = data.get("payment_methods")
-    
-    return generate_new_order(cart, policy_id, note, payment_methods)
+    is_delivered = data.get("is_delivered", False)  # 預設為 False (自取)
+
+    return generate_new_order(cart, policy_id, note, payment_methods, is_delivered)
 
 def view_order():
     data = request.get_json()
@@ -170,29 +186,36 @@ def view_order():
     預計傳給我{
     "order_id":XXX,
     "user_id":XXX,
-    "vendor_id":XXX,
+    "vendor_id":XXX (optional),
     }
     """
 
     if not data:
         return jsonify({'message': '無效的請求數據',
                         "success": False}), 400
-    
+
     order_id = data.get("order_id")
     request_user_id = data.get("user_id")
     request_vendor_id = data.get("vendor_id")
 
-    if not order_id or not request_user_id or not request_vendor_id:
-        return jsonify({"message": "缺少 order_id 或 user_id 或 vendor_id"}), 400
-    
+    if not order_id or not request_user_id:
+        return jsonify({"message": "缺少 order_id 或 user_id"}), 400
+
     try:
         order = Order.query.get(order_id)
 
         if not order:
             return jsonify({"message": "查無訂單",
                             "success": False}), 400
-        if order.user_id != request_user_id or order.vendor_id != request_vendor_id:
-            return jsonify({"message": "user_id 或 vendor_id 不匹配",
+
+        # 驗證 user_id 必須匹配
+        if order.user_id != request_user_id:
+            return jsonify({"message": "user_id 不匹配",
+                            "success": False}), 400
+
+        # 如果提供了 vendor_id，也驗證它
+        if request_vendor_id is not None and order.vendor_id != request_vendor_id:
+            return jsonify({"message": "vendor_id 不匹配",
                             "success": False}), 400
         
         order_items = order.items
@@ -273,20 +296,45 @@ def update_orderinfo():
     is_completed = data.get("is_completed")
     is_delivered = data.get("is_delivered")
 
-    able_refund_status = ['refunded', 'rejected', None]
+    able_refund_status = ['pending', 'refunded', 'rejected', None]
 
     try:
         if refund_status is not None:
             if refund_status not in able_refund_status:
                 return jsonify({"message": "refund_status 傳值錯誤",
                                 "success": False}), 400
+
+            # 防止重複退款
+            if refund_status == "refunded" and order.refund_status == "refunded":
+                return jsonify({"message": "此訂單已退款，無法重複退款",
+                                "success": False}), 400
+
             order.refund_status = refund_status
-        
+
         if refund_status == "refunded":
             if refund_at is None:
                 return jsonify({"message": "refund_at 傳值錯誤",
                                 "success": False}), 400
             order.refund_at = datetime.strptime(refund_at, '%Y-%m-%d %H:%M:%S')
+
+            # 如果是儲值金支付，退款到顧客帳戶
+            if order.payment_methods == 'button':
+                customer = Customer.query.filter_by(user_id=order.user_id).first()
+                if not customer:
+                    return jsonify({"message": "找不到顧客資訊",
+                                    "success": False}), 404
+
+                refund_amount = order.total_price
+                customer.stored_balance += refund_amount
+                print(f"[退款] 訂單 #{order.id}, 用戶 {order.user_id}, 退款金額 ${refund_amount}, 退款後餘額 ${customer.stored_balance}")
+
+            # 如果訂單已完成，減少商家營業額
+            if order.is_completed:
+                vendor = Vendor.query.filter_by(user_id=order.vendor_id).first()
+                if vendor:
+                    revenue_decrease = order.total_price
+                    vendor.revenue -= revenue_decrease
+                    print(f"[退款] 商家 {order.vendor_id}, 減少營業額 ${revenue_decrease}, 退款後營業額 ${vendor.revenue}")
 
         elif refund_status != 'refunded' and refund_at is not None:
              return jsonify({"message": "refund_status 不為 'refunded'",
@@ -298,7 +346,15 @@ def update_orderinfo():
             if not isinstance(is_completed, bool):
                 return jsonify({"message": "is_completed 必須是bool",
                                 "success": False}), 400
-            
+
+            # 如果訂單從未完成變為完成，增加商家營業額
+            if is_completed and not order.is_completed:
+                vendor = Vendor.query.filter_by(user_id=order.vendor_id).first()
+                if vendor:
+                    revenue_increase = order.total_price
+                    vendor.revenue += revenue_increase
+                    print(f"[完成訂單] 商家 {order.vendor_id}, 增加營業額 ${revenue_increase}, 完成後營業額 ${vendor.revenue}")
+
             order.is_completed = is_completed
 
         if is_delivered is not None:
@@ -393,8 +449,62 @@ def view_all_user_orders():
             })
 
         return jsonify({
-            "data": all_orders_data,           
+            "data": all_orders_data,
             "message": "成功取得所有訂單與細項",
+            "success": True,
+        })
+    except Exception as e:
+        return jsonify({"message": "系統錯誤", "error": str(e), "success": False}), 500
+
+def view_all_vendor_orders():
+    data = request.get_json()
+    request_vendor_id = data.get("vendor_id")
+
+    if not request_vendor_id:
+        return jsonify({"message": "缺少 vendor_id", "success": False}), 400
+
+    try:
+        # 抓取該 vendor 的所有訂單
+        orders = Order.query.filter_by(vendor_id=request_vendor_id).order_by(Order.id.desc()).all()
+
+        all_orders_data = []
+
+        for order in orders:
+            # 針對每一筆訂單建立其商品清單
+            items_in_this_order = []
+            for item in order.items:
+                product = item.product
+                items_in_this_order.append({
+                    "order_item_id": item.id,
+                    "product_id": item.product_id,
+                    "product_name": product.name if product else "未知商品",
+                    "product_image": product.image_url if product else None,
+                    "price": item.price,
+                    "quantity": item.quantity,
+                    "subtotal": item.price * item.quantity,
+                    "selected_sugar": item.selected_sugar,
+                    "selected_ice": item.selected_ice,
+                    "selected_size": item.selected_size
+                })
+
+            # 將訂單摘要與商品詳情打包
+            all_orders_data.append({
+                "order_id": order.id,
+                "user_id": order.user_id,
+                "total_price": order.total_price,
+                "discount_amount": order.discount_amount,
+                "is_completed": order.is_completed,
+                "is_delivered": order.is_delivered,
+                "payment_methods": str(order.payment_methods),
+                "refund_status": str(order.refund_status) if order.refund_status else None,
+                "note": order.note,
+                "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                "items": items_in_this_order
+            })
+
+        return jsonify({
+            "data": all_orders_data,
+            "message": "成功取得 vendor 所有訂單與細項",
             "success": True,
         })
     except Exception as e:

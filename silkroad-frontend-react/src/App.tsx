@@ -16,9 +16,28 @@ function App() {
 
   const currentUser = useCurrentUser();
 
+  // 等待用户状态加载完成
+  if (currentUser.isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '1.2rem',
+        color: '#666'
+      }}>
+        載入中...
+      </div>
+    );
+  }
+
+  // 無論成功或失敗都繼續渲染（未登入是正常狀態）
   if (currentUser.isSuccess) {
     const user = currentUser.data;
     console.log(`[${user.role}] Current user loaded:`, user);
+  } else if (currentUser.isError) {
+    console.log('[App] User not logged in');
   }
 
   return (

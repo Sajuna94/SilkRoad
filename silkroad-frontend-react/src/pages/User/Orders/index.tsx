@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 // 1. 只引入列表 Hook，不需要詳細 Hook 了
 import { useUserOrders } from "@/hooks/order/order";
 import styles from "./Orders.module.scss";
@@ -43,12 +44,13 @@ const OrderCardDetails = ({ items }: { items: OrderDetailItem[] }) => {
 };
 
 export default function History() {
+    const navigate = useNavigate();
     // 根據你提供的後端資料，user_id = 2 才有那筆測試訂單
-    const customerId = 2; 
+    const customerId = 2;
 
     // 2. 使用 API Hook 取得訂單列表 (包含 items)
     const { data: orders, isLoading, error } = useUserOrders(customerId);
-    
+
     const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
     const [rotateY, setRotateY] = useState(0);
 
@@ -147,7 +149,18 @@ export default function History() {
                                     直接把 API 回傳的 order.items 傳進去，不需要再 Call API
                                 */}
                                 {isSelected ? (
-                                    <OrderCardDetails items={order.items} />
+                                    <>
+                                        <OrderCardDetails items={order.items} />
+                                        <button
+                                            className={styles.detailButton}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/orders/${order.order_id}`);
+                                            }}
+                                        >
+                                            查看完整訂單
+                                        </button>
+                                    </>
                                 ) : (
                                     <div className={styles.detailPlaceholder}>
                                         點擊查看詳情

@@ -30,8 +30,10 @@ export const useLogin = () => {
     },
     onSuccess: (res) => {
       console.log(`[${res.role}] Login successful:`, res);
+      // 重置查詢標記，允許重新查詢
+      resetQueryFlag();
+      // 直接設置用戶數據
       qc.setQueryData(["user"], res);
-      qc.invalidateQueries({ queryKey: ["user"] });
     },
   });
 };
@@ -54,8 +56,10 @@ export const useRegisterRole = (role: UserRole) => {
       return res.data.data[0];
     },
     onSuccess: (res) => {
+      // 重置查詢標記，允許重新查詢
+      resetQueryFlag();
+      // 直接設置用戶數據
       qc.setQueryData(["user"], res);
-      qc.invalidateQueries({ queryKey: ["user"] });
     },
     onError: (error) => {
       console.error("註冊失敗:", error.response?.data);
@@ -71,21 +75,45 @@ export const useLogout = () => {
       await api.post("/user/logout");
     },
     onSuccess: () => {
+      // 重置查詢標記，允許重新查詢
+      resetQueryFlag();
+      // 清除用戶數據
+      qc.setQueryData(["user"], undefined);
       qc.clear();
-      qc.invalidateQueries();
     },
   });
+};
+
+// 用於追蹤查詢狀態的全局變量
+let hasEverQueried = false;
+
+// 重置查詢標記（登入/登出時使用）
+const resetQueryFlag = () => {
+	hasEverQueried = false;
 };
 
 export const useCurrentUser = () => {
 	return useQuery<User, ApiErrorBody>({
 		queryKey: ["user"],
 		queryFn: async () => {
-			const res = await api.get("/user/current_user");
-			return res.data.data;
+			// 在查詢開始時就標記，避免失敗時重複查詢
+			hasEverQueried = true;
+			try {
+				const res = await api.get("/user/current_user");
+				return res.data.data;
+			} catch (error) {
+				// 即使失敗也不要再次查詢
+				throw error;
+			}
 		},
+		// 關鍵：只在從未查詢過時才啟用
+		enabled: !hasEverQueried,
 		retry: false,
 		refetchOnWindowFocus: false,
+		refetchOnMount: false,
+		refetchOnReconnect: false,
+		staleTime: Infinity,
+		gcTime: Infinity,
 	});
 }
 
@@ -125,9 +153,8 @@ export const useUpdateUser = () => {
       return res.data.data[0];
     },
     onSuccess: (userData) => {
-      // 更新 user query cache
+      // 直接更新用戶數據，不需要重新查詢
       qc.setQueryData(["user"], userData);
-      qc.invalidateQueries({ queryKey: ["user"] });
     },
   });
 };

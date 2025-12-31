@@ -163,8 +163,7 @@ export const useUpdateVendorDescription = () => {
 			return res.data;
 		},
 		onSuccess: () => {
-			// 刷新當前用戶資料
-			qc.invalidateQueries({ queryKey: ["user"] });
+			// 更新會在下次登入時反映
 		},
 	});
 };

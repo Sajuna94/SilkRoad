@@ -394,7 +394,7 @@ def insert_test_order():
             vendor_id=vendor_id,
             total_price=0, 
             note="API 測試訂單 - 自動生成",
-            payment_methods="cash", # 根據你的 Enum: 'cash' 或 'credit'
+            payment_methods="cash", # 根據你的 Enum: 'cash' 或 'button'
             is_delivered=False,
             is_completed=False,
             refund_status=None

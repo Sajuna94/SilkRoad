@@ -2,6 +2,7 @@ import { useRoutes } from "react-router-dom";
 import { AdminDashboard } from "@/pages/Admin";
 import { About, Auth, Cart, Home } from "@/pages/Main";
 import { UserOrders, UserProfile, ReviewPage } from "@/pages/User";
+import OrderDetail from "@/pages/User/Orders/OrderDetail";
 import { VendorDashboard, VendorProductList } from "@/pages/Vendor";
 import { TopUpPage, UserDiscountPage } from "@/pages/Customer";
 import type { DiscountData } from "@/pages/Customer/UserDiscount/UserDiscountPage";
@@ -103,6 +104,7 @@ export const routes = [
         children: [{ index: true, element: <AdminDashboard /> }],
       },
       { path: "orders", element: <UserOrders /> },
+      { path: "orders/:orderId", element: <OrderDetail /> },
       { path: "profile", element: <UserProfile /> },
       {
         path: "discounts",

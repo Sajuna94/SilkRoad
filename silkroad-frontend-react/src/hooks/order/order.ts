@@ -1,9 +1,11 @@
 import { api, type ApiErrorBody } from "@/api/instance";
-import type { 
-  OrderSummary, 
-  CreateOrderInput, 
+import type {
+  OrderSummary,
+  VendorOrderSummary,
+  CreateOrderInput,
+  CreateOrderResponse,
   OrderDetailResponse,
-  UpdateOrderInput 
+  UpdateOrderInput
 } from "@/types/order";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -58,7 +60,7 @@ export const useOrderDetails = (orderId?: number, userId?: number, vendorId?: nu
 export const useCreateOrder = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<any, AxiosError<ApiErrorBody>, CreateOrderInput>({
+  return useMutation<CreateOrderResponse, AxiosError<ApiErrorBody>, CreateOrderInput>({
     mutationFn: async (newOrderData) => {
       // 後端要求 POST /trans
       const res = await api.post("/order/trans", newOrderData);
@@ -67,6 +69,9 @@ export const useCreateOrder = () => {
     onSuccess: (_, variables) => {
       // 建立成功後，讓訂單列表失效，觸發重新抓取
       queryClient.invalidateQueries({ queryKey: ["orders", variables.customer_id] });
+      // 讓購物車失效，因為結帳後購物車會被清空
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      // 註：用戶餘額會在後端更新，前端顯示會在下次登入時更新
     },
   });
 };
@@ -82,11 +87,30 @@ export const useUpdateOrder = () => {
       const res = await api.post("/order/update", updateData);
       return res.data;
     },
-    onSuccess: (_, variables) => {
-      // 更新成功後，重新抓取該筆訂單的詳細資料
-      queryClient.invalidateQueries({ queryKey: ["order", variables.order_id] });
-      // 也可以選擇讓列表更新
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    onSuccess: async (_, variables) => {
+      // 更新成功後，等待資料重新獲取完成
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["order", variables.order_id] }),
+        queryClient.invalidateQueries({ queryKey: ["orders"] }),
+        queryClient.invalidateQueries({ queryKey: ["vendor-orders"] }),
+        // 註：用戶餘額會在後端更新，前端顯示會在下次登入時更新
+      ]);
+    },
+  });
+};
+
+// ------------------------------------------
+// 5. 取得 Vendor 的所有訂單列表 (/view_vendor_orders)
+// ------------------------------------------
+export const useVendorOrders = (vendorId?: number) => {
+  return useQuery<VendorOrderSummary[], AxiosError<ApiErrorBody>>({
+    queryKey: ["vendor-orders", vendorId],
+    enabled: !!vendorId,
+    queryFn: async () => {
+      const res = await api.post("/order/view_vendor_orders", {
+        vendor_id: vendorId
+      });
+      return res.data.data;
     },
   });
 };

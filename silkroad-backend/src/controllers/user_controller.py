@@ -628,7 +628,7 @@ def topup_balance():
 
     Expect:
     {
-        "amount": int (1 - 9999)
+        "amount": int (1 - 999999)
     }
 
     Return:
@@ -662,8 +662,8 @@ def topup_balance():
     if amount <= 0:
         return jsonify({"message": "金額必須大於 0", "success": False}), 400
 
-    if amount > 9999:
-        return jsonify({"message": "單次儲值上限為 9999", "success": False}), 400
+    if amount > 999999:
+        return jsonify({"message": "單次儲值上限為 999999", "success": False}), 400
 
     # 4. 查詢 Customer 實例
     customer = Customer.query.get(current_user_id)

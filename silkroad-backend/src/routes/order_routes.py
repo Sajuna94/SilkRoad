@@ -1,4 +1,4 @@
-from controllers import trans_to_order, view_order, update_orderinfo, view_all_user_orders
+from controllers import trans_to_order, view_order, update_orderinfo, view_all_user_orders, view_all_vendor_orders
 from flask import Blueprint
 
 order_routes = Blueprint("order", __name__)
@@ -11,6 +11,7 @@ order_routes.route('/trans', methods=['POST'])(trans_to_order)
     #     "policy_id":int,
     #     "note":text(str),
     #     "payment_methods":enum(str),
+    #     "is_delivered":boolean,
     #     }
 
         # 可能會回傳:
@@ -24,7 +25,7 @@ order_routes.route('/view', methods=['POST'])(view_order)
     #     預計傳給我{
     #     "order_id":int,
     #     "user_id":int,
-    #     "vendor_id":int,
+    #     "vendor_id":int (optional),
     #     }
 
         # 錯誤時回傳:
@@ -121,8 +122,8 @@ order_routes.route('/view_user_orders', methods=['POST'])(view_all_user_orders)
 jsonify({
             "data": result_list,
             "message": "成功取得所有訂單",
-            "success": True,         
-        })  
+            "success": True,
+        })
 result_list 包含一個或多個
 {
     "order_id": order.id, (int)
@@ -134,5 +135,45 @@ result_list 包含一個或多個
     "payment_methods": str(order.payment_methods), (ENUM(str))
     "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S') if hasattr(order, 'created_at') else None, (timestamp(str))
     "note": order.note (text(str))
+}
+"""
+
+order_routes.route('/view_vendor_orders', methods=['POST'])(view_all_vendor_orders)
+
+"""
+需要 { "vendor_id": int }
+
+回傳
+jsonify({
+            "data": result_list,
+            "message": "成功取得 vendor 所有訂單與細項",
+            "success": True,
+        })
+result_list 包含一個或多個
+{
+    "order_id": order.id, (int)
+    "user_id": order.user_id, (int)
+    "total_price": order.total_price, (int)
+    "discount_amount": order.discount_amount, (int)
+    "is_completed": order.is_completed, (boolean)
+    "is_delivered": order.is_delivered, (boolean)
+    "payment_methods": str(order.payment_methods), (ENUM(str))
+    "refund_status": str(order.refund_status) if order.refund_status else None, (ENUM(str))
+    "note": order.note, (text(str))
+    "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S'), (timestamp(str))
+    "items": [
+        {
+            "order_item_id": item.id, (int)
+            "product_id": item.product_id, (int)
+            "product_name": product.name, (str)
+            "product_image": product.image_url, (str)
+            "price": item.price, (int)
+            "quantity": item.quantity, (int)
+            "subtotal": item.price * item.quantity, (int)
+            "selected_sugar": item.selected_sugar, (str)
+            "selected_ice": item.selected_ice, (str)
+            "selected_size": item.selected_size (str)
+        }
+    ]
 }
 """

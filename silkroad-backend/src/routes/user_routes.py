@@ -319,7 +319,7 @@ Headers: Cookie (Session required, Role: 'customer')
 
 Expect:
 {
-    "amount": int (1 - 9999)
+    "amount": int (1 - 999999)
 }
 
 Return (Success):

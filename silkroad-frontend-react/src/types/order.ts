@@ -4,9 +4,18 @@
 export interface CreateOrderInput {
   customer_id: number;
   vendor_id: number;
-  policy_id: number; // 假設這是後端需要的欄位
+  policy_id: number | null; // 沒有折扣券時傳 null
   note: string;
-  payment_methods: string; // Enum string
+  payment_methods: string; // 'cash' 或 'button'
+  is_delivered: boolean; // true=外送, false=自取
+}
+
+// 建立訂單的回傳
+export interface CreateOrderResponse {
+  order_id: number;
+  total_amount: number;
+  message: string;
+  success: boolean;
 }
 
 // --- 2. 用於 /view_user_orders (訂單列表) 的回傳結構 ---
@@ -17,17 +26,33 @@ export interface OrderSummary {
   discount_amount: number;
   is_completed: boolean;
   // is_delivered 雖然 JSON 沒看到，但如果後端有回傳就留著，若無可設為 optional
-  is_delivered?: boolean; 
+  is_delivered?: boolean;
   payment_methods?: string; // JSON 沒看到這個，設為 optional
   created_at: string;
   note?: string;
-  
+
   // ★ 新增這行：後端回傳了 items 陣列
-  items: OrderDetailItem[]; 
+  items: OrderDetailItem[];
+}
+
+// --- 2.5 用於 /view_vendor_orders (vendor 訂單列表) 的回傳結構 ---
+export interface VendorOrderSummary {
+  order_id: number;
+  user_id: number; // vendor 查看的是客戶的訂單，所以是 user_id
+  total_price: number;
+  discount_amount: number;
+  is_completed: boolean;
+  is_delivered: boolean;
+  payment_methods: string;
+  refund_status: string | null;
+  note: string;
+  created_at: string;
+  items: OrderDetailItem[];
 }
 
 // --- 3. 用於 /view (單筆訂單詳細) 的回傳結構 ---
 export interface OrderDetailInfo {
+  discount_amount: number;
   note: string;
   payment_methods: string;
   refund_status: string;
