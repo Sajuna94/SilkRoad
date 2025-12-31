@@ -36,7 +36,7 @@ export default function Cart() {
     const removeFromCartMutation = useRemoveFromCart();
     const updateCartItemMutation = useUpdateCartItem();
     const createOrderMutation = useCreateOrder();
-    const { data: currentUser, isSuccess: isUserLoaded } = useCurrentUser();
+    const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
 
     // 取得折扣券列表（需要 vendor_id，僅登入用戶）
     const vendorId = items.length > 0 ? items[0].vendor_id : undefined;
@@ -55,10 +55,10 @@ export default function Cart() {
 
     // 預填用戶地址
     useEffect(() => {
-        if (isUserLoaded && currentUser) {
+        if (currentUser) {
             setAddress(currentUser.address || "");
         }
-    }, [isUserLoaded, currentUser]);
+    }, [currentUser]);
 
     // D. 計算折扣後的最終金額
     const calculateFinalAmount = () => {
@@ -206,7 +206,7 @@ export default function Cart() {
         }
     };
 
-    if (loading || !isUserLoaded) {
+    if (loading || isUserLoading) {
         return <div className={styles["container"]}>正在載入...</div>;
     }
 

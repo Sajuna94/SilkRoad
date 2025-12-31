@@ -63,6 +63,8 @@ export const useCartItems = (customerId?: number) => {
 			const res = await api.get(`/cart/view/${id}`);
 			return res.data;
 		},
+		// 覆蓋全局設定，確保購物車在頁面掛載時重新查詢
+		refetchOnMount: true,
 	});
 };
 
