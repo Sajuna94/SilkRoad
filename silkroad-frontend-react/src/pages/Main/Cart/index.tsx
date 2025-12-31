@@ -140,10 +140,9 @@ export default function Cart() {
 
     const availablePolicies = getAvailablePolicies();
 
-    // G. 結帳驗證
+    // G. 結帳驗證（僅對登入用戶）
     const validateCheckout = (): string | null => {
         if (items.length === 0) return "購物車是空的！";
-        if (!currentUser) return "請先登入";
 
         // 檢查配送地址
         if (deliveryMethod === 'delivery' && !address.trim()) {
@@ -151,7 +150,7 @@ export default function Cart() {
         }
 
         // 檢查儲值餘額
-        if (paymentMethod === 'button') {
+        if (paymentMethod === 'button' && currentUser) {
             const balance = currentUser.role === 'customer' && 'stored_balance' in currentUser
                 ? currentUser.stored_balance
                 : 0;
@@ -179,8 +178,6 @@ export default function Cart() {
             alert(error);
             return;
         }
-
-        if (!items.length) return;
 
         try {
             const payload = {

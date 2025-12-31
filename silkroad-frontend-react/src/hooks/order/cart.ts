@@ -80,15 +80,9 @@ export const useAddToCart = () => {
 			const res = await api.post("/cart/add", payload);
 			return res.data;
 		},
-		onSuccess: (_, variables) => {
-			// Invalidate the cart query to refetch updated cart data
-			// For logged-in users, invalidate by customer_id
-			// For guests, the backend uses session
-			// if (variables.customer_id) {
-			// 	qc.invalidateQueries({ queryKey: ["cartItems", variables.customer_id] });
-			// } else {
+		onSuccess: () => {
+			// 刷新購物車快取（訪客和登入用戶都使用相同的 query key）
 			qc.invalidateQueries({ queryKey: ["cartItems"] });
-			// }
 		},
 	});
 };
@@ -114,8 +108,6 @@ export const useRemoveFromCart = () => {
 			return res.data;
 		},
 		onSuccess: () => {
-			// Invalidate the cart query to refetch updated cart data
-			// Use the same query key as useCartItems hook
 			qc.invalidateQueries({ queryKey: ["cartItems"] });
 		},
 	});
