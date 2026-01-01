@@ -3,7 +3,7 @@ User controllers package : 定義所有api 被呼叫後要執行的function
 """
 
 from controllers.user_controller import register_step1,register_step2, login_user, logout_user, update_user, update_password, delete_user, current_user,get_all_announcements
-from controllers.cart_controller import add_to_cart, add_to_cart_guest, remove_from_cart, remove_from_cart_guest, update_cart_item, view_cart, view_cart_guest
+from controllers.cart_controller import add_to_cart, add_to_cart_guest, remove_from_cart, remove_from_cart_guest, update_cart_item, view_cart, view_cart_guest, clean_cart
 from controllers.admin_controller import block_user, post_announcement, update_announcement, delete_announcement, unblock_user,get_all_customers,get_all_vendors,get_all_announcements
 from controllers.vendor_controller import update_products_listed, update_products, get_products, add_product, view_vendor_products, add_discount_policy, view_discount_policy, invalid_discount_policy, update_discount_policy, view_vendor_product_detail,get_public_vendors,update_vendor_description, get_info,update_vendor_manager_info
 from controllers.order_controller import trans_to_order, view_order, update_orderinfo, view_all_user_orders, view_all_vendor_orders
@@ -53,4 +53,6 @@ __all__ = [
     'view_all_user_orders',
     'view_all_vendor_orders',
     'update_vendor_manager_info',
-    'get_info']
+    'get_info',
+    'clean_cart'
+    ]

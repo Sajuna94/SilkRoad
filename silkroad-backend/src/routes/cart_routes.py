@@ -5,7 +5,8 @@ from controllers import (
     remove_from_cart,
     update_cart_item,
     view_cart,
-    view_cart_guest
+    view_cart_guest,
+    clean_cart
 )
 from utils import switcher
 from flask import Blueprint
@@ -111,4 +112,25 @@ cart_routes.route('/update', methods=['POST'])(update_cart_item)
 }
 
 注意: 至少需要提供一個更新欄位
+'''
+
+cart_routes.route('/clean', methods=['POST'])(clean_cart)
+'''
+需要{
+    "user_id": int OR "customer_id": int  建議用user_id
+} 
+
+可能會回傳:
+---成功---
+{
+    "message": "購物車已成功清空",
+    "success": True
+}
+
+---失敗---
+{
+    "message": "錯誤訊息",
+    "success": False
+}
+
 '''

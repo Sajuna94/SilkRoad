@@ -202,6 +202,49 @@ def view_cart(cart_id : int):
     except Exception as e:
         print(f"Error details: {e}")
         return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
+    
+@require_login(["customer"])
+def clean_cart():
+    data = request.get_json()
+    
+    customer_id = session.get("user_id") or data.get("customer_id")
+
+    if not customer_id:
+        return jsonify({
+            "message": "缺少 customer_id",
+            "success": False
+        }), 400
+
+    try:
+        current_cart = Cart.query.filter_by(customer_id=customer_id).first()
+
+        if not current_cart:
+            return jsonify({
+                "message": "購物車已是空的，無需清理",
+                "success": True
+            }), 200
+
+
+        Cart_Item.query.filter_by(cart_id=customer_id).delete()
+
+        db.session.delete(current_cart)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "購物車已成功清空",
+            "success": True
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error cleaning cart: {e}")
+        return jsonify({
+            "message": "系統錯誤，清空失敗",
+            "error": str(e),
+            "success": False
+        }), 500
+
 
 #================ guest user ================
 def add_to_cart_guest():
@@ -435,4 +478,5 @@ def view_cart_guest(*args, **kwargs):
     #         "message": str(e),
     #         "success": False
     #     }), 500
+
 
