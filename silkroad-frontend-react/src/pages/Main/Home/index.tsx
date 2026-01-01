@@ -34,7 +34,7 @@ export default function Home() {
         apiAnnouncements?.map((a: ApiAnnouncement) => ({
             id: String(a.id),
             content: a.message,
-            adminId: String(a.admin_id),
+            adminId: String(a.admin_name),
             createdAt: a.created_at,
         })) ?? [];
 

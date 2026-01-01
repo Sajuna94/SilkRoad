@@ -34,9 +34,11 @@ export type DeleteAnnouncementArgs = {
 export type Announcement = {
   id: number;
   admin_id: number;
+  admin_name: string;
   message: string;
   created_at: string;
 };
+
 
 // --- Hooks ---
 

@@ -308,18 +308,24 @@ def get_all_vendors():
 # @require_login(role=["admin"])
 def get_all_announcements():
     """
-    列出所有系統公告 (建議依時間倒序排列)
+    列出所有系統公告 (建議依時間倒序排列)，包含管理員名字
     """
     try:
-        # 依建立時間由新到舊排序
-        announcements = System_Announcement.query.order_by(System_Announcement.created_at.desc()).all()
+       # used join to get informations about admin
+        announcements = db.session.query(
+            System_Announcement,
+            Admin.name.label('admin_name')
+        ).join(
+            Admin, System_Announcement.admin_id == Admin.id
+        ).order_by(System_Announcement.created_at.desc()).all()
         
         result = [{
-            "id": a.id,
-            "admin_id": a.admin_id,
-            "message": a.message,
-            "created_at": a.created_at.isoformat() if a.created_at else None
-        } for a in announcements]
+            "id": announcement.id,
+            "admin_id": announcement.admin_id,
+            "admin_name": admin_name, 
+            "message": announcement.message,
+            "created_at": announcement.created_at.isoformat() if announcement.created_at else None
+        } for announcement, admin_name in announcements]
 
         return jsonify({
             "success": True,
@@ -332,4 +338,5 @@ def get_all_announcements():
             "message": f"Database error: {str(e)}",
             "success": False
         }), 500
+
     
