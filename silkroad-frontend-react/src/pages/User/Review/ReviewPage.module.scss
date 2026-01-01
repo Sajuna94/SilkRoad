@@ -44,6 +44,8 @@
   font-size: 0.95rem;
   outline: none;
   background: white;
+  color: #333;
+  color-scheme: light;
 
   &:focus {
     border-color: #3b82f6;
@@ -54,6 +56,10 @@
 .searchInput {
   flex: 1;
   min-width: 200px;
+}
+
+.selectInput {
+  cursor: pointer;
 }
 
 .datePresets {
@@ -81,10 +87,12 @@
   cursor: pointer;
   font-size: 0.9rem;
   color: #4b5563;
-  transition: all 0.5s;
+  transition: all 0.2s ease-in-out;
 
   &:hover {
-    background: #a98;
+    background: #f3f4f6; 
+    color: #111;
+    border-color: #9ca3af;
   }
 
   &.active {
@@ -115,9 +123,11 @@
   cursor: pointer;
   color: #4b5563;
   font-weight: 500;
+  transition: all 0.2s;
 
   &:hover {
-    background-color: #333;
+    background-color: #f9fafb;
+    border-color: #d1d5db;
   }
 
   &.active {
