@@ -77,6 +77,12 @@ export default function Header() {
               <Link to="/discounts">查看折扣券</Link>
             </li>
           )}
+
+          {user && user.role === "vendor" && (
+            <li>
+              <Link to="/vendor/reviews">查看評論</Link>
+            </li>
+          )}
         </ul>
         <ul className={styles.authSection}>
           {!user ? (
