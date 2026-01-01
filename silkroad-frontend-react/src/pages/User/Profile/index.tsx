@@ -139,7 +139,6 @@ export default function Profile() {
           const formData = new FormData();
           formData.append('logo', logoFile);
           await updateVendorLogoMutation.mutateAsync(formData);
-          // 清除本地預覽，使用新上傳的URL
           setLogoFile(null);
         }
       }
