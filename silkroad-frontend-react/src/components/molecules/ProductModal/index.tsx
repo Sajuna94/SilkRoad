@@ -19,16 +19,17 @@ interface FormState {
 }
 
 interface ProductModalProps {
-    onSubmit?: (form: FormState) => Promise<void> | void;
+    onSubmit?: () => Promise<void> | void;
     submitText?: string;
+    needFetch?: boolean;
 }
 
-export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ onSubmit, submitText }, ref) => {
+export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ onSubmit, submitText, needFetch = true }, ref) => {
     const dialogRef = useRef<DialogRef>(null);
     const initialFormStateRef = useRef<Partial<FormState> | undefined>(undefined);
     const [product, setProduct] = useState<Product>({} as Product);
     const [form, setForm] = useState<FormState>({
-        size: "", ice: "", sugar: "", quantity: 1,
+        size: "", ice: "", sugar: "", quantity: 1
     });
     const [pending, setPending] = useState(false);
     const [vendorId, setVendorId] = useState<number | undefined>(undefined);
@@ -89,7 +90,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ on
         if (!onSubmit) return;
         try {
             setPending(true);
-            await onSubmit(form);
+            await onSubmit();
             dialogRef.current?.close();
         } finally {
             setPending(false);
@@ -102,7 +103,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ on
                 <img src={product.image_url} />
             </picture>
             <form>
-                {isLoadingDetail ? (
+                {needFetch && isLoadingDetail ? (
                     <div className={styles['loading']}>載入商品詳情中...</div>
                 ) : (
                     <>

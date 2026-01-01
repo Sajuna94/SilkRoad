@@ -161,7 +161,7 @@ export interface UpdateVendorManagerReq {
 }
 
 export const useUpdateVendorDescription = () => {
-	const qc = useQueryClient();
+	// const qc = useQueryClient();
 
 	return useMutation<any, ApiErrorBody, UpdateVendorDescriptionReq>({
 		mutationFn: async (payload) => {

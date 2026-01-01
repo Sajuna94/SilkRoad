@@ -340,9 +340,12 @@ function CartList({
   };
 
   const handleUpdateSubmit = async (
-    form: { size: string; ice: string; sugar: string; quantity: number }
+    // form: { size: string; ice: string; sugar: string; quantity: number }
   ) => {
     if (!editingCartItemId) return;
+
+    const form = modalRef.current?.getForm();
+    if (!form) return;
 
     try {
       await updateMutation.mutateAsync({

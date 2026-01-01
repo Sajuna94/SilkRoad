@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import styles from "./ProductGallery.module.scss";
 import ProductCard from "@/components/molecules/ProductCard";
 import {
@@ -14,12 +14,12 @@ interface ProductGalleryProps {
     products: Product[];
     pageSize: number;
 }
-interface FormState {
-    size: string;
-    ice: string;
-    sugar: string;
-    quantity: number;
-}
+// interface FormState {
+//     size: string;
+//     ice: string;
+//     sugar: string;
+//     quantity: number;
+// }
 
 export default function ProductGallery({
     products,
@@ -29,7 +29,12 @@ export default function ProductGallery({
     const addToCart = useAddToCart();
     const currentUserQuery = useCurrentUser();
 
-    const handleSubmit = async (product: Product, form: FormState) => {
+    const [product, setProduct] = useState<Product>();
+
+    const handleSubmit = async () => {
+        const form = modalRef.current?.getForm();
+        if (!form || !product) return;
+
         const res = await addToCart.mutateAsync({
             vendor_id: product.vendor_id,
             product_id: product.id,
@@ -48,6 +53,7 @@ export default function ProductGallery({
                 ref={modalRef}
                 submitText={currentUserQuery.isFetched ? "加入購物車" : "請先登入"}
                 onSubmit={currentUserQuery.isFetched ? handleSubmit : async () => { modalRef.current?.close() }}
+                needFetch={false}
             />
 
             <div className={styles.container}>
@@ -61,7 +67,10 @@ export default function ProductGallery({
                                 name={product.name}
                                 price={product.price}
                                 img={product.image_url}
-                                onClick={() => modalRef.current?.open(product)}
+                                onClick={() =>  {
+                                    setProduct(product)
+                                    modalRef.current?.open(product)
+                                }}
                             />
                         )}
                     />
