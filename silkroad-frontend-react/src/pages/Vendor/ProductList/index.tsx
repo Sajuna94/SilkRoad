@@ -35,7 +35,7 @@ export default function ProductList() {
             <h1>{vendor.name}</h1>
             <div className={styles.meta}>
               <span>{vendor?.address || "地址未提供"}</span>
-              <Link to="/vendor/reviews" className={styles.ratingLink}>
+              <Link to={`/vendor/${vendorId}/reviews`} className={styles.ratingLink}>
                 <span>⭐ 4.8 (120 評論)</span>
               </Link>
             </div>

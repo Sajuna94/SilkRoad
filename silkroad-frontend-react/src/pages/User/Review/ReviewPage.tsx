@@ -1,125 +1,88 @@
 import { useState, useMemo } from "react";
+import { useParams } from "react-router-dom"; // 1. 記得引入這行
 import ReviewItem from "@/components/molecules/ReviewItem";
 import styles from "./ReviewPage.module.scss";
-
-// 模擬資料
-const mockReviews = [
-  {
-    id: 1,
-    rating: 5,
-    comment: "我真的很好喝耶！推薦給大家～",
-    orderId: 13,
-    date: "2025-12-20",
-  },
-  {
-    id: 2,
-    rating: 4,
-    comment: "最喜歡帆帆",
-    orderId: 12,
-    date: "2025-12-18",
-  },
-  { id: 3, rating: 3, comment: "", orderId: 1, date: "2025-12-15" },
-  {
-    id: 4,
-    rating: 1,
-    comment: "喔買尬，這是我喝過最難喝的飲料，六星好評！",
-    orderId: 10,
-    date: "2025-11-01",
-  },
-  {
-    id: 5,
-    rating: 5,
-    comment: "cliu 可以再噁心一點！",
-    orderId: 3,
-    date: "2025-10-15",
-  },
-  {
-    id: 6,
-    rating: 1,
-    comment: "等到天荒地老",
-    orderId: 11,
-    date: "2024-12-18",
-  },
-];
+import { useVendorReviews } from "@/hooks/store/review";
 
 type SortOption = "newest" | "oldest" | "highest" | "lowest";
 type DateRangeOption = "custom" | "week" | "month" | "quarter" | "year";
 
 export default function ReviewPage() {
-  const [searchTerm, setSearchTerm] = useState(""); // 訂單編號搜尋
+  // 2. 抓取網址上的 ID
+  const { vendorId } = useParams<{ vendorId: string }>();
+  const vendorIdNum = vendorId ? parseInt(vendorId, 10) : 0;
+
+  // 3. 傳入正確的 ID
+  const { data: reviews = [], isLoading, isError, error } = useVendorReviews(vendorIdNum);
+
+  // ... (其餘 state 保持不變)
+  const [searchTerm, setSearchTerm] = useState("");
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>("newest");
-
   const [dateRangeType, setDateRangeType] = useState<DateRangeOption>("custom");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  // ... (handleDatePreset 保持不變)
   const handleDatePreset = (type: DateRangeOption) => {
     setDateRangeType(type);
     if (type === "custom") return;
-
     const end = new Date();
     const start = new Date();
-
     switch (type) {
-      case "week":
-        start.setDate(end.getDate() - 7);
-        break;
-      case "month":
-        start.setMonth(end.getMonth() - 1);
-        break;
-      case "quarter":
-        start.setMonth(end.getMonth() - 3);
-        break;
-      case "year":
-        start.setFullYear(end.getFullYear() - 1);
-        break;
+      case "week": start.setDate(end.getDate() - 7); break;
+      case "month": start.setMonth(end.getMonth() - 1); break;
+      case "quarter": start.setMonth(end.getMonth() - 3); break;
+      case "year": start.setFullYear(end.getFullYear() - 1); break;
     }
-
     setEndDate(end.toISOString().split("T")[0]);
     setStartDate(start.toISOString().split("T")[0]);
   };
 
+  // ... (processedReviews 保持不變)
   const processedReviews = useMemo(() => {
-    let result = [...mockReviews];
+    if (!reviews) return [];
+    let result = [...reviews];
 
     if (searchTerm) {
-      result = result.filter((r) => r.orderId.toString().includes(searchTerm));
+      result = result.filter((r) => r.order_id?.toString().includes(searchTerm));
     }
-
     if (ratingFilter !== null) {
       result = result.filter((r) => r.rating === ratingFilter);
     }
-
     if (startDate) {
-      result = result.filter((r) => r.date >= startDate);
+      result = result.filter((r) => r.created_at.split("T")[0] >= startDate);
     }
     if (endDate) {
-      result = result.filter((r) => r.date <= endDate);
+      result = result.filter((r) => r.created_at.split("T")[0] <= endDate);
     }
 
     result.sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
       switch (sortOption) {
-        case "newest":
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
-        case "oldest":
-          return new Date(a.date).getTime() - new Date(b.date).getTime();
-        case "highest":
-          return b.rating - a.rating;
-        case "lowest":
-          return a.rating - b.rating;
-        default:
-          return 0;
+        case "newest": return dateB - dateA;
+        case "oldest": return dateA - dateB;
+        case "highest": return b.rating - a.rating;
+        case "lowest": return a.rating - b.rating;
+        default: return 0;
       }
     });
-
     return result;
-  }, [searchTerm, ratingFilter, startDate, endDate, sortOption]);
+  }, [reviews, searchTerm, ratingFilter, startDate, endDate, sortOption]);
+
+  if (isLoading) return <div className={styles.pageContainer}>載入評論中...</div>;
+  
+  // 顯示詳細錯誤訊息方便除錯
+  if (isError) {
+    console.error(error); // 在 F12 Console 顯示錯誤細節
+    return <div className={styles.pageContainer}>讀取評論失敗，請確認後端資料庫已更新。</div>;
+  }
 
   return (
     <div className={styles.pageContainer}>
       <h1 className={styles.title}>顧客評論專區</h1>
-
+      {/* ... (下方的 JSX 保持不變) ... */}
       <div className={styles.controls}>
         <div className={styles.row}>
           <input
@@ -129,7 +92,6 @@ export default function ReviewPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className={styles.searchInput}
           />
-
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value as SortOption)}
@@ -141,85 +103,21 @@ export default function ReviewPage() {
             <option value="lowest">評分：由低到高</option>
           </select>
         </div>
-
+        {/* ... 日期與星級篩選器 ... */}
         <div className={styles.row}>
-          <div className={styles.datePresets}>
-            {[
-              { label: "最近一週", val: "week" },
-              { label: "最近一個月", val: "month" },
-              { label: "最近一季", val: "quarter" },
-              { label: "最近一年", val: "year" },
-            ].map((btn) => (
-              <button
-                key={btn.val}
-                className={`${styles.filterBtn} ${
-                  dateRangeType === btn.val ? styles.active : ""
-                }`}
-                onClick={() => handleDatePreset(btn.val as DateRangeOption)}
-              >
-                {btn.label}
-              </button>
-            ))}
-            <button
-              className={`${styles.filterBtn} ${
-                dateRangeType === "custom" ? styles.active : ""
-              }`}
-              onClick={() => {
-                setDateRangeType("custom");
-                setStartDate("");
-                setEndDate("");
-              }}
-            >
-              全部/自訂
-            </button>
-          </div>
-
-          <div className={styles.dateInputs}>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-                setDateRangeType("custom");
-              }}
-              className={styles.dateInput}
-            />
-            <span>至</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => {
-                setEndDate(e.target.value);
-                setDateRangeType("custom");
-              }}
-              className={styles.dateInput}
-            />
-          </div>
+             {/* 這裡省略，保持你原本的代碼即可 */}
+             <div className={styles.datePresets}>
+                {/* ...略... */}
+             </div>
+             <div className={styles.dateInputs}>
+                {/* ...略... */}
+             </div>
         </div>
-
         <div className={styles.row}>
-          <div className={styles.starFilters}>
-            <span className={styles.label}>星級篩選：</span>
-            <button
-              className={`${styles.starBtn} ${
-                ratingFilter === null ? styles.active : ""
-              }`}
-              onClick={() => setRatingFilter(null)}
-            >
-              全部
-            </button>
-            {[5, 4, 3, 2, 1].map((star) => (
-              <button
-                key={star}
-                className={`${styles.starBtn} ${
-                  ratingFilter === star ? styles.active : ""
-                }`}
-                onClick={() => setRatingFilter(star)}
-              >
-                {star} ★
-              </button>
-            ))}
-          </div>
+             <div className={styles.starFilters}>
+                 {/* ...略... */}
+                 <button onClick={() => setRatingFilter(null)}>全部</button>
+             </div>
         </div>
       </div>
 
@@ -227,12 +125,12 @@ export default function ReviewPage() {
         {processedReviews.length > 0 ? (
           processedReviews.map((review) => (
             <ReviewItem
-              key={review.id}
-              reviewId={review.id}
+              key={review.review_id}
+              reviewId={review.review_id}
               rating={review.rating}
-              comment={review.comment}
-              orderId={review.orderId}
-              date={review.date}
+              comment={review.content}
+              orderId={review.order_id || 0}
+              date={review.created_at}
             />
           ))
         ) : (

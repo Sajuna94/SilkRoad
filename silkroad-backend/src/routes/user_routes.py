@@ -9,7 +9,8 @@ from controllers.user_controller import (
     register_step2,
     current_user,
     get_all_announcements,
-    topup_balance
+    topup_balance,
+    get_vendor_reviews
 )
 
 user_routes = Blueprint('user', __name__)
@@ -333,6 +334,32 @@ Return (Success):
 }
 
 Return (Failure):
+{
+    "message": "...",
+    "success": false
+}
+"""
+
+user_routes.route('/vendor/<int:vendor_id>/reviews', methods=['GET'])(get_vendor_reviews)
+"""
+Get Vendor Reviews
+URL: /api/user/vendor/<int:vendor_id>/reviews
+Method: GET
+Auth: None (Public)
+
+Return:
+{
+    "success": true,
+    "message": string,
+    "data": [{
+            "review_id": int,
+            "rating": int,
+            "order_id": int,
+            "content": string,
+            "created_at": datetime
+    }]
+}
+else:
 {
     "message": "...",
     "success": false

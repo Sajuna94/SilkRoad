@@ -4,6 +4,7 @@ class Review(db.Model):
     __tablename__ = "reviews"
 
     id              = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    order_id = db.Column(db.Integer, db.ForeignKey("order.orders.id"), nullable=False)
     customer_id     = db.Column(db.Integer, db.ForeignKey("auth.customers.user_id"), nullable=False)
     vendor_id       = db.Column(db.Integer, db.ForeignKey("auth.vendors.user_id"), nullable=False)
     rating          = db.Column(db.Integer, nullable=False)

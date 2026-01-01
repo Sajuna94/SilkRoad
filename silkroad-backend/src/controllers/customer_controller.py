@@ -1,9 +1,7 @@
-#by Fan
-from flask import request, jsonify,session
-from models import Customer
+from flask import request, jsonify, session
+# 請確認這行的引入路徑是正確的，如果 Order.py 在 models 資料夾下，通常是 from models import Order
+from models import Order 
 from models.store.review import Review
-from models.auth.vendor import Vendor
-from models.auth.customer import Customer
 from config import db
 from utils import require_login
 
@@ -11,7 +9,6 @@ from utils import require_login
 def post_vendor_review():
     """
     顧客根據訂單評論店家
-    邏輯：Order ID -> 查訂單 -> 驗證 Session User -> 寫入評論
     """
     data = request.get_json()
     
@@ -30,31 +27,33 @@ def post_vendor_review():
     except ValueError:
         return jsonify({"message": "Rating must be 1-5", "success": False}), 400
 
-    # 2. [關鍵] 從 Session 獲取當前使用者的 ID
-    customer_id = session.get('user_id')
+    # 2. 從 Session 獲取當前使用者的 ID
+    current_user_id = session.get('user_id')
     
-    # 3. 查詢訂單
-    order = order.query.get(order_id)
+    # 3. 查詢訂單 
+    # [修正 1] 使用大寫 Order (類別) 來查詢，避免變數名稱衝突
+    order = Order.query.get(order_id)
+    
     if not order:
         return jsonify({"message": "Order not found", "success": False}), 404
     
-    # 4. [安全性驗證] 確保這筆訂單的主人，就是當前登入的 session 使用者
-    # 這一步非常重要！防止 A 用戶拿 B 用戶的 order_id 來惡意評論
-    if order.customer_id != customer_id:
+    # 4. [安全性驗證] 
+    # [修正 2] 你的 Order Model 欄位叫做 user_id，不是 customer_id
+    if order.user_id != current_user_id:
         return jsonify({
             "message": "Unauthorized: You can only review your own orders", 
             "success": False
         }), 403
 
-    # 5. 檢查是否重複評論 (針對這筆訂單)
+    # 5. 檢查是否重複評論
     existing_review = Review.query.filter_by(order_id=order_id).first()
     if existing_review:
         return jsonify({"message": "You have already reviewed this order.", "success": False}), 409
 
-    # 6. 建立評論 (使用 session 拿到的 customer_id)
+    # 6. 建立評論
     new_review = Review(
-        customer_id=customer_id,    # <--- 這裡填入 session 的 ID
-        vendor_id=order.vendor_id,  # <--- 從訂單自動抓取店家 ID
+        customer_id=current_user_id,
+        vendor_id=order.vendor_id, # 這裡沒問題，Model 裡有 vendor_id
         order_id=order_id,
         rating=rating,
         review_content=review_content
@@ -67,7 +66,7 @@ def post_vendor_review():
         return jsonify({
             "data": [{
                 "review_id": new_review.id,
-                "customer_id": new_review.customer_id, # 回傳確認
+                "customer_id": new_review.customer_id,
                 "vendor_id": new_review.vendor_id,
                 "order_id": new_review.order_id,
                 "rating": new_review.rating,
@@ -80,4 +79,5 @@ def post_vendor_review():
 
     except Exception as e:
         db.session.rollback()
+        print(f"Error posting review: {e}") 
         return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
