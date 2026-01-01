@@ -122,7 +122,7 @@ export default function Header() {
                     </Link>
                   )}
 
-                  {(user.role === "vendor" || user.role === "customer") && (
+                  {user.role === "customer" && (
                     <Link
                       to="/orders"
                       className={styles.menuItem}
