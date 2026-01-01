@@ -291,19 +291,34 @@ def update_products():
             elif "options" in col_name:
                 value_list = [v.strip() for v in str(value).split(",") if v.strip()]
 
-                # 特別處理 size_options -> sizes_option (注意複數)
+                # 判定是要處理哪種選項
                 if col_name == "size_options":
-                    option_attr_name = "sizes_option"
+                    option_attr_name = "sizes_option" # Model 中的屬性名稱
+                    OptionClass = Sizes_Option        # 對應的 Model 類別
+                elif col_name == "sugar_options":
+                    option_attr_name = "sugar_option"
+                    OptionClass = Sugar_Option
+                elif col_name == "ice_options":
+                    option_attr_name = "ice_option"
+                    OptionClass = Ice_Option
                 else:
-                    option_attr_name = col_name.replace("_options", "_option")
+                    return jsonify({"message": "Unknown option type", "success": False}), 400
 
+                # 嘗試獲取現有的選項物件
                 option_obj = getattr(product, option_attr_name, None)
+                
+                # --- 修改開始 ---
+                # 如果沒有找到選項物件，則建立一個新的
                 if not option_obj:
-                    return jsonify({
-                        "message": f"Product {product_id} has no {option_attr_name}",
-                        "success": False
-                    }), 400
+                    # 建立新物件 (注意：這裡假設你的 Model 建構子可以接受 product_id 和 options)
+                    new_option = OptionClass(product_id=product.id, options="")
+                    db.session.add(new_option)
+                    option_obj = new_option # 將變數指向新建立的物件
+                
+                # 設定新的值
                 option_obj.set_options_list(value_list)
+                # --- 修改結束 ---
+
             else:
                 setattr(product, col_name, value)
         except ValueError:
