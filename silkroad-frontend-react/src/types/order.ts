@@ -28,6 +28,7 @@ export interface OrderSummary {
   // is_delivered 雖然 JSON 沒看到，但如果後端有回傳就留著，若無可設為 optional
   is_delivered?: boolean;
   payment_methods?: string; // JSON 沒看到這個，設為 optional
+  refund_status: string | null;
   created_at: string;
   note?: string;
 
@@ -75,8 +76,6 @@ export interface OrderDetailItem {
   selected_ice: string;
   selected_size: string;
 }
-
-
 
 // 整合單筆訂單的完整回應
 export interface OrderDetailResponse {

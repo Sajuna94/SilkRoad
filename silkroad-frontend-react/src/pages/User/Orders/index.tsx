@@ -6,7 +6,7 @@ import { useUserOrders } from "@/hooks/order/order";
 import styles from "./Orders.module.scss";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ReviewInput from "@/components/molecules/ReviewInput/ReviewInput";
-import type { OrderDetailItem } from "@/types/order";
+import type { OrderDetailItem, OrderSummary } from "@/types/order";
 
 const CAROUSEL_RADIUS = 800;
 const ANGLE = 18;
@@ -77,7 +77,10 @@ export default function History() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewingOrderId, setReviewingOrderId] = useState<number | null>(null);
 
-  const carouselOrders = useMemo(() => orders || [], [orders]);
+  const carouselOrders = useMemo(
+    () => (orders as OrderSummary[]) || [],
+    [orders]
+  );
 
   // 計算目前的旋轉索引
   const currentRotationIndex = useMemo(() => {
@@ -158,7 +161,7 @@ export default function History() {
             transform: `rotateY(${rotateY}deg)`,
           }}
         >
-          {carouselOrders.map((order, index) => {
+          {carouselOrders.map((order: OrderSummary, index) => {
             const cardAngle = ANGLE * index;
             const isSelected = selectedOrderId === order.order_id;
 
@@ -182,8 +185,21 @@ export default function History() {
                     NT$ {order.total_price}
                   </div>
                   <div style={{ fontSize: "0.8rem", color: "#888" }}>
-                    {order.is_completed ? "已完成" : "製作中"}
-                    {order.is_delivered ? " / 已送達" : ""}
+                    {order.refund_status === "refunded" ? (
+                      <span style={{ color: "#ef4444", fontWeight: "bold" }}>
+                        已退款
+                      </span>
+                    ) : (
+                      <>
+                        {order.is_completed ? "已完成" : "製作中"}
+                        {order.is_delivered ? " / 已送達" : ""}
+                        {order.refund_status === "pending" && (
+                          <span style={{ color: "#f97316", marginLeft: "5px" }}>
+                            (退款審核中)
+                          </span>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -202,17 +218,18 @@ export default function History() {
                         查看完整訂單
                       </button>
 
-                      {order.is_completed && (
-                        <button
-                          className={`${styles.textLink} ${styles.reviewLink}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenReview(order.order_id);
-                          }}
-                        >
-                          撰寫評論
-                        </button>
-                      )}
+                      {order.is_completed &&
+                        order.refund_status !== "refunded" && (
+                          <button
+                            className={`${styles.textLink} ${styles.reviewLink}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenReview(order.order_id);
+                            }}
+                          >
+                            撰寫評論
+                          </button>
+                        )}
                     </div>
                   </>
                 ) : (
