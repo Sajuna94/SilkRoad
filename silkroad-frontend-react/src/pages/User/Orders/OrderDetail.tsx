@@ -10,20 +10,13 @@ export default function OrderDetail() {
   const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
   const updateOrder = useUpdateOrder();
 
-  // 需要傳入 orderId, userId, vendorId
-  // 這裡我們先從購物車取得 vendorId（實際上應該從訂單列表點擊進來時傳入）
-  // 暫時設為 undefined，等 API 回傳後再處理
   const orderIdNum = orderId ? parseInt(orderId, 10) : undefined;
 
   const {
     data: orderData,
     isLoading: isOrderLoading,
     isError,
-  } = useOrderDetails(
-    orderIdNum,
-    currentUser?.id,
-    undefined // vendorId 可以先設為 undefined，讓後端處理
-  );
+  } = useOrderDetails(orderIdNum, currentUser?.id, undefined);
 
   const handleConfirmDelivery = () => {
     if (!orderIdNum) return;
@@ -55,9 +48,26 @@ export default function OrderDetail() {
   }
 
   const { order_info, data: items } = orderData;
-
-  // 計算小計（折扣前金額）
   const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+
+  // 狀態顯示邏輯
+  const getStatusDisplay = () => {
+    if (order_info.refund_status === "refunded") {
+      return { text: "已退款", style: styles.refund };
+    }
+    if (order_info.refund_status === "pending") {
+      return { text: "退款審核中", style: styles.pending };
+    }
+    // if (order_info.refund_status === "rejected") {
+    //   return { text: "退款被拒", style: styles.refund }; // 或另外定義 rejected 樣式
+    // }
+    if (order_info.is_completed) {
+      return { text: "已完成", style: styles.completed };
+    }
+    return { text: "處理中", style: styles.pending };
+  };
+
+  const statusObj = getStatusDisplay();
 
   return (
     <div className={styles.container}>
@@ -68,7 +78,6 @@ export default function OrderDetail() {
         </button>
       </div>
 
-      {/* 訂單基本資訊 */}
       <div className={styles.section}>
         <h2>訂單資訊</h2>
         <div className={styles.infoGrid}>
@@ -86,32 +95,25 @@ export default function OrderDetail() {
               {order_info.payment_methods === "cash" ? "現金" : "儲值餘額"}
             </span>
           </div>
+
           <div className={styles.infoItem}>
             <span className={styles.label}>訂單狀態：</span>
-            <span
-              className={
-                order_info.is_completed ? styles.completed : styles.pending
-              }
-            >
-              {order_info.is_completed
-                ? "已完成"
-                : order_info.refund_status === "refunded"
-                ? "已取消"
-                : "處理中"}
-            </span>
+            <span className={statusObj.style}>{statusObj.text}</span>
           </div>
+
           {order_info.refund_status && (
             <div className={styles.infoItem}>
-              <span className={styles.label}>退款狀態：</span>
+              <span className={styles.label}>退款詳情：</span>
               <span className={styles.refund}>
                 {order_info.refund_status === "pending"
-                  ? "審核中"
+                  ? "商家審核中"
                   : order_info.refund_status === "refunded"
-                  ? "已退款"
+                  ? "退款成功"
                   : "退款被拒"}
               </span>
             </div>
           )}
+
           {order_info.note && (
             <div className={styles.infoItem}>
               <span className={styles.label}>訂單備註：</span>
@@ -121,9 +123,8 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {/* 商品列表 */}
       <div className={styles.section}>
-        <h2>商品明細</h2>
+        <h2>商品明細 ({items.length})</h2>
         <div className={styles.itemList}>
           {items.map((item) => (
             <div key={item.order_item_id} className={styles.item}>
@@ -150,7 +151,6 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {/* 訂單金額摘要 */}
       <div className={styles.section}>
         <h2>訂單摘要</h2>
         <div className={styles.summary}>
@@ -171,20 +171,21 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {/* 外送訂單的確認送達按鈕 */}
-      {order_info.is_delivered && !order_info.is_completed && (
-        <div className={styles.section}>
-          <button
-            className={styles.confirmButton}
-            onClick={handleConfirmDelivery}
-            disabled={updateOrder.isPending}
-          >
-            {updateOrder.isPending ? "處理中..." : "確認已送達"}
-          </button>
-        </div>
-      )}
+      {/* 只有在「未完成」且「無退款狀態」時才顯示確認按鈕 */}
+      {order_info.is_delivered &&
+        !order_info.is_completed &&
+        !order_info.refund_status && (
+          <div className={styles.section}>
+            <button
+              className={styles.confirmButton}
+              onClick={handleConfirmDelivery}
+              disabled={updateOrder.isPending}
+            >
+              {updateOrder.isPending ? "處理中..." : "確認已送達"}
+            </button>
+          </div>
+        )}
 
-      {/* 退款申請按鈕 */}
       <div className={styles.section}>
         {order_info.refund_status === null ? (
           <button
@@ -195,8 +196,9 @@ export default function OrderDetail() {
             {updateOrder.isPending ? "處理中..." : "申請退款"}
           </button>
         ) : (
+          // 如果已經有狀態，顯示提示訊息
           <div className={styles.refundStatus}>
-            <span className={styles.label}>退款狀態：</span>
+            <span className={styles.label}>目前退款進度：</span>
             <span
               className={`${styles.statusBadge} ${
                 order_info.refund_status === "pending"
@@ -214,7 +216,7 @@ export default function OrderDetail() {
             </span>
             {order_info.refund_at && (
               <span className={styles.refundDate}>
-                退款時間：{order_info.refund_at}
+                處理時間：{order_info.refund_at}
               </span>
             )}
           </div>
