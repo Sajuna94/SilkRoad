@@ -9,13 +9,14 @@ from models import (
     Vendor,
     Product,
     Discount_Policy,
-    Vendor_Manager
+    Vendor_Manager,
+    Order
 )
 from config.database import db
 from utils import require_login
 
 from datetime import datetime
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from sqlalchemy.orm import joinedload
 
 
@@ -712,7 +713,7 @@ def add_discount_policy():
             return jsonify({"message": "新增折價券失敗，請稍後再試", "success": False}), 500
 
 
-@require_login(role=["vendor", "customer"])
+@require_login(role=["vendor"])
 def view_discount_policy():
     data = request.get_json()
     """
@@ -779,7 +780,78 @@ def view_discount_policy():
         print(f"Error details: {e}")
         return jsonify({"message": "系統錯誤", "error": str(e)}), 500
 
+@require_login(role=["customer"])
+def view_customer_discounts():
+    # 取得當前登入用戶 ID (對應 orders 表的 user_id)
+    current_user_id = session.get("user_id")
+    
+    data = request.get_json()
+    # 如果有傳 vendor_id，就只看該店家的券；若無，則看全平台
+    target_vendor_id = data.get("vendor_id")
+    
+    today = date.today()
 
+    try:
+        # 1. 從 orders 表找出該用戶「使用過」的 policy_id 列表
+        used_policies_query = db.session.query(Order.policy_id).filter(
+            Order.user_id == current_user_id,
+            Order.policy_id.isnot(None)
+        ).distinct().all()
+        
+        # 轉換為簡單的 ID 列表: [1, 5, 12...]
+        used_ids = [row[0] for row in used_policies_query]
+
+        # 2. 構建查詢條件
+        # 條件 A: 該券目前處於「發布中」且「有效期限內」
+        is_active = and_(
+            Discount_Policy.is_available == True,
+            Discount_Policy.start_date <= today,
+            or_(
+                Discount_Policy.expiry_date.is_(None),
+                Discount_Policy.expiry_date >= today
+            )
+        )
+
+        # 條件 B: 該券在用戶的使用歷史名單中
+        was_used = Discount_Policy.id.in_(used_ids)
+
+        # 3. 執行查詢 (合併 A 或 B)
+        query = Discount_Policy.query.filter(or_(is_active, was_used))
+
+        # 若前端有指定商家，加入篩選
+        if target_vendor_id:
+            query = query.filter(Discount_Policy.vendor_id == target_vendor_id)
+
+        policies = query.all()
+
+        # 4. 格式化回傳內容
+        result = []
+        for p in policies:
+            # 決定狀態標籤，方便前端 UI 渲染 (例如已使用的顯示灰色)
+            status = "used" if p.id in used_ids else "available"
+            
+            result.append({
+                "policy_id": p.id,
+                "vendor_id": p.vendor_id,
+                "code": p.code,
+                "type": p.type,
+                "value": p.value,
+                "min_purchase": p.min_purchase,
+                "max_discount": p.max_discount,
+                "expiry_date": str(p.expiry_date) if p.expiry_date else "永久有效",
+                "status": status  # 'used' 或 'available'
+            })
+
+        return jsonify({
+            "success": True,
+            "data": result,
+            "count": len(result)
+        }), 200
+
+    except Exception as e:
+        print(f"Error fetching customer discounts: {e}")
+        return jsonify({"message": "系統錯誤", "success": False}), 500
+    
 def invalid_discount_policy():
     data = request.get_json()
     """
