@@ -120,7 +120,19 @@ def get_products():
     data = []
 
     for p in products:
-        sizes = [s.strip() for s in (p.sizes_option.options.split(",") if p.sizes_option else []) if s.strip()]
+        # --- 修改開始：實作「順序計價法」 ---
+        # 1. 先拆分字串取得列表 ["S", "M", "L"]
+        raw_sizes = [s.strip() for s in (p.sizes_option.options.split(",") if p.sizes_option else []) if s.strip()]
+        
+        # 2. 自動計算價格 (Index * 10) -> [{"name": "S", "price": 0}, {"name": "M", "price": 10}]
+        sizes_data = []
+        for index, name in enumerate(raw_sizes):
+            sizes_data.append({
+                "name": name,
+                "price": index * 10  # 核心邏輯：依照順序，每多一層加 10 元
+            })
+        # --- 修改結束 ---
+
         sugars = [s.strip() for s in (p.sugar_option.options.split(",") if p.sugar_option else []) if s.strip()]
         ices = [s.strip() for s in (p.ice_option.options.split(",") if p.ice_option else []) if s.strip()]
 
@@ -131,7 +143,7 @@ def get_products():
             "price": p.price,
             "description": p.description,
             "options": {
-                "size": sizes,
+                "size": sizes_data, # 注意：現在這裡回傳的是物件列表，前端要改用 .name 和 .price 讀取
                 "sugar": sugars,
                 "ice": ices,
             },
@@ -362,10 +374,7 @@ def update_products():
 
 
 def view_vendor_products(vendor_id):
-    # vendor = Vendor.query.get(vendor_id)
-    # if not vendor:
-        # return jsonify({"message": "Vendor not found", "success": False}), 404
-
+    # ... (前面的查詢邏輯保持不變) ...
     products = (
         Product.query
         .options(
@@ -379,7 +388,16 @@ def view_vendor_products(vendor_id):
     data = []
 
     for p in products:
-        sizes = [s.strip() for s in (p.sizes_option.options.split(",") if p.sizes_option else []) if s.strip()]
+        # --- 修改開始 ---
+        raw_sizes = [s.strip() for s in (p.sizes_option.options.split(",") if p.sizes_option else []) if s.strip()]
+        sizes_data = []
+        for index, name in enumerate(raw_sizes):
+            sizes_data.append({
+                "name": name,
+                "price": index * 10  # 固定加價邏輯
+            })
+        # --- 修改結束 ---
+
         sugars = [s.strip() for s in (p.sugar_option.options.split(",") if p.sugar_option else []) if s.strip()]
         ices = [s.strip() for s in (p.ice_option.options.split(",") if p.ice_option else []) if s.strip()]
 
@@ -390,7 +408,7 @@ def view_vendor_products(vendor_id):
             "price": p.price,
             "description": p.description,
             "options": {
-                "size": sizes,
+                "size": sizes_data,
                 "sugar": sugars,
                 "ice": ices,
             },
@@ -451,22 +469,26 @@ def view_vendor_products(vendor_id):
 
 def view_vendor_product_detail(vendor_id, product_id):
     try:
+        # ... (前面的查詢與檢查邏輯保持不變) ...
         vendor = Vendor.query.get(vendor_id)
-        if not vendor:
-            return jsonify({"message": "Vendor not found", "success": False}), 404
-
+        # ...
         product = Product.query.get(product_id)
         if not product:
-            return (
-                jsonify(
-                    {
-                        "message": "Product not found",
-                        "success": True,
-                        "products": [],
-                    }
-                ),
-                404,
-            )
+             return jsonify({"message": "Product not found", "success": True, "products": []}), 404
+        
+        # --- 修改開始：處理單一商品的尺寸加價 ---
+        raw_sizes = []
+        if product.sizes_option:
+             raw_sizes = [s.strip() for s in product.sizes_option.options.split(",") if s.strip()]
+        
+        sizes_data = []
+        for index, name in enumerate(raw_sizes):
+            sizes_data.append({
+                "name": name,
+                "price": index * 10 
+            })
+        # --- 修改結束 ---
+
         return (
             jsonify(
                 {
@@ -479,7 +501,7 @@ def view_vendor_product_detail(vendor_id, product_id):
                         "description": product.description,
                         "sugar_option": product.sugar_option.get_options_list(),
                         "ice_option": product.ice_option.get_options_list(),
-                        "size_option": product.sizes_option.get_options_list(),
+                        "size_option": sizes_data, # 這裡回傳含有價格的結構
                     },
                 }
             ),

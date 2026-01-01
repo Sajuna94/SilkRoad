@@ -218,3 +218,4 @@ CREATE TABLE `order`.`cart_items` (
     FOREIGN KEY (`cart_id`) REFERENCES `order`.`carts` (`customer_id`),
     FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`)
 );
+

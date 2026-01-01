@@ -24,55 +24,49 @@ def get_user_cart(customer_id, vendor_id):
         db.session.rollback()
         raise e
     
-@require_login(["customer"])
+@require_login(role=["customer"])
 def add_to_cart():
     data = request.get_json()
     
-    #     預計傳給我{
-    #     "customer_id":XXX,
-    #     "vendor_id":XXX,
-    #     "product_id":XXX,
-    #     "quantity":XXX,
-    #     "selected_sugar":XXX,
-    #     "selected_ice":XXX,
-    #     "selected_sizece":XXX
-    #     }
-
     customer_id = session.get("user_id")
     if not customer_id:
-        return jsonify({
-            "message": "無法取得 user_id，尚未登入?",
-            "success": False
-        }), 400
+        return jsonify({"message": "無法取得 user_id，尚未登入?", "success": False}), 400
 
     vendor_id = data.get("vendor_id")
     product_id = data.get("product_id")
     quantity = data.get("quantity")   
     selected_sugar = data.get("selected_sugar")
     selected_ice = data.get("selected_ice")
-    selected_size = data.get("selected_size")
+    
+    raw_size = data.get("selected_size")
+    selected_size_str = ""
+    
+    if isinstance(raw_size, dict):
+        selected_size_str = raw_size.get("name", "") # 取出 "M"
+    else:
+        selected_size_str = str(raw_size) # 確保是字串
 
     if not vendor_id:
-        return jsonify({"message": "缺少 vendor_id ",
-                        "success": False}), 400
+        return jsonify({"message": "缺少 vendor_id", "success": False}), 400
 
     try:
         cart = get_user_cart(customer_id, vendor_id)
     except Exception as e:
-        return jsonify({"message": f"{e}",
-                        "success": False}), 404
+        return jsonify({"message": f"{e}", "success": False}), 404
     
-
     if cart.vendor_id != vendor_id:
         cart.clear()
         cart.vendor_id = vendor_id
 
     cart_id = customer_id
 
-    if not all([product_id, quantity, selected_sugar, selected_ice, selected_size]):
-        return jsonify({"message": "缺少必要欄位 (product_id, quantity, selected_sugar...)",
-                        "success": False
-                        }), 400
+    # 注意：這裡驗證要用 selected_size_str
+    if not all([product_id, quantity, selected_sugar, selected_ice, selected_size_str]):
+        return jsonify({
+            "message": "缺少必要欄位 (product_id, quantity, selected_sugar...)", 
+            "success": False
+        }), 400
+    
     
     new_cart_item = Cart_Item(
         cart_id = cart_id,
@@ -80,7 +74,9 @@ def add_to_cart():
         quantity = quantity,
         selected_sugar = selected_sugar,
         selected_ice = selected_ice,
-        selected_size = selected_size
+        
+        # [關鍵修改] 這裡一定要存字串，不能存物件
+        selected_size = selected_size_str 
     )
 
     try:
@@ -88,9 +84,8 @@ def add_to_cart():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": f"資料庫錯誤: {str(e)}",
-                        "success": False
-                        }), 500
+        print(f"Error adding to cart: {e}") # 建議印出錯誤以便除錯
+        return jsonify({"message": f"資料庫錯誤: {str(e)}", "success": False}), 500
     
     return jsonify({"message": "新增商品成功", "success": True}), 200
     
@@ -172,7 +167,28 @@ def view_cart(cart_id : int):
             product = item.product
 
             if product:
-                item_sub_price = product.price * item.quantity
+                # --- 修改開始：計算尺寸加價 ---
+                size_delta = 0
+                
+                # 1. 確保該產品有設定尺寸選項
+                if product.sizes_option and product.sizes_option.options:
+                    # 2. 解析尺寸字串為列表 ["S", "M", "L"]
+                    size_list = [s.strip() for s in product.sizes_option.options.split(',') if s.strip()]
+                    
+                    # 3. 找出 user 選的尺寸在列表中的位置 (Index)
+                    # item.selected_size 應該存的是字串 "M"
+                    if item.selected_size in size_list:
+                        index = size_list.index(item.selected_size)
+                        # 4. 計算加價：第 0 個 +0，第 1 個 +10，第 2 個 +20...
+                        size_delta = index * 10
+                
+                # 5. 計算正確的單價 (基本價 + 尺寸加價)
+                final_unit_price = product.price + size_delta
+                
+                # 6. 計算小計
+                item_sub_price = final_unit_price * item.quantity
+                # --- 修改結束 ---
+
                 total_price += item_sub_price
 
                 result_list.append({
@@ -183,7 +199,10 @@ def view_cart(cart_id : int):
                     "product_name": product.name,
                     "product_image": product.image_url,
 
-                    "price": product.price,
+                    "price": final_unit_price, # 這裡回傳加價後的單價給前端顯示比較清楚
+                    "base_price": product.price, # (選填) 如果前端想顯示原價可回傳這個
+                    "size_delta": size_delta,    # (選填) 顯示加了多少錢
+                    
                     "quantity": item.quantity,
                     "subtotal": item_sub_price,
 
@@ -247,6 +266,7 @@ def clean_cart():
 
 
 #================ guest user ================
+@require_login(role=["guest"]) # 假設你有 guest 裝飾器，或者直接拿掉裝飾器
 def add_to_cart_guest():
     data = request.get_json()
     
@@ -255,16 +275,27 @@ def add_to_cart_guest():
     quantity = data.get("quantity")   
     selected_sugar = data.get("selected_sugar")
     selected_ice = data.get("selected_ice")
-    selected_size = data.get("selected_size")
+    
+    # --- [修改 1] 處理 selected_size (物件轉字串) ---
+    raw_size = data.get("selected_size")
+    selected_size_str = ""
+    
+    if isinstance(raw_size, dict):
+        selected_size_str = raw_size.get("name", "")
+    else:
+        selected_size_str = str(raw_size)
+    # ---------------------------------------------
     
     if not vendor_id:
-        return jsonify({"message": "缺少 vendor_id ",
-                        "success": False}), 400
+        return jsonify({"message": "缺少 vendor_id ", "success": False}), 400
         
-    if not all([product_id, quantity, selected_sugar, selected_ice, selected_size]):
-        return jsonify({"message": "缺少必要欄位 (product_id, quantity, selected_sugar...)",
-                        "success": False
-                        }), 400
+    # 注意：這裡驗證要用 selected_size_str
+    if not all([product_id, quantity, selected_sugar, selected_ice, selected_size_str]):
+        return jsonify({
+            "message": "缺少必要欄位 (product_id, quantity, selected_sugar...)",
+            "success": False
+        }), 400
+
     if "cart" not in session:
         session["cart"] = {
             "vendor_id" : vendor_id,
@@ -283,7 +314,9 @@ def add_to_cart_guest():
         "quantity": quantity,
         "selected_sugar": selected_sugar,
         "selected_ice": selected_ice,
-        "selected_size": selected_size
+        
+        # [關鍵] 存入處理過的字串
+        "selected_size": selected_size_str
     })
     
     session.modified = True
@@ -433,7 +466,7 @@ def view_cart_guest(*args, **kwargs):
 
     total_price = 0
     result = []
-    # try:
+    
     for item in session["cart"]["items"]:
         try:
             product = Product.query.get(item["product_id"])
@@ -444,10 +477,29 @@ def view_cart_guest(*args, **kwargs):
             }), 500
 
         if not product:
-            # Should not happen, but handle it gracefully
             continue
 
-        item_sub_price = product.price * item["quantity"]
+        # --- [修改 2] 計算尺寸加價 (Index * 10) ---
+        size_delta = 0
+        current_size_name = item["selected_size"] # 這裡是字串 "M"
+
+        if product.sizes_option and product.sizes_option.options:
+            # 1. 解析 DB 中的選項列表
+            size_list = [s.strip() for s in product.sizes_option.options.split(',') if s.strip()]
+            
+            # 2. 找出目前尺寸的 Index
+            if current_size_name in size_list:
+                index = size_list.index(current_size_name)
+                # 3. 計算加價
+                size_delta = index * 10
+        
+        # 4. 算出最終單價
+        final_unit_price = product.price + size_delta
+        
+        # 5. 算出該項目的小計
+        item_sub_price = final_unit_price * item["quantity"]
+        # ----------------------------------------
+
         total_price += item_sub_price
 
         result.append({
@@ -458,7 +510,11 @@ def view_cart_guest(*args, **kwargs):
             "product_name": product.name,
             "product_image": product.image_url,
 
-            "price": product.price,
+            # 回傳加價後的單價
+            "price": final_unit_price,
+            "base_price": product.price, # (可選) 讓前端知道原價
+            "size_delta": size_delta,    # (可選) 讓前端知道加了多少
+            
             "quantity": item["quantity"],
             "subtotal": item_sub_price,
 
@@ -470,13 +526,8 @@ def view_cart_guest(*args, **kwargs):
     return jsonify({
         "message": "success",
         "success": True,
-        "total_price": total_price,
+        "total_amount": total_price, # 注意：我把這裡的 key 統一改成 total_amount 跟會員版一樣，若前端用 total_price 請自行改回
         "data": result
     }), 200
-    # except Exception as e:
-    #     return jsonify({
-    #         "message": str(e),
-    #         "success": False
-    #     }), 500
 
 

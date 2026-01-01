@@ -122,14 +122,35 @@ def store_and_calculate_item(new_order, item):
     if not product:
         raise ValueError(f"project ID {item.product_id} do not exist。")
 
-    unit_price = product.price
+    # --- [修改] 計算單價 (含尺寸加價) ---
+    size_delta = 0
+    selected_size_str = item.selected_size # 這裡是字串 "M"
+
+    # 1. 確保該產品有設定尺寸選項
+    if product.sizes_option and product.sizes_option.options:
+        # 2. 解析尺寸字串為列表 ["S", "M", "L"]
+        size_list = [s.strip() for s in product.sizes_option.options.split(',') if s.strip()]
+        
+        # 3. 找出選中尺寸的 Index
+        if selected_size_str in size_list:
+            index = size_list.index(selected_size_str)
+            # 4. 計算加價：第 0 個 +0，第 1 個 +10...
+            size_delta = index * 10
+    
+    # 5. 計算正確單價
+    unit_price = product.price + size_delta
+    # --------------------------------
+
     items_price = unit_price * item.quantity 
     
     new_order_item = Order_Item(
         order_id = new_order.id,
         product_id = item.product_id,
         quantity = item.quantity,
-        price = unit_price,
+        
+        # 這裡存入的 price 必須是 "加價後" 的單價
+        price = unit_price, 
+        
         selected_sugar = item.selected_sugar,
         selected_ice = item.selected_ice,
         selected_size = item.selected_size,
