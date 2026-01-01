@@ -154,6 +154,12 @@ type UpdateVendorDescriptionReq = {
 	description: string;
 };
 
+export interface UpdateVendorManagerReq {
+  name: string;
+  email: string;
+  phone_number: string;
+}
+
 export const useUpdateVendorDescription = () => {
 	const qc = useQueryClient();
 
@@ -166,6 +172,21 @@ export const useUpdateVendorDescription = () => {
 			// 更新會在下次登入時反映
 		},
 	});
+};
+
+export const useUpdateVendorManagerInfo = () => {
+  const qc = useQueryClient();
+
+  return useMutation<any, ApiErrorBody, UpdateVendorManagerReq>({
+    mutationFn: async (payload) => {
+      const res = await api.patch("/vendor/manager", payload);
+      return res.data;
+    },
+    onSuccess: () => {
+      // 如果之後你有 useVendorInfo，可以在這裡 invalidate
+      // qc.invalidateQueries({ queryKey: ["vendor-info"] });
+    },
+  });
 };
 
 type UpdateProductFieldsPayload = {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useCurrentUser, useLogout, useUpdateUser } from "@/hooks/auth/user";
-import { useUpdateVendorDescription } from "@/hooks/auth/vendor";
+import { useUpdateVendorDescription, useUpdateVendorManagerInfo } from "@/hooks/auth/vendor";
 import { useNavigate } from "react-router-dom";
 import styles from "./Profile.module.scss";
 
@@ -16,36 +16,49 @@ export default function Profile() {
   const userQuery = useCurrentUser();
   const updateUserMutation = useUpdateUser();
   const updateVendorDescMutation = useUpdateVendorDescription();
+  const updateVendorManagerMutation = useUpdateVendorManagerInfo();
 
-  const user = userQuery.data as User;
+  const user = userQuery.data;
 
   const [formData, setFormData] = useState({
     name: "",
     phone_number: "",
     address: "",
-    description: "",
   });
 
-  useEffect(() => {
-    if (user) {
-      let initialDescription = "";
-      let initialAddress = "";
+const [vendorDesc, setVendorDesc] = useState("");
 
-      if (user.role === UserRole.VENDOR) {
-        initialDescription = user.description ?? "";
-        initialAddress = user.address ?? "";
-      } else if (user.role === UserRole.CUSTOMER) {
-        initialAddress = user.address ?? "";
-      }
+const [managerForm, setManagerForm] = useState({
+  name: "",
+  email: "",
+  phone_number: "",
+});
 
-      setFormData({
-        name: user.name ?? "",
-        phone_number: user.phone_number ?? "",
-        address: initialAddress,
-        description: initialDescription,
-      });
-    }
-  }, [user]);
+const [logoFile, setLogoFile] = useState<File | null>(null);
+const [logoPreview, setLogoPreview] = useState<string | null>(null);
+	
+
+useEffect(() => {
+ 	if (!user) return;
+
+  	setFormData({
+    	name: user.name ?? "",
+    	phone_number: user.phone_number ?? "",
+    	address:
+      		user.role === UserRole.CUSTOMER || user.role === UserRole.VENDOR
+        	? user.address ?? ""
+        	: "",
+  	});
+
+	if (user?.role === UserRole.VENDOR) {
+ 		setVendorDesc(user.description ?? "");
+		setManagerForm({
+      name: user.vendor_manager?.name ?? "",
+      email: user.vendor_manager?.email ?? "",
+      phone_number: user.vendor_manager?.phone_number ?? "",
+    });
+	}
+}, [user]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -53,6 +66,27 @@ export default function Profile() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  setLogoFile(file);
+  setLogoPreview(URL.createObjectURL(file));
+};
+
+const handleVendorChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+) => {
+  setVendorDesc(e.target.value);
+};
+
+  const handleManagerChange = (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  const { name, value } = e.target;
+  setManagerForm(prev => ({ ...prev, [name]: value }));
+};
 
   const handleSave = async () => {
     if (!user) return;
@@ -72,14 +106,13 @@ export default function Profile() {
       await updateUserMutation.mutateAsync(basicData);
 
       // 3. Vendor 需要另外更新 description
-      if (user.role === UserRole.VENDOR) {
-        const vendorUser = user as any;
-        if (formData.description !== (vendorUser.description || "")) {
-          await updateVendorDescMutation.mutateAsync({
-            description: formData.description,
-          });
-        }
-      }
+	if (user.role === UserRole.VENDOR) {
+  		await updateVendorDescMutation.mutateAsync({
+    		description: vendorDesc,
+  		});
+	}
+
+	await userQuery.refetch();
 
       alert("資料更新成功！");
     } catch (err: any) {
@@ -107,6 +140,8 @@ export default function Profile() {
     }
     return `${DEFAULT_AVATAR}${user.name}`;
   };
+
+
 
   return (
     <>
@@ -150,6 +185,8 @@ export default function Profile() {
             )}
           </h2>
 
+
+
           <div className={styles.formGroup}>
             <label>姓名 / 名稱</label>
             <input
@@ -181,13 +218,33 @@ export default function Profile() {
             </div>
           )}
 
+		{user.role === UserRole.VENDOR && (
+		<div className={styles.formGroup}>
+			<label>商家 Logo</label>
+
+			<div className={styles.logoUpload}>
+			<img
+				src={logoPreview || getAvatarSrc()}
+				alt="Logo preview"
+				className={styles.logoPreview}
+			/>
+
+			<input
+				type="file"
+				accept="image/*"
+				onChange={handleLogoChange}
+			/>
+			</div>
+		</div>
+		)}
+
           {user.role === UserRole.VENDOR && (
             <div className={styles.formGroup}>
               <label>商家描述 (選填)</label>
               <textarea
                 name="description"
-                value={formData.description}
-                onChange={handleInputChange}
+                value={vendorDesc}
+                onChange={handleVendorChange}
                 placeholder="請輸入商家簡介..."
                 maxLength={200}
                 rows={4}
@@ -205,10 +262,80 @@ export default function Profile() {
                   color: "#888",
                 }}
               >
-                {formData.description.length} / 200
+                {vendorDesc.length} / 200
               </div>
             </div>
           )}
+		{user.role === UserRole.VENDOR && (
+  <div className={styles.formGroup}>
+    <label style={{ fontWeight: "bold" }}>商家負責人資訊</label>
+
+    	<input
+		  name="name"
+    	  type="text"
+    	  placeholder="負責人姓名"
+		  value={managerForm.name}
+    	  onChange={handleManagerChange}
+    	  style={{ marginBottom: "8px" }}
+    />
+
+    	<input
+		  name="email"
+    	  type="email"
+    	  placeholder="負責人 Email"
+    	  value={managerForm.email}
+    	  onChange={handleManagerChange}
+    	  style={{ marginBottom: "8px" }}
+    	/>
+
+    	<input
+		  name="phone_number"
+    	  type="text"
+    	  placeholder="負責人電話"
+    	  value={managerForm.phone_number}
+    	  onChange={handleManagerChange}
+    	/>
+
+    		<button
+      			style={{ marginTop: "10px" }}
+      			onClick={async () => {
+        			try {
+          				await updateVendorManagerMutation.mutateAsync(managerForm);
+          				await userQuery.refetch();
+          				alert("負責人資訊已儲存");
+        			} catch (e) {
+          				alert("儲存失敗");
+        			}
+      			}}
+      			disabled={updateVendorManagerMutation.isPending}
+    		>
+      			{updateVendorManagerMutation.isPending
+        			? "更新中..."
+        			: "儲存負責人資訊"}
+    		</button>
+
+    		{updateVendorManagerMutation.isError && (
+      			<p style={{ color: "red", marginTop: "6px" }}>
+        			更新失敗，請確認資料是否正確
+      			</p>
+    		)}
+			<div
+      			style={{
+    		    marginTop: "12px",
+    		    padding: "10px",
+    		    background: "#2b2b2b",
+    		    borderRadius: "6px",
+    		    fontSize: "0.85rem",
+    		    color: "#ccc",
+    		  }}
+    		>
+    		  <strong>目前已儲存：</strong>
+    		  <div>姓名：{user.vendor_manager?.name || "尚未設定"}</div>
+    		  <div>Email：{user.vendor_manager?.email || "尚未設定"}</div>
+    		  <div>電話：{user.vendor_manager?.phone_number || "尚未設定"}</div>
+    </div>
+  		</div>
+		)}
 
           <button
             className={styles.saveBtn}

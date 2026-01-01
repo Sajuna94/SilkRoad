@@ -19,11 +19,19 @@ export interface Admin extends BaseUser {
   role: UserRole.ADMIN;
 }
 
+export interface VendorManager {
+  id: number;
+  name: string;
+  email: string;
+  phone_number: string;
+}
+
 export interface Vendor extends BaseUser {
   role: UserRole.VENDOR;
   revenue: number;
   address: string;
   vendor_manager_id: number;
+  vendor_manager?: VendorManager;
   logo_url?: string;
   description?: string;
   is_active: boolean;
