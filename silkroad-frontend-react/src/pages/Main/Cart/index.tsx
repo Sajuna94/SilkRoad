@@ -14,6 +14,7 @@ import { useCurrentUser } from "@/hooks/auth/user";
 import { useViewDiscountPolicies } from "@/hooks/order/discount";
 import type { Product } from "@/types/store";
 import type { DiscountPolicy } from "@/types/order";
+import type { Customer } from "@/types/user";
 
 export default function Cart() {
     const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function Cart() {
     // 預填用戶地址
     useEffect(() => {
         if (currentUser) {
-            setAddress(currentUser.address || "");
+            setAddress((currentUser as Customer).address || "");
         }
     }, [currentUser]);
 
@@ -230,6 +231,7 @@ export default function Cart() {
                     paymentMethod={paymentMethod}
                     setPaymentMethod={setPaymentMethod}
                     selectedPolicy={selectedPolicy}
+                    setSelectedPolicy={setSelectedPolicy}
                     availablePolicies={availablePolicies}
                     onSelectPolicy={() => setShowPolicyModal(true)}
                     currentUser={currentUser}
@@ -269,8 +271,8 @@ export default function Cart() {
                         {createOrderMutation.isPending
                             ? "處理中..."
                             : !currentUser
-                            ? "登入後結帳"
-                            : "結帳"
+                                ? "登入後結帳"
+                                : "結帳"
                         }
                     </button>
                 </div>
@@ -317,7 +319,7 @@ function CartList({
         });
     };
 
-    const handleUpdateSubmit = async (product: Product, form: { size: string; ice: string; sugar: string; quantity: number }) => {
+    const handleUpdateSubmit = async (form: { size: string; ice: string; sugar: string; quantity: number }) => {
         if (!editingCartItemId) return;
 
         try {
@@ -402,6 +404,7 @@ function Sidebar({
     paymentMethod,
     setPaymentMethod,
     selectedPolicy,
+    setSelectedPolicy,
     availablePolicies,
     onSelectPolicy,
     currentUser,
@@ -415,6 +418,7 @@ function Sidebar({
     paymentMethod: 'cash' | 'button';
     setPaymentMethod: (method: 'cash' | 'button') => void;
     selectedPolicy: DiscountPolicy | null;
+    setSelectedPolicy: (policy: DiscountPolicy | null) => void;
     availablePolicies: DiscountPolicy[];
     onSelectPolicy: () => void;
     currentUser: any;

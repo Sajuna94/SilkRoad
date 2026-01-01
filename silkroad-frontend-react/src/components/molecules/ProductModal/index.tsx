@@ -19,7 +19,7 @@ interface FormState {
 }
 
 interface ProductModalProps {
-    onSubmit?: (product: Product, form: FormState) => Promise<void> | void;
+    onSubmit?: (form: FormState) => Promise<void> | void;
     submitText?: string;
 }
 
@@ -89,7 +89,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(({ on
         if (!onSubmit) return;
         try {
             setPending(true);
-            await onSubmit(product, form);
+            await onSubmit(form);
             dialogRef.current?.close();
         } finally {
             setPending(false);
