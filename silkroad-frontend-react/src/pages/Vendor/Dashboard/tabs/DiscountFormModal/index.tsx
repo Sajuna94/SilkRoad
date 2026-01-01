@@ -159,7 +159,9 @@ export default function PostDiscount({
           <div className={styles.inputGroup}>
             <label htmlFor="code">
               折扣代碼
-              <span style={{ fontSize: '0.85em', color: '#666', marginLeft: '8px' }}>
+              <span
+                style={{ fontSize: "0.85em", color: "#666", marginLeft: "8px" }}
+              >
                 ({formData.code.length}/20 字元)
               </span>
             </label>
