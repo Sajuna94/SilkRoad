@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import StarRating from "../atoms/StarRating";
+import StarRating from "../../atoms/StarRating";
 import styles from "./ReviewItem.module.scss";
 
 interface ReviewItemProps {
@@ -29,7 +29,7 @@ export default function ReviewItem({
       <div className={styles.footer}>
         <div className={styles.orderInfo}>
           訂單編號：
-          <Link to={`/user/orders/${orderId}`}>#{orderId}</Link>
+          <Link to={`/orders/${orderId}`}>#{orderId}</Link>
         </div>
 
         <div className={styles.date}>{date}</div>

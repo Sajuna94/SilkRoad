@@ -1,0 +1,58 @@
+.container {
+  background: #fff;
+  padding: 24px;
+  border-radius: 16px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.ratingWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  resize: none;
+  outline: none;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #fbbf24;
+  }
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 12px;
+  background: #fbbf24;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: #f59e0b;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}

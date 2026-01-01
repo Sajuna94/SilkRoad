@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery";
-import ReviewInput from "@/components/molecules/ReviewInput";
+import ReviewInput from "@/components/molecules/ReviewInput/ReviewInput";
 import { useVendor, useVendorProductsByVendorId } from "@/hooks/auth/vendor";
 import { useCurrentUser } from "@/hooks/auth/user";
 import styles from "./ProductList.module.scss";
