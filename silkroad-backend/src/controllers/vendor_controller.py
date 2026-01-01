@@ -15,7 +15,7 @@ from models import (
 from config.database import db
 from utils import require_login
 
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import joinedload
 
