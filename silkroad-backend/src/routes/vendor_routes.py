@@ -13,7 +13,8 @@ from controllers import (
     get_public_vendors,
     update_vendor_description,
     update_vendor_manager_info,
-    get_info
+    get_info,
+    view_customer_discounts
 )
 vendor_routes = Blueprint('vendor', __name__)
 
@@ -229,6 +230,45 @@ data包含
     "membership_limit": policy.membership_limit,
     "expiry_date": formatted_date
     }
+
+'''
+
+vendor_routes.route("/view_discount", methods=["POST"])(view_customer_discounts)
+'''
+需要{
+    "vendor_id": int
+}
+
+回傳
+
+失敗
+{
+    "message": "請先登入 或 系統錯誤訊息",
+    "success": False
+}
+or
+
+成功
+{
+    "success": True,
+    "count": 2,
+    "data": [
+        {
+            "policy_id": int,
+            "vendor_id": int,
+            "code": str,
+            "type": str,
+            "value": float,
+            "min_purchase": int,
+            "max_discount": int,
+            "expiry_date": int,
+            "status": str 'used' 或 'available'
+        },
+        {
+        ...... 可能有多個
+        }
+    ]
+}
 
 '''
 
