@@ -444,6 +444,7 @@ def view_all_user_orders():
                 "total_price": order.total_price,
                 "discount_amount": order.discount_amount,
                 "is_completed": order.is_completed,
+                "refund_status": str(order.refund_status) if order.refund_status else None,
                 "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                 "items": items_in_this_order 
             })

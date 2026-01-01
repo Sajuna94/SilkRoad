@@ -157,6 +157,7 @@ result_list 包含一個或多個
     "discount_amount": order.discount_amount, (int)
     "is_completed": order.is_completed, (boolean)
     "is_delivered": order.is_delivered, (boolean)
+    "refund_status": str(order.refund_status) if order.refund_status else None, (ENUM(str))
     "payment_methods": str(order.payment_methods), (ENUM(str))
     "refund_status": str(order.refund_status) if order.refund_status else None, (ENUM(str))
     "note": order.note, (text(str))
