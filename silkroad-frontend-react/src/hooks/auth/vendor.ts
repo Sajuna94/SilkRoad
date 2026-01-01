@@ -183,11 +183,33 @@ export const useUpdateVendorManagerInfo = () => {
       return res.data;
     },
     onSuccess: () => {
-      // 如果之後你有 useVendorInfo，可以在這裡 invalidate
-      // qc.invalidateQueries({ queryKey: ["vendor-info"] });
+      // 刷新當前用戶資訊，讓負責人資訊能夠立即更新
+      qc.invalidateQueries({ queryKey: ["currentUser"] });
     },
   });
 };
+
+// 添加到現有的vendor.ts文件中
+
+export const useUpdateVendorLogo = () => {
+  const qc = useQueryClient();
+
+  return useMutation<any, ApiErrorBody, FormData>({
+    mutationFn: async (formData) => {
+      const res = await api.patch("/vendor/logo", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      // 刷新當前用戶資訊，讓logo能夠立即更新
+      qc.invalidateQueries({ queryKey: ["currentUser"] });
+    },
+  });
+};
+
 
 type UpdateProductFieldsPayload = {
 	product_id: number;

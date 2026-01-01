@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useCurrentUser, useLogout, useUpdateUser } from "@/hooks/auth/user";
-import { useUpdateVendorDescription, useUpdateVendorManagerInfo } from "@/hooks/auth/vendor";
+import { useUpdateVendorDescription, useUpdateVendorManagerInfo, useUpdateVendorLogo } from "@/hooks/auth/vendor";
 import { useNavigate } from "react-router-dom";
 import styles from "./Profile.module.scss";
 
@@ -17,6 +17,7 @@ export default function Profile() {
   const updateUserMutation = useUpdateUser();
   const updateVendorDescMutation = useUpdateVendorDescription();
   const updateVendorManagerMutation = useUpdateVendorManagerInfo();
+  const updateVendorLogoMutation = useUpdateVendorLogo();
 
   const user = userQuery.data;
 
@@ -26,39 +27,43 @@ export default function Profile() {
     address: "",
   });
 
-const [vendorDesc, setVendorDesc] = useState("");
+  const [vendorDesc, setVendorDesc] = useState("");
 
-const [managerForm, setManagerForm] = useState({
-  name: "",
-  email: "",
-  phone_number: "",
-});
+  const [managerForm, setManagerForm] = useState({
+    name: "",
+    email: "",
+    phone_number: "",
+  });
 
-const [logoFile, setLogoFile] = useState<File | null>(null);
-const [logoPreview, setLogoPreview] = useState<string | null>(null);
-	
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-useEffect(() => {
- 	if (!user) return;
+  useEffect(() => {
+    if (!user) return;
 
-  	setFormData({
-    	name: user.name ?? "",
-    	phone_number: user.phone_number ?? "",
-    	address:
-      		user.role === UserRole.CUSTOMER || user.role === UserRole.VENDOR
-        	? user.address ?? ""
-        	: "",
-  	});
-
-	if (user?.role === UserRole.VENDOR) {
- 		setVendorDesc(user.description ?? "");
-		setManagerForm({
-      name: user.vendor_manager?.name ?? "",
-      email: user.vendor_manager?.email ?? "",
-      phone_number: user.vendor_manager?.phone_number ?? "",
+    setFormData({
+      name: user.name ?? "",
+      phone_number: user.phone_number ?? "",
+      address:
+        user.role === UserRole.CUSTOMER || user.role === UserRole.VENDOR
+          ? user.address ?? ""
+          : "",
     });
-	}
-}, [user]);
+
+    if (user?.role === UserRole.VENDOR) {
+      setVendorDesc(user.description ?? "");
+      setManagerForm({
+        name: user.vendor_manager?.name ?? "",
+        email: user.vendor_manager?.email ?? "",
+        phone_number: user.vendor_manager?.phone_number ?? "",
+      });
+      
+      // 設置logo預覽
+      if (user.logo_url) {
+        setLogoPreview(user.logo_url);
+      }
+    }
+  }, [user]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -68,25 +73,37 @@ useEffect(() => {
   };
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  setLogoFile(file);
-  setLogoPreview(URL.createObjectURL(file));
-};
+    // 驗證文件類型
+    if (!file.type.startsWith('image/')) {
+      alert('請選擇圖片文件');
+      return;
+    }
 
-const handleVendorChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-) => {
-  setVendorDesc(e.target.value);
-};
+    // 驗證文件大小 (限制5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('圖片大小不能超過 5MB');
+      return;
+    }
+
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
+
+  const handleVendorChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setVendorDesc(e.target.value);
+  };
 
   const handleManagerChange = (
-  e: React.ChangeEvent<HTMLInputElement>
-) => {
-  const { name, value } = e.target;
-  setManagerForm(prev => ({ ...prev, [name]: value }));
-};
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name, value } = e.target;
+    setManagerForm(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleSave = async () => {
     if (!user) return;
@@ -105,15 +122,29 @@ const handleVendorChange = (
 
       await updateUserMutation.mutateAsync(basicData);
 
-      // 3. Vendor 需要另外更新 description
-	if (user.role === UserRole.VENDOR) {
-  		await updateVendorDescMutation.mutateAsync({
-    		description: vendorDesc,
-  		});
-	}
+      // 3. Vendor 需要另外更新 description、manager info 和 logo
+      if (user.role === UserRole.VENDOR) {
+        // 更新商家描述
+        await updateVendorDescMutation.mutateAsync({
+          description: vendorDesc,
+        });
 
-	await userQuery.refetch();
+        // 更新負責人資訊（只要有任一欄位不為空就更新）
+        if (managerForm.name || managerForm.email || managerForm.phone_number) {
+          await updateVendorManagerMutation.mutateAsync(managerForm);
+        }
 
+        // 更新 logo（如果有選擇新文件）
+        if (logoFile) {
+          const formData = new FormData();
+          formData.append('logo', logoFile);
+          await updateVendorLogoMutation.mutateAsync(formData);
+          // 清除本地預覽，使用新上傳的URL
+          setLogoFile(null);
+        }
+      }
+
+      await userQuery.refetch();
       alert("資料更新成功！");
     } catch (err: any) {
       console.error("更新失敗:", err);
@@ -127,6 +158,11 @@ const handleVendorChange = (
     });
   };
 
+  const handleRemoveLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(user?.role === UserRole.VENDOR && user.logo_url ? user.logo_url : null);
+  };
+
   if (userQuery.isLoading) return <p>Loading...</p>;
   if (!user) return <p>請先登入</p>;
 
@@ -135,13 +171,17 @@ const handleVendorChange = (
     user.is_active === false;
 
   const getAvatarSrc = () => {
+    // 如果有預覽圖片（新上傳的），優先使用預覽
+    if (logoPreview) return logoPreview;
+    
+    // 如果是商家且有logo_url，使用logo
     if (user.role === UserRole.VENDOR && user.logo_url) {
       return user.logo_url;
     }
+    
+    // 否則使用默認頭像
     return `${DEFAULT_AVATAR}${user.name}`;
   };
-
-
 
   return (
     <>
@@ -158,7 +198,10 @@ const handleVendorChange = (
       <section className={styles.profileContainer}>
         <div className={styles.leftPanel}>
           {/* 錯誤提示 */}
-          {(updateUserMutation.isError || updateVendorDescMutation.isError) && (
+          {(updateUserMutation.isError || 
+            updateVendorDescMutation.isError || 
+            updateVendorManagerMutation.isError ||
+            updateVendorLogoMutation.isError) && (
             <div
               style={{
                 backgroundColor: "#fee",
@@ -171,6 +214,8 @@ const handleVendorChange = (
             >
               {updateUserMutation.error?.response?.data?.message ||
                 updateVendorDescMutation.error?.response?.data?.message ||
+                updateVendorManagerMutation.error?.response?.data?.message ||
+                updateVendorLogoMutation.error?.response?.data?.message ||
                 "更新失敗，請稍後再試"}
             </div>
           )}
@@ -184,8 +229,6 @@ const handleVendorChange = (
               <span style={{ fontSize: "0.8rem", color: "#666" }}>(商家)</span>
             )}
           </h2>
-
-
 
           <div className={styles.formGroup}>
             <label>姓名 / 名稱</label>
@@ -218,25 +261,68 @@ const handleVendorChange = (
             </div>
           )}
 
-		{user.role === UserRole.VENDOR && (
-		<div className={styles.formGroup}>
-			<label>商家 Logo</label>
-
-			<div className={styles.logoUpload}>
-			<img
-				src={logoPreview || getAvatarSrc()}
-				alt="Logo preview"
-				className={styles.logoPreview}
-			/>
-
-			<input
-				type="file"
-				accept="image/*"
-				onChange={handleLogoChange}
-			/>
-			</div>
-		</div>
-		)}
+          {user.role === UserRole.VENDOR && (
+            <div className={styles.formGroup}>
+              <label>商家 Logo</label>
+              <div className={styles.logoUpload}>
+                <img
+                  src={getAvatarSrc()}
+                  alt="Logo preview"
+                  className={styles.logoPreview}
+                  style={{
+                    width: "120px",
+                    height: "120px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    border: "2px solid #ddd",
+                    marginBottom: "10px"
+                  }}
+                />
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    style={{ display: "none" }}
+                    id="logo-input"
+                  />
+                  <label 
+                    htmlFor="logo-input"
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "14px"
+                    }}
+                  >
+                    選擇圖片
+                  </label>
+                  {logoFile && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveLogo}
+                      style={{
+                        padding: "8px 16px",
+                        backgroundColor: "#dc3545",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "14px"
+                      }}
+                    >
+                      取消
+                    </button>
+                  )}
+                </div>
+                <small style={{ color: "#666", marginTop: "5px", display: "block" }}>
+                  支援 JPG, PNG, GIF 格式，檔案大小限制 5MB
+                </small>
+              </div>
+            </div>
+          )}
 
           {user.role === UserRole.VENDOR && (
             <div className={styles.formGroup}>
@@ -266,86 +352,53 @@ const handleVendorChange = (
               </div>
             </div>
           )}
-		{user.role === UserRole.VENDOR && (
-  <div className={styles.formGroup}>
-    <label style={{ fontWeight: "bold" }}>商家負責人資訊</label>
 
-    	<input
-		  name="name"
-    	  type="text"
-    	  placeholder="負責人姓名"
-		  value={managerForm.name}
-    	  onChange={handleManagerChange}
-    	  style={{ marginBottom: "8px" }}
-    />
+          {user.role === UserRole.VENDOR && (
+            <div className={styles.formGroup}>
+              <label style={{ fontWeight: "bold" }}>商家負責人資訊</label>
 
-    	<input
-		  name="email"
-    	  type="email"
-    	  placeholder="負責人 Email"
-    	  value={managerForm.email}
-    	  onChange={handleManagerChange}
-    	  style={{ marginBottom: "8px" }}
-    	/>
+              <input
+                name="name"
+                type="text"
+                placeholder="負責人姓名"
+                value={managerForm.name}
+                onChange={handleManagerChange}
+                style={{ marginBottom: "8px" }}
+              />
 
-    	<input
-		  name="phone_number"
-    	  type="text"
-    	  placeholder="負責人電話"
-    	  value={managerForm.phone_number}
-    	  onChange={handleManagerChange}
-    	/>
+              <input
+                name="email"
+                type="email"
+                placeholder="負責人 Email"
+                value={managerForm.email}
+                onChange={handleManagerChange}
+                style={{ marginBottom: "8px" }}
+              />
 
-    		<button
-      			style={{ marginTop: "10px" }}
-      			onClick={async () => {
-        			try {
-          				await updateVendorManagerMutation.mutateAsync(managerForm);
-          				await userQuery.refetch();
-          				alert("負責人資訊已儲存");
-        			} catch (e) {
-          				alert("儲存失敗");
-        			}
-      			}}
-      			disabled={updateVendorManagerMutation.isPending}
-    		>
-      			{updateVendorManagerMutation.isPending
-        			? "更新中..."
-        			: "儲存負責人資訊"}
-    		</button>
-
-    		{updateVendorManagerMutation.isError && (
-      			<p style={{ color: "red", marginTop: "6px" }}>
-        			更新失敗，請確認資料是否正確
-      			</p>
-    		)}
-			<div
-      			style={{
-    		    marginTop: "12px",
-    		    padding: "10px",
-    		    background: "#2b2b2b",
-    		    borderRadius: "6px",
-    		    fontSize: "0.85rem",
-    		    color: "#ccc",
-    		  }}
-    		>
-    		  <strong>目前已儲存：</strong>
-    		  <div>姓名：{user.vendor_manager?.name || "尚未設定"}</div>
-    		  <div>Email：{user.vendor_manager?.email || "尚未設定"}</div>
-    		  <div>電話：{user.vendor_manager?.phone_number || "尚未設定"}</div>
-    </div>
-  		</div>
-		)}
+              <input
+                name="phone_number"
+                type="text"
+                placeholder="負責人電話"
+                value={managerForm.phone_number}
+                onChange={handleManagerChange}
+              />
+            </div>
+          )}
 
           <button
             className={styles.saveBtn}
             onClick={handleSave}
             disabled={
               updateUserMutation.isPending ||
-              updateVendorDescMutation.isPending
+              updateVendorDescMutation.isPending ||
+              updateVendorManagerMutation.isPending ||
+              updateVendorLogoMutation.isPending
             }
           >
-            {updateUserMutation.isPending || updateVendorDescMutation.isPending
+            {updateUserMutation.isPending || 
+             updateVendorDescMutation.isPending || 
+             updateVendorManagerMutation.isPending ||
+             updateVendorLogoMutation.isPending
               ? "儲存中..."
               : "儲存修改"}
           </button>
@@ -400,6 +453,7 @@ const handleVendorChange = (
                   <strong>帳號狀態：</strong>{" "}
                   {user.is_active ? "營業中" : "停權中"}
                 </p>
+                {/* 移除負責人資訊顯示區塊 */}
               </>
             )}
 

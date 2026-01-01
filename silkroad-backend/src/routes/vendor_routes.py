@@ -381,4 +381,6 @@ else:
     "success": False
 }
 """
+#vendor_routes.route('/logo', methods=['PATCH'])(update_vendor_logo)
+
 vendor_routes.route('/<int:vendor_id>', methods=['GET'])(get_info)
