@@ -1,85 +1,118 @@
 $color-header-title: #333;
 $color-main-bg: #fdfdfd;
-// cart item
-$color-item-hover: #ddd;
+$color-item-hover: #f3f3f3;
 $color-item-name: #282828;
-$color-item-options: #414141;
+$color-item-options: #666;
 $color-item-price: #1d1d1d;
 $color-item-quantity: #7f20ac;
-
-// $color-item: #f77070;
-$color-item-chose: #70f7da;
+$color-primary: #8a3e3e;
+$color-primary-dark: #6f2c2c;
+$color-item-chose: #e0f2f1;
 
 h3 {
   margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: $color-item-name;
 }
 
 .container {
   display: flex;
   flex-direction: column;
-  max-width: 980px;
+  max-width: 1100px;
   width: 100%;
-  height: 70vh;
-  margin: auto;
+  height: calc(100vh - 100px);
+  margin: 20px auto;
   padding: 30px;
-  gap: 10px;
+  gap: 20px;
   background-color: $color-main-bg;
-  border-radius: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
   header {
     color: $color-header-title;
     font-size: 1.5rem;
     font-weight: bold;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
   }
 
   main {
     display: flex;
-    gap: 20px;
+    gap: 30px;
+    flex: 1;
     min-height: 0;
     width: 100%;
+    overflow: hidden;
   }
 
   footer {
     display: flex;
-    gap: 10px;
+    align-items: center;
     justify-content: space-between;
+    padding-top: 15px;
+    border-top: 2px solid #eee;
 
     .cartOperation {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      font-size: 0.9rem;
 
-      // a {
-      // 	color: #333;
-      // }
+      a {
+        color: #666;
+        text-decoration: none;
+        cursor: pointer;
+        transition: color 0.2s;
+
+        &:hover {
+          color: $color-primary;
+        }
+      }
 
       span {
-        color: #a98;
+        color: #ccc;
         user-select: none;
       }
     }
 
     .totalArea {
-      gap: 10px;
+      gap: 20px;
       display: flex;
       align-items: center;
 
-      .total {
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #c01818;
+      .summary {
+        display: flex;
+        gap: 15px;
+        align-items: baseline;
+        font-size: 1rem;
+        color: #555;
 
-        &::before {
-          content: "總共 ";
-        }
-
-        &::after {
-          content: " 元";
+        .total {
+          font-size: 1.4rem;
+          font-weight: bold;
+          color: #c01818;
         }
       }
 
       button {
-        padding: 10px 20px;
+        padding: 10px 24px;
+        background-color: $color-primary;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: $color-primary-dark;
+        }
+
+        &:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
       }
     }
   }
@@ -88,58 +121,98 @@ h3 {
 .list {
   flex: 2;
   list-style-type: none;
-  min-width: 300px;
   padding: 0;
   margin: 0;
   overflow-y: auto;
+  padding-right: 10px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 4px;
+  }
 
   .item {
     display: flex;
-    padding: 6px;
+    padding: 15px;
     gap: 15px;
-    border-bottom: 1px solid $color-item-hover;
-    border-radius: 0.5rem;
-    transition: 0.3s;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    transition: all 0.2s;
     cursor: pointer;
 
+    &:hover {
+      border-color: $color-primary;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
     .area {
-      border-radius: 8px;
+      width: 80px;
+      height: 80px;
+      border-radius: 6px;
       overflow: hidden;
-      width: 100px;
+      flex-shrink: 0;
+      background-color: #f5f5f5;
     }
 
     .options {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
 
       h3 {
         color: $color-item-name;
+        margin-bottom: 6px;
       }
 
       div {
+        font-size: 0.9rem;
         color: $color-item-options;
+        display: flex;
+        gap: 10px;
       }
     }
 
     .price {
       text-align: right;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 80px;
 
       h3 {
         color: $color-item-price;
+        margin-bottom: 4px;
       }
 
       .quantity {
         color: $color-item-quantity;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 4px;
 
         &::before {
-          content: "x";
-          // margin-right: 4px;
+          content: "x ";
+        }
+      }
+
+      .btnRemove {
+        color: #d32f2f;
+        font-size: 0.85rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #ffebee;
         }
       }
     }
-  }
-
-  .item:hover {
-    background-color: $color-item-hover;
   }
 }
 
@@ -152,99 +225,268 @@ h3 {
   font-size: 1.1rem;
   background-color: #f9f9f9;
   border-radius: 8px;
+  border: 1px dashed #ddd;
 }
 
 .sidebar {
-  div {
-    // background-color: rgb(137, 226, 196);
-    // border: 1px solid aqua;
-    font-weight: bold;
-  }
-
   flex: 1;
-  min-width: 300px;
-  max-width: 350px;
-
+  min-width: 320px;
+  max-width: 380px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-y: auto;
+  padding-right: 5px;
 
-  .code {
-    display: flex;
-    justify-content: space-between;
-    border: #333 1px solid;
-    padding: 10px;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 4px;
+  }
+
+  .section {
+    background-color: #fff;
+    border: 1px solid #eee;
     border-radius: 8px;
+    padding: 15px;
 
-    input {
-      border: #333 1px solid;
+    h3 {
+      font-size: 1rem;
+      margin-bottom: 12px;
+      color: #555;
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 8px;
+    }
+  }
+
+  .radioGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: #333;
+
+      input[type="radio"] {
+        accent-color: $color-primary;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  .input,
+  .textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #333;
+    background-color: #fff;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: $color-primary;
+      box-shadow: 0 0 0 2px rgba($color-primary, 0.1);
+    }
+  }
+
+  .textarea {
+    height: 80px;
+    resize: none;
+  }
+
+  .policyBtn {
+    width: 100%;
+    padding: 10px;
+    border: 1px dashed $color-primary;
+    background-color: #fff;
+    color: $color-primary;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    text-align: left;
+
+    &:hover:not(:disabled) {
+      background-color: #fff5f5;
+    }
+
+    &:disabled {
+      border-color: #ddd;
+      color: #999;
+      cursor: not-allowed;
+      background-color: #f9f9f9;
+    }
+  }
+
+  .clearPolicyBtn {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #d32f2f;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+
+    &:hover {
+      color: #b71c1c;
+    }
+  }
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modalContent {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+  h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.3rem;
+    color: #333;
+    text-align: center;
+  }
+
+  .policyList {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 4px;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #ddd;
+      border-radius: 4px;
+    }
+  }
+
+  .policyItem {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #fff;
+
+    &:hover {
+      border-color: $color-primary;
+      background-color: #fffbfb;
+    }
+
+    &.selected {
+      border-color: $color-primary;
+      background-color: #fff5f5;
+      box-shadow: 0 0 0 1px $color-primary;
+    }
+
+    .policyHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+
+      .policyCode {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .policyValue {
+        color: $color-primary;
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+    }
+
+    .policyDetails {
+      font-size: 0.85rem;
+      color: #666;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+  }
+
+  .closeBtn {
+    margin-top: 20px;
+    padding: 10px;
+    width: 100%;
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    height: auto;
+    padding: 15px;
+    margin: 10px;
+
+    main {
+      flex-direction: column;
+      overflow: visible;
     }
   }
 
   .list {
-    border: #333 1px solid;
-    padding: 10px;
-    border-radius: 8px;
-    flex: 2;
-    display: flex;
-    flex-direction: column;
-    color: $color-header-title;
-    overflow: hidden;
-
-    hr {
-      width: 100%;
-    }
-
-    ul {
-      flex: 1;
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-      overflow-y: auto;
-      color: $color-header-title;
-
-      li {
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        padding: 10px;
-        border-bottom: 1px solid $color-item-hover;
-        transition: 0.3s;
-
-        .discount {
-          &::before {
-            content: "折扣 ";
-          }
-
-          &::after {
-            content: " 元";
-          }
-        }
-      }
-
-      li:not(.selected):hover {
-        background-color: $color-item-hover;
-      }
-
-      .selected {
-        background-color: $color-item-chose;
-      }
-    }
+    min-height: 200px;
+    max-height: 400px;
   }
 
-  .note {
-    color: $color-header-title;
+  .sidebar {
+    min-width: 100%;
+    max-width: none;
+  }
 
-    textarea {
-      background-color: #f0f0f0;
-      color: $color-header-title;
+  footer {
+    flex-direction: column;
+    gap: 15px;
+
+    .totalArea {
       width: 100%;
-      height: 80px;
-      padding: 8px;
-      box-sizing: border-box;
-      resize: none;
-      border-radius: 8px;
-      border: 1px solid #333;
+      justify-content: space-between;
     }
   }
 }

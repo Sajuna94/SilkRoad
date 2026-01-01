@@ -1,6 +1,6 @@
 from flask import request, jsonify, session
 from models import User
-from models import Admin,Vendor,Customer,Vendor_Manager,Cart,Cart_Item,System_Announcement
+from models import Admin,Vendor,Customer,Vendor_Manager,Cart,Cart_Item,System_Announcement,Review
 from config import db
 from utils import require_login
 from sqlalchemy import or_
@@ -696,6 +696,52 @@ def topup_balance():
 
     except Exception as e:
         db.session.rollback()
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
+    
+def get_vendor_reviews(vendor_id):
+    """
+    取得指定店家的所有評論 (僅內容、評分、時間)
+    URL: /api/user/vendor/<vendor_id>/reviews
+    Method: GET
+    權限: Public (公開)
+    """
+    try:
+        # 1. 確認店家是否存在
+        vendor = Vendor.query.get(vendor_id)
+        if not vendor:
+            return jsonify({
+                "message": "Vendor not found",
+                "success": False
+            }), 404
+
+        # 2. 查詢該店家的所有評論，依時間倒序排列
+        reviews = Review.query.filter_by(vendor_id=vendor_id)\
+            .order_by(Review.created_at.desc())\
+            .all()
+
+        # 3. 組裝回傳資料
+        result = []
+        
+        for r in reviews:
+            # 不需要查詢 Customer 了，直接取 Review 本身的欄位
+            result.append({
+                "review_id": r.id,
+                "rating": r.rating,
+                "content": r.review_content,
+                "order_id": r.order_id,
+                "created_at": r.created_at.isoformat() if r.created_at else None
+            })
+
+        return jsonify({
+            "success": True,
+            "message": f"Retrieved {len(result)} reviews for vendor {vendor_id}",
+            "data": result
+        }), 200
+
+    except Exception as e:
         return jsonify({
             "message": f"Database error: {str(e)}",
             "success": False

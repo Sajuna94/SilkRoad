@@ -119,7 +119,7 @@ export default function UserDiscountPage({ discounts }: UserDiscountPageProps) {
     <div className={styles.container}>
       <header className={styles.pageHeader}>
         <h1>專屬優惠券</h1>
-        <p>領取您的專屬折扣，享受購物樂趣</p>
+        <p>查看您的專屬折扣，享受購物樂趣</p>
       </header>
 
       <div className={styles.filterSection}>

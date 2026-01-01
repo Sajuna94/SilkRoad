@@ -115,7 +115,7 @@ export const routes = [
         children: [
           { path: ":vendorId", element: <VendorProductList /> },
           { path: "dashboard", element: <VendorDashboard /> },
-          { path: "reviews", element: <ReviewPage /> },
+          { path: ":vendorId/reviews", element: <ReviewPage /> },
         ],
       },
     ],
