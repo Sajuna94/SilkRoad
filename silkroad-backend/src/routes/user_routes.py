@@ -9,6 +9,7 @@ from controllers.user_controller import (
     register_step2,
     current_user,
     get_all_announcements,
+    get_vendor_ids,
     topup_balance,
     get_vendor_reviews
 )
@@ -310,6 +311,26 @@ else:
     "success": False
 }
 """
+
+user_routes.route('/vendors/ids', methods=['GET'])(get_vendor_ids)
+"""
+Get all available vendor IDs (for general users)
+No authentication required
+
+Return:
+{
+    "success": true,
+    "message": "Retrieved vendor IDs successfully",
+    "data": [1, 2, 3, 4, 5]  # Array of vendor IDs
+}
+
+else:
+{
+    "message": "Database error: ...",
+    "success": false
+}
+"""
+
 
 user_routes.route('/topup', methods=['POST'])(topup_balance)
 """

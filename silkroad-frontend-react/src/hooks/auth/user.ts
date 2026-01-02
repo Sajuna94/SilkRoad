@@ -158,3 +158,17 @@ export const useUpdateUser = () => {
     },
   });
 };
+
+// 獲取所有可用的店家 ID
+export const useVendorIds = () => {
+  return useQuery<number[], ApiErrorBody>({
+    queryKey: ["vendorIds"],
+    queryFn: async () => {
+      const res = await api.get("/user/vendors/ids");
+      return res.data.data;
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+};

@@ -1,14 +1,28 @@
 import styles from "./About.module.scss";
 import { useNavigate } from "react-router-dom";
+import { useVendorIds } from "@/hooks/auth/user";
 
 export default function About() {
-	const navigate = useNavigate();
-	//const vendorIds = [1, 2, 3, 4, 5]; // 新增完vendor後把comment拿掉
+    const navigate = useNavigate();
+    const { data: vendorIds, isLoading} = useVendorIds();
+
+    // 新增調試資訊
+    console.log("Vendor IDs:", vendorIds);
+    console.log("Loading:", isLoading);
+
     const goRandomVendor = () => {
-        //const randomId =
-        //    vendorIds[Math.floor(Math.random() * vendorIds.length)];
-        navigate(`/vendor`); // /${randomId}
+        console.log("goRandomVendor clicked, vendorIds:", vendorIds);
+        
+        if (vendorIds && vendorIds.length > 0) {
+            const randomId = vendorIds[Math.floor(Math.random() * vendorIds.length)];
+            console.log("Navigating to vendor:", randomId);
+            navigate(`/vendor/${randomId}`);
+        } else {
+            console.log("No vendor IDs available, going to vendor list");
+            navigate(`/vendor`);
+        }
     };
+
     return (
         <div className={styles.page}>
             <section className={styles.banner}>
@@ -51,19 +65,23 @@ export default function About() {
                 <section className={styles.features}>
                     <div
                         className={`${styles.featureBox} ${styles.animateSlideUp} ${styles.delay75}`}
-						onClick={goRandomVendor}
-        				role="button"
-        				tabIndex={0}
+                        onClick={goRandomVendor}
+                        role="button"
+                        tabIndex={0}
                     >
                         <h3>輕鬆訂購</h3>
-                        <p>瀏覽飲品、客製化你的飲料，幾秒內即可完成結帳。</p>
+                        <p>
+                            瀏覽飲品、客製化你的飲料，幾秒內即可完成結帳。
+                            {isLoading && " (載入店家資訊中...)"}
+                            {vendorIds && ` (${vendorIds.length} 家店家可選)`}
+                        </p>
                     </div>
 
                     <div
                         className={`${styles.featureBox} ${styles.animateSlideUp} ${styles.delay150}`}
-						onClick={() => navigate("/home")}
-						role="button"
-						tabIndex={0}
+                        onClick={() => navigate("/home")}
+                        role="button"
+                        tabIndex={0}
                     >
                         <h3>多種品項，任君挑選</h3>
                         <p>探索熱門店家，或發掘你附近的新品牌。</p>
@@ -71,9 +89,9 @@ export default function About() {
 
                     <div
                         className={`${styles.featureBox} ${styles.animateSlideUp} ${styles.delay300}`}
-						onClick={() => navigate("/User/Orders")}
-        				role="button"
-        				tabIndex={0}
+                        onClick={() => navigate("/User/Orders")}
+                        role="button"
+                        tabIndex={0}
                     >
                         <h3>可靠的外送</h3>
                         <p>從結帳到送達家門，全程即時追蹤你的訂單。</p>

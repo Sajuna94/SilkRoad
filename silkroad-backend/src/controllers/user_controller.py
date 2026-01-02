@@ -618,6 +618,31 @@ def get_all_announcements():
             "message": f"Database error: {str(e)}",
             "success": False
         }), 500
+    
+# 新的一般用戶可用的 endpoint
+def get_vendor_ids():
+    """
+    取得所有可用店家的ID列表 (一般用戶可用)
+    """
+    try:
+        # 只查詢啟用的店家，只返回 ID
+        vendors = Vendor.query.filter_by(is_active=True).all()
+        
+        vendor_ids = [v.id for v in vendors]
+
+        return jsonify({
+            "success": True,
+            "message": "Retrieved vendor IDs successfully",
+            "data": vendor_ids
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
+
+
 
 @require_login(role='customer')
 def topup_balance():
