@@ -3,6 +3,7 @@ import styles from "./Dashboard.module.scss";
 import OrderTab from "./tabs/OrderManagement";
 import ProductTab from "./tabs/ProductManagement";
 import DiscountManagement from "./tabs/DiscountManagement";
+import SalesDashboard from "./tabs/SalesDashboard";
 
 export default function VendorDashboardPage() {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ export default function VendorDashboardPage() {
     { id: "1", label: "折扣管理", element: <DiscountManagement /> },
     { id: "2", label: "商品管理", element: <ProductTab /> },
     { id: "3", label: "訂單管理", element: <OrderTab /> },
+	{ id: "4", label: "利潤報表", element: <SalesDashboard/>}
   ];
 
   const currentId = location.hash.replace("#", "") || tabs[0].id;
