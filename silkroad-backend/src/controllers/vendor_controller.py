@@ -20,7 +20,7 @@ from utils import require_login
 from datetime import datetime, date
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import joinedload
-
+import pytz
 
 # def allowed_file(filename):
 #     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -836,7 +836,10 @@ def view_customer_discounts():
     if not customer_id:
         return jsonify({"message": "缺少 customer_id", "success": False}), 400
 
-    today = date.today()
+    # --- 設定台灣時區 ---
+    tw_tz = pytz.timezone('Asia/Taipei')
+    # 取得台灣當下的日期 (忽略時分秒，只取日期部分進行比對)
+    today = datetime.now(tw_tz).date()
 
     try:
         # 1. 獲取該用戶目前的會員等級
