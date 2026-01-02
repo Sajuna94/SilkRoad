@@ -1,6 +1,6 @@
-from flask import jsonify, request
+from flask import jsonify, request,session
 from config import db
-from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy, Customer, Vendor
+from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy, Customer, Vendor,Review
 from datetime import date, datetime
 
 def do_discount(total_price_accumulated, policy_id, user_id):
@@ -530,4 +530,42 @@ def view_all_vendor_orders():
             "success": True,
         })
     except Exception as e:
+        return jsonify({"message": "系統錯誤", "error": str(e), "success": False}), 500
+    
+def check_order_review_status():
+    data = request.get_json()
+    
+    order_id = data.get("order_id")
+
+    if not order_id:
+        return jsonify({"message": "缺少 order_id", "success": False}), 400
+
+    try:
+        order = Order.query.get(order_id)
+        if not order:
+            return jsonify({"message": "找不到該訂單", "success": False}), 404
+
+        review = Review.query.filter_by(order_id=order_id).first()
+
+        is_reviewed = False
+        review_data = None
+
+        if review:
+            is_reviewed = True
+            review_data = {
+                "review_id": review.id,
+                "rating": review.rating,
+                "content": review.review_content,
+                "created_at": review.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            }
+
+        return jsonify({
+            "success": True,
+            "message": "查詢成功",
+            "has_reviewed": is_reviewed, # True 代表已評論，False 代表未評論
+            "data": review_data
+        }), 200
+
+    except Exception as e:
+        print(f"Check review status error: {e}")
         return jsonify({"message": "系統錯誤", "error": str(e), "success": False}), 500

@@ -1,4 +1,4 @@
-from controllers import trans_to_order, view_order, update_orderinfo, view_all_user_orders, view_all_vendor_orders
+from controllers import trans_to_order, view_order, update_orderinfo, view_all_user_orders, view_all_vendor_orders,check_order_review_status
 from flask import Blueprint
 
 order_routes = Blueprint("order", __name__)
@@ -177,4 +177,19 @@ result_list 包含一個或多個
         }
     ]
 }
+"""
+order_routes.route('/check_review', methods=['POST'])(check_order_review_status)
+"""
+if success:
+    return {
+        "success": True,
+        "message": "查詢成功",
+        "has_reviewed": is_reviewed, # True 代表已評論，False 代表未評論
+        "data": review_data
+    }
+else:
+    return {
+        "success": False,
+        "message": "找不到該訂單",
+    }
 """

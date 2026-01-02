@@ -272,7 +272,7 @@ export default function Cart() {
         <div className={styles["cartOperation"]}>
           <Link to="/home">繼續加點</Link>
           <span>|</span>
-          <a onClick={() => alert("功能開發中")}>清空購物車</a>
+          <a onClick={() => alert("功能開發中")}>清空購物車?</a>
         </div>
 
         <div className={styles["totalArea"]}>
@@ -339,30 +339,30 @@ function CartList({
     });
   };
 
-  const handleUpdateSubmit = async (
+  const handleUpdateSubmit = async () =>
     // form: { size: string; ice: string; sugar: string; quantity: number }
-  ) => {
-    if (!editingCartItemId) return;
+    {
+      if (!editingCartItemId) return;
 
-    const form = modalRef.current?.getForm();
-    if (!form) return;
+      const form = modalRef.current?.getForm();
+      if (!form) return;
 
-    try {
-      await updateMutation.mutateAsync({
-        cart_item_id: editingCartItemId,
-        quantity: form.quantity,
-        selected_size: form.size,
-        selected_ice: form.ice,
-        selected_sugar: form.sugar,
-      });
-      alert("購物車項目已更新");
-      setEditingCartItemId(null);
-    } catch (err) {
-      console.error("更新失敗", err);
-      alert("更新失敗，請稍後再試");
-      throw err;
-    }
-  };
+      try {
+        await updateMutation.mutateAsync({
+          cart_item_id: editingCartItemId,
+          quantity: form.quantity,
+          selected_size: form.size,
+          selected_ice: form.ice,
+          selected_sugar: form.sugar,
+        });
+        alert("購物車項目已更新");
+        setEditingCartItemId(null);
+      } catch (err) {
+        console.error("更新失敗", err);
+        alert("更新失敗，請稍後再試");
+        throw err;
+      }
+    };
 
   if (items.length === 0)
     return <p className={styles["empty"]}>您的購物車目前空空如也。</p>;

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { useCurrentUser } from "@/hooks/auth/user";
@@ -81,10 +81,32 @@ export default function History() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewingOrderId, setReviewingOrderId] = useState<number | null>(null);
 
+  const latestOrderIdRef = useRef<number | null>(null);
+
   const carouselOrders = useMemo(
     () => (orders as OrderSummary[]) || [],
     [orders]
   );
+
+  useEffect(() => {
+    if (carouselOrders.length > 0) {
+      const currentNewestId = carouselOrders[0].order_id;
+
+      // 情況 A: 第一次載入 (ref 是空的)
+      if (latestOrderIdRef.current === null) {
+        latestOrderIdRef.current = currentNewestId;
+        // 第一次不跳轉，交給下面的初始化邏輯去處理 URL 定位
+        return;
+      }
+
+      // 情況 B: 有新資料 (目前的最新 ID != 紀錄中的最新 ID)
+      if (currentNewestId !== latestOrderIdRef.current) {
+        console.log("偵測到新訂單！跳轉至最新");
+        setCurrentIndex(0); // 強制跳到最新
+        latestOrderIdRef.current = currentNewestId; // 更新紀錄
+      }
+    }
+  }, [carouselOrders]);
 
   useEffect(() => {
     // 只有當資料存在，且尚未初始化過時才執行
