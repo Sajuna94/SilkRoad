@@ -80,32 +80,6 @@
   }
 }
 
-.sectionTitle {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #222;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  &::before {
-    content: "";
-    display: block;
-    width: 6px;
-    height: 24px;
-    background-color: #333;
-    border-radius: 3px;
-  }
-}
-
 .productSection {
   margin-bottom: 60px;
-}
-
-.reviewSection {
-  background: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  border: 1px solid #eee;
 }

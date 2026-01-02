@@ -1,7 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery";
-import ReviewInput from "@/components/molecules/ReviewInput/ReviewInput";
 import { useVendor, useVendorProductsByVendorId } from "@/hooks/auth/vendor";
 import { useCurrentUser } from "@/hooks/auth/user";
 import styles from "./ProductList.module.scss";
@@ -35,7 +34,10 @@ export default function ProductList() {
             <h1>{vendor.name}</h1>
             <div className={styles.meta}>
               <span>{vendor?.address || "地址未提供"}</span>
-              <Link to={`/vendor/${vendorId}/reviews`} className={styles.ratingLink}>
+              <Link
+                to={`/vendor/${vendorId}/reviews`}
+                className={styles.ratingLink}
+              >
                 <span>⭐ 4.8 (120 評論)</span>
               </Link>
             </div>
@@ -67,13 +69,6 @@ export default function ProductList() {
           ) : (
             <p>此店家暫無商品</p>
           )}
-        </section>
-
-        <section className={styles.reviewSection}>
-          <h2 className={styles.sectionTitle}>撰寫評論</h2>
-          <div>
-            <ReviewInput />
-          </div>
         </section>
       </main>
     </>
