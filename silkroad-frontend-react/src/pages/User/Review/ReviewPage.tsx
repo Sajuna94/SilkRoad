@@ -224,8 +224,11 @@ export default function ReviewPage() {
               reviewId={review.review_id}
               rating={review.rating}
               comment={review.content}
-              orderId={review.order_id || 0}
+              orderId={review.order_id ?? undefined}
               date={review.created_at.replace("T", " ")}
+              customerId={review.customer_id}
+              vendorId={review.vendor_id}
+              vendorPageId={vendorIdNum}
             />
           ))
         ) : (
