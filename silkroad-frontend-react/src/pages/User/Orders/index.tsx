@@ -8,8 +8,8 @@ import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ReviewInput from "@/components/molecules/ReviewInput/ReviewInput";
 import type { OrderDetailItem, OrderSummary } from "@/types/order";
 
-const CAROUSEL_RADIUS = 800;
-const ANGLE = 18;
+const X_OFFSET = 240;
+const VISIBLE_COUNT = 4; // 左右各顯示幾張
 
 const ReviewModal = ({
   isOpen,
@@ -66,13 +66,13 @@ const OrderCardDetails = ({ items }: { items: OrderDetailItem[] }) => {
 export default function History() {
   const navigate = useNavigate();
   const { data: currentUser } = useCurrentUser();
-  const customerId = currentUser!.id;
+  const customerId = currentUser?.id || 0;
 
-  // 2. 使用 API Hook 取得訂單列表 (包含 items)
   const { data: orders, isLoading, error } = useUserOrders(customerId);
 
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-  const [rotateY, setRotateY] = useState(0);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewingOrderId, setReviewingOrderId] = useState<number | null>(null);
@@ -82,57 +82,37 @@ export default function History() {
     [orders]
   );
 
-  // 計算目前的旋轉索引
-  const currentRotationIndex = useMemo(() => {
-    if (carouselOrders.length === 0) return 0;
-    return Math.round(-rotateY / ANGLE) % carouselOrders.length;
-  }, [rotateY, carouselOrders.length]);
-
-  // 當旋轉改變時，同步更新選中的 Order ID
+  // 當 currentIndex 改變時，同步更新選中的 Order ID
   useEffect(() => {
     if (carouselOrders.length > 0) {
-      let index = currentRotationIndex;
-      if (index < 0) index = carouselOrders.length + index;
-
-      const newSelectedOrder = carouselOrders[index];
+      const newSelectedOrder = carouselOrders[currentIndex];
       setSelectedOrderId(newSelectedOrder?.order_id || null);
     }
-  }, [carouselOrders, currentRotationIndex]);
+  }, [carouselOrders, currentIndex]);
 
   const handleCardClick = useCallback((index: number) => {
-    const newRotateY = -index * ANGLE;
-    setRotateY(newRotateY);
+    setCurrentIndex(index);
   }, []);
 
-  const handleNavClick = useCallback(
-    (direction: 1 | -1) => {
-      const total = carouselOrders.length;
-      if (total === 0) return;
-
-      const currentIndex = Math.round(-rotateY / ANGLE);
-      let newIndex = currentIndex + direction;
-
-      if (newIndex < 0) newIndex = total - 1;
-      else if (newIndex >= total) newIndex = 0;
-
-      handleCardClick(newIndex);
-    },
-    [rotateY, carouselOrders.length, handleCardClick]
-  );
-
-  // 初始載入時選中第一張
-  useEffect(() => {
-    if (carouselOrders.length > 0) {
-      setSelectedOrderId(carouselOrders[0].order_id);
+  const handleJumpTo = (index: number) => {
+    if (index >= 0 && index < carouselOrders.length) {
+      setCurrentIndex(index);
     }
-  }, [carouselOrders]);
+  };
 
   const handleOpenReview = (orderId: number) => {
     setReviewingOrderId(orderId);
     setIsReviewModalOpen(true);
   };
 
-  // --- 狀態處理 ---
+  // 初始載入設定
+  useEffect(() => {
+    if (carouselOrders.length > 0) {
+      // 如果想要從最新的開始，就設為 0
+      setCurrentIndex(0);
+    }
+  }, [carouselOrders.length]); // 只在長度改變時觸發
+
   if (isLoading)
     return (
       <p style={{ textAlign: "center", marginTop: "100px" }}>載入訂單中...</p>
@@ -155,15 +135,29 @@ export default function History() {
       <h1 className={styles.title}>訂單紀錄</h1>
 
       <div className={styles.carouselContainer}>
-        <div
-          className={styles.carousel}
-          style={{
-            transform: `rotateY(${rotateY}deg)`,
-          }}
-        >
+        <div className={styles.carouselTrack}>
           {carouselOrders.map((order: OrderSummary, index) => {
-            const cardAngle = ANGLE * index;
-            const isSelected = selectedOrderId === order.order_id;
+            const length = carouselOrders.length;
+
+            // 計算相對於當前選中項目的距離 (正數在右，負數在左)
+            let relativeIndex = index - currentIndex;
+
+            // 環狀處理：如果距離太遠，代表它應該從另一端繞過來
+            if (relativeIndex > length / 2) {
+              relativeIndex -= length;
+            } else if (relativeIndex < -length / 2) {
+              relativeIndex += length;
+            }
+
+            const absDistance = Math.abs(relativeIndex);
+
+            const isVisible = absDistance <= VISIBLE_COUNT;
+            const isSelected = relativeIndex === 0;
+
+            const translateX = relativeIndex * X_OFFSET;
+            const scale = isSelected ? 1 : 0.85;
+            const opacity = isVisible ? (isSelected ? 1 : 0.5) : 0;
+            const zIndex = 100 - absDistance;
 
             return (
               <div
@@ -173,9 +167,11 @@ export default function History() {
                 }`}
                 onClick={() => handleCardClick(index)}
                 style={{
-                  transform: `rotateY(${cardAngle}deg) translateZ(${
-                    isSelected ? CAROUSEL_RADIUS + 60 : CAROUSEL_RADIUS
-                  }px)`,
+                  transform: `translateX(${translateX}px) scale(${scale})`,
+                  zIndex: zIndex,
+                  opacity: opacity,
+                  visibility: isVisible ? "visible" : "hidden",
+                  pointerEvents: isVisible ? "auto" : "none",
                 }}
               >
                 <div className={styles.orderInfo}>
@@ -206,7 +202,6 @@ export default function History() {
                 {isSelected ? (
                   <>
                     <OrderCardDetails items={order.items} />
-
                     <div className={styles.actionButtons}>
                       <button
                         className={`${styles.textLink} ${styles.detailLink}`}
@@ -217,7 +212,6 @@ export default function History() {
                       >
                         查看完整訂單
                       </button>
-
                       {order.is_completed &&
                         order.refund_status !== "refunded" && (
                           <button
@@ -240,24 +234,23 @@ export default function History() {
           })}
         </div>
 
-        <button
-          className={styles.navButtonLeft}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleNavClick(-1);
-          }}
-        >
-          &lt;
-        </button>
-        <button
-          className={styles.navButtonRight}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleNavClick(1);
-          }}
-        >
-          &gt;
-        </button>
+        <div className={styles.controls}>
+          <button
+            className={styles.jumpBtn}
+            onClick={() => handleJumpTo(0)}
+            title="最新訂單"
+          >
+            Latest
+          </button>
+
+          <button
+            className={styles.jumpBtn}
+            onClick={() => handleJumpTo(carouselOrders.length - 1)}
+            title="最舊訂單"
+          >
+            Oldest
+          </button>
+        </div>
       </div>
       <ReviewModal
         isOpen={isReviewModalOpen}
