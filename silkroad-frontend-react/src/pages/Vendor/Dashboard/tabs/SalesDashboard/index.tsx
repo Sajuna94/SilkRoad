@@ -24,7 +24,7 @@ export default function SalesDashboard() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const COST_RATIO = 0.6; // default estimated cost as 60% of revenue
+  const [topDrinks, setTopDrinks] = useState<any[]>([]);
 
   useEffect(() => {
     // fetch backend sales summary and compute profit using an estimated cost ratio
@@ -53,17 +53,16 @@ export default function SalesDashboard() {
           return;
         }
 
-        const monthly = json.monthly || [];
+        const weekly = json.weekly || [];
 
-        const chartData = monthly.map((m: any) => {
-          const monthLabel = `${m.month}月`;
-          const revenue = m.revenue ?? m.gross_revenue ?? 0;
-          const cost = m.cost_estimate ?? Math.round(revenue * COST_RATIO);
-          const profit = m.profit ?? (revenue - (m.discount || 0) - cost);
-          return { month: monthLabel, revenue, cost, profit };
+        const chartData = weekly.map((w: any) => {
+          const label = w.week_label || `${w.year}-W${w.week}`;
+          const revenue = w.net_revenue ?? w.gross_revenue ?? 0;
+          return { week: label, revenue };
         });
 
         setData(chartData);
+        setTopDrinks(json.top_drinks || []);
         setLoading(false);
       } catch (err) {
         console.error('fetchSales error', err);
@@ -78,7 +77,7 @@ export default function SalesDashboard() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>📊 利潤報表</h1>
+      <h1 className={styles.title}>利潤報表</h1>
 
       {loading ? (
         <div className={styles.loading} style={{ color: "black" }}>載入中...</div>
@@ -89,33 +88,33 @@ export default function SalesDashboard() {
       ) : (
         <>
           <div className={styles.chartSection}>
-            <h2 className={styles.subtitle}>每月利潤趨勢</h2>
+            <h2 className={styles.subtitle}>每週利潤趨勢</h2>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={data}>
                 <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                <XAxis dataKey="month"/>
+                <XAxis dataKey="week" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="profit" stroke="#82ca9d"/>
+                <Line type="monotone" dataKey="revenue" stroke="#82ca9d" />
               </LineChart>
             </ResponsiveContainer>
           </div>
-
-          <div className={styles.chartSection}>
-            <h2 className={styles.subtitle}>營收 / 成本 / 利潤</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="revenue" fill="#8884d8" name="營收" />
-                <Bar dataKey="cost" fill="#ff7300" name="成本" />
-                <Bar dataKey="profit" fill="#82ca9d" name="利潤" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+              <div className={styles.chartSection}>
+                <h2 className={styles.subtitle}>銷量最高的飲品</h2>
+                {topDrinks.length === 0 ? (
+                  <div>目前沒有銷售紀錄</div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={topDrinks} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="product_name" type="category" />
+                      <Tooltip />
+                      <Bar dataKey="quantity" fill="#8884d8" name="數量" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
         </>
       )}
       

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useVendorOrders, useUpdateOrder } from "@/hooks/order/order";
 import styles from "./OrderManagement.module.scss";
@@ -18,12 +19,29 @@ export default function OrderTab() {
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const [refundModalOrder, setRefundModalOrder] = useState<any | null>(null);
 
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const orderIdParam = params.get("orderId");
+    if (orderIdParam) {
+      const id = parseInt(orderIdParam, 10);
+      if (!isNaN(id)) {
+        setExpandedOrderId(id);
+        setTimeout(() => {
+          const el = document.getElementById(`order-${id}`);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+      }
+    }
+  }, [location.search]);
+
   if (isLoading) {
     return <div className={styles.container} style={{ color: "black" }}>載入中...</div>;
   }
 
   if (isError || !orders) {
-    return <div className={styles.container}>無法載入訂單資料</div>;
+    return <div className={styles.container} style={{ color: "black" }}>無法載入訂單資料</div>;
   }
 
   const handleToggleExpand = (orderId: number) => {
@@ -92,7 +110,7 @@ export default function OrderTab() {
       ) : (
         <div className={styles.orderList}>
           {orders.map((order: any) => (
-            <div key={order.order_id} className={styles.orderCard}>
+            <div id={`order-${order.order_id}`} key={order.order_id} className={styles.orderCard}>
               <div
                 className={`${styles.orderHeader} ${
                   expandedOrderId === order.order_id ? styles.active : ""

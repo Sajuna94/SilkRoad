@@ -1257,13 +1257,14 @@ def get_public_vendors():
 
 
 def get_vendor_sales(vendor_id: int):
-    """Compute sales summary for a vendor using order items.
+    """Compute weekly sales summary and top-selling drinks for a vendor.
 
-    Returns monthly list with: year, month, gross_revenue, discount, net_revenue, cost_estimate, profit, orders
-    and overall summary with totals.
+    Returns JSON with:
+      - 'weekly': list of { year, week, week_label, gross_revenue, discount, net_revenue, orders }
+      - 'top_drinks': list of { product_id, product_name, quantity, revenue }
+      - 'summary': totals
     """
     try:
-        # default estimated cost ratio when no cost model exists
         COST_RATIO = 0.6
 
         orders = (
@@ -1277,7 +1278,8 @@ def get_vendor_sales(vendor_id: int):
         total_discount = 0
         total_orders = 0
 
-        monthly = {}
+        weekly = {}
+        product_sales = {}
 
         for o in orders:
             # ignore fully refunded orders
@@ -1286,43 +1288,65 @@ def get_vendor_sales(vendor_id: int):
 
             total_orders += 1
 
-            # compute gross revenue from order items
+            # compute gross revenue from order items and collect product stats
             gross = 0
             for it in getattr(o, 'items', []):
                 qty = getattr(it, 'quantity', 0) or 0
                 price = getattr(it, 'price', 0) or 0
                 gross += price * qty
 
+                # product info
+                pid = getattr(it, 'product_id', None)
+                pname = None
+                if getattr(it, 'product', None):
+                    pname = getattr(it.product, 'name', None)
+
+                if pid is not None:
+                    ps = product_sales.get(pid)
+                    if not ps:
+                        ps = {'product_id': pid, 'product_name': pname or 'Unknown', 'quantity': 0, 'revenue': 0}
+                        product_sales[pid] = ps
+                    ps['quantity'] += qty
+                    ps['revenue'] += price * qty
+
             total_gross += gross
             total_discount += (o.discount_amount or 0)
 
             if o.created_at:
-                key = (o.created_at.year, o.created_at.month)
+                y, w, _ = o.created_at.isocalendar()
+                key = (y, w)
             else:
                 key = (1970, 1)
 
-            entry = monthly.get(key)
+            entry = weekly.get(key)
             if not entry:
-                entry = {"year": key[0], "month": key[1], "gross_revenue": 0, "discount": 0, "orders": 0}
-                monthly[key] = entry
+                entry = {'year': key[0], 'week': key[1], 'gross_revenue': 0, 'discount': 0, 'orders': 0}
+                weekly[key] = entry
 
             entry['gross_revenue'] += gross
             entry['discount'] += (o.discount_amount or 0)
             entry['orders'] += 1
 
-        monthly_list = [v for k, v in sorted(monthly.items(), key=lambda kv: (kv[0][0], kv[0][1]))]
-
-        # enrich monthly entries with net, cost and profit
-        for m in monthly_list:
-            revenue = m.get('gross_revenue', 0)
-            discount = m.get('discount', 0)
+        # prepare weekly list sorted by year-week
+        weekly_list = []
+        for k, v in sorted(weekly.items(), key=lambda kv: (kv[0][0], kv[0][1])):
+            year, week = k
+            revenue = v.get('gross_revenue', 0)
+            discount = v.get('discount', 0)
             net = revenue - discount
-            cost = int(round(revenue * COST_RATIO))
-            profit = net - cost
-            m['revenue'] = revenue
-            m['net_revenue'] = net
-            m['cost_estimate'] = cost
-            m['profit'] = profit
+            week_label = f"{year}-W{week}"
+            weekly_list.append({
+                'year': year,
+                'week': week,
+                'week_label': week_label,
+                'gross_revenue': revenue,
+                'discount': discount,
+                'net_revenue': net,
+                'orders': v.get('orders', 0),
+            })
+
+        # compute top drinks by quantity
+        top_drinks = sorted(product_sales.values(), key=lambda x: x['quantity'], reverse=True)[:10]
 
         summary = {
             'total_gross_revenue': total_gross,
@@ -1336,9 +1360,10 @@ def get_vendor_sales(vendor_id: int):
         return (
             jsonify({
                 'success': True,
-                'message': 'vendor sales summary',
+                'message': 'vendor weekly sales summary',
                 'summary': summary,
-                'monthly': monthly_list,
+                'weekly': weekly_list,
+                'top_drinks': top_drinks,
             }),
             200,
         )

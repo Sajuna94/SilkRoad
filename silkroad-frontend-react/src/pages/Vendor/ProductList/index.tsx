@@ -1,18 +1,29 @@
 import { Link, useParams } from "react-router-dom";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery";
+import StarRating from "@/components/atoms/StarRating";
 import { useVendor, useVendorProductsByVendorId } from "@/hooks/auth/vendor";
 import { useCurrentUser } from "@/hooks/auth/user";
+import { useVendorReviews } from "@/hooks/store/review";
 import styles from "./ProductList.module.scss";
 
 export default function ProductList() {
   const { vendorId } = useParams<{ vendorId: string }>();
-  const vendorIdNum = vendorId ? parseInt(vendorId, 10) : undefined;
+  const vendorIdNum = vendorId ? parseInt(vendorId, 10) : 0;
 
-  const { data: vendor, isLoading: isVendorLoading } = useVendor(vendorIdNum!);
+  const { data: vendor, isLoading: isVendorLoading } = useVendor(vendorIdNum);
   const { data: products, isLoading: isProductsLoading } =
     useVendorProductsByVendorId(vendorIdNum);
   const { data: user } = useCurrentUser();
+
+  const { data: reviews = [], isLoading: isReviewsLoading } =
+    useVendorReviews(vendorIdNum);
+
+  const avgRating =
+    reviews && reviews.length > 0
+      ? reviews.reduce((sum: number, r: any) => sum + (r.rating || 0), 0) /
+        reviews.length
+      : 0;
 
   if (isVendorLoading || isProductsLoading) {
     return <div className={styles.pageContainer}>載入中...</div>;
@@ -34,11 +45,14 @@ export default function ProductList() {
             <h1>{vendor.name}</h1>
             <div className={styles.meta}>
               <span>{vendor?.address || "地址未提供"}</span>
-              <Link
-                to={`/vendor/${vendorId}/reviews`}
-                className={styles.ratingLink}
-              >
-                <span>⭐ 4.8 (120 評論)</span>
+              <Link to={`/vendor/${vendorId}/reviews`} className={styles.ratingLink}>
+                <div style={{ display: "inline-flex", alignItems: "center" }}>
+                  <StarRating initialRating={avgRating} readonly size={16} />
+                  <span style={{ marginLeft: 8 }}>
+                    {reviews.length > 0 ? avgRating.toFixed(1) : "尚無評分"} (
+                    {reviews.length} 評論)
+                  </span>
+                </div>
               </Link>
             </div>
           </div>

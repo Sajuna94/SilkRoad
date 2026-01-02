@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import StarRating from "../../atoms/StarRating";
 import styles from "./ReviewItem.module.scss";
 
@@ -16,8 +16,13 @@ export default function ReviewItem({
   orderId,
   date,
 }: ReviewItemProps) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/vendor/dashboard?orderId=${orderId}#3`);
+  };
   return (
-    <div className={styles.card}>
+    <div className={styles.card} onClick={handleClick} style={{ cursor: "pointer" }}>
       <div className={styles.header}>
         <StarRating initialRating={rating} readonly size={20} />
       </div>
