@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.scss";
-// import { type User } from "@/types/user";
-// import { useQueryClient } from "@tanstack/react-query";
+import { UserRole } from "@/types/user";
 import { useLogout, useCurrentUser } from "@/hooks/auth/user";
 
 const DEFAULT_AVATAR =
@@ -53,6 +52,18 @@ export default function Header() {
     navigate("/home");
   };
 
+  const getAvatarUrl = () => {
+    if (!user) return DEFAULT_AVATAR;
+
+    // Vendor 使用 logo_url，如果有的話
+    if (user.role === UserRole.VENDOR && user.logo_url) {
+      return user.logo_url;
+    }
+
+    // 其他角色或沒有 logo 的 vendor 使用預設頭像
+    return `${DEFAULT_AVATAR}${user.name}`;
+  };
+
   return (
     <header className={styles["header-warp"]}>
       <h1>
@@ -98,7 +109,7 @@ export default function Header() {
                 className={styles.avatarCircle}
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
-                <img src={`${DEFAULT_AVATAR}${user.name}`} alt={user.name} />
+                <img src={getAvatarUrl()} alt={user.name} />
               </div>
 
               {isMenuOpen && (
