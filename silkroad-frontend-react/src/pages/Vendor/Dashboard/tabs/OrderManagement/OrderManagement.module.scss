@@ -8,6 +8,9 @@ $gray-text: #6b7280;
 $dark-text: #111827;
 
 .container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
   padding: 24px;
   max-width: 1000px;
   margin: 0 auto;
@@ -20,6 +23,112 @@ $dark-text: #111827;
     color: $dark-text;
     margin-bottom: 24px;
     padding-left: 12px;
+  }
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.8rem;
+  }
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.searchGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.searchInput {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 0.95rem;
+  outline: none;
+  width: 180px;
+  transition: all 0.2s;
+
+  &:focus {
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
+  }
+}
+
+.searchBtn {
+  padding: 8px 16px;
+  background-color: $dark-text;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: lighten($dark-text, 10%);
+  }
+}
+
+.scrollTopBtn {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #4f7cc5;
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+
+  &:hover {
+    background-color: #3b5fa3;
+    transform: translateY(0) scale(1.1);
+  }
+
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background-color: white;
+  color: #333;
+  font-size: 0.95rem;
+  cursor: pointer;
+  outline: none;
+  min-width: 140px;
+
+  &:focus {
+    border-color: #fbbf24;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.2);
   }
 }
 
@@ -353,6 +462,22 @@ $dark-text: #111827;
 }
 
 @media (max-width: 640px) {
+  .filters {
+    width: 100%;
+
+    .searchInput,
+    .filterSelect {
+      flex: 1;
+      min-width: auto;
+    }
+  }
+
+  .scrollTopBtn {
+    bottom: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+  }
   .orderHeader {
     flex-direction: column;
     align-items: flex-start;

@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useVendorOrders, useUpdateOrder } from "@/hooks/order/order";
 import styles from "./OrderManagement.module.scss";
 import type { VendorOrderSummary } from "@/types/order";
 import RefundModal from "../RefundModal/RefundModal";
+
+type StatusFilter = "ALL" | "COMPLETED" | "PENDING" | "REFUND";
+type DeliveryFilter = "ALL" | "DELIVERY" | "PICKUP";
 
 export default function OrderTab() {
   const { data: currentUser } = useCurrentUser();
@@ -18,6 +21,13 @@ export default function OrderTab() {
 
   const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
   const [refundModalOrder, setRefundModalOrder] = useState<any | null>(null);
+
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [deliveryFilter, setDeliveryFilter] = useState<DeliveryFilter>("ALL");
+  const [inputSearchId, setInputSearchId] = useState("");
+  const [activeSearchId, setActiveSearchId] = useState("");
+
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
 
   const location = useLocation();
 
@@ -36,12 +46,89 @@ export default function OrderTab() {
     }
   }, [location.search]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollBtn(true);
+      } else {
+        setShowScrollBtn(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  const handleSearch = () => {
+    setActiveSearchId(inputSearchId);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const filteredOrders = useMemo(() => {
+    if (!orders) return [];
+
+    return orders.filter((order) => {
+      if (activeSearchId) {
+        const idStr = String(order.order_id);
+        if (!idStr.includes(activeSearchId)) {
+          return false;
+        }
+      }
+
+      // 配送方式篩選
+      if (deliveryFilter === "DELIVERY" && !order.is_delivered) return false;
+      if (deliveryFilter === "PICKUP" && order.is_delivered) return false;
+
+      // 訂單狀態篩選
+      if (statusFilter !== "ALL") {
+        const isRefund =
+          order.refund_status === "refunded" ||
+          order.refund_status === "pending"; // 退款相關歸在同一類
+
+        if (statusFilter === "REFUND" && !isRefund) return false;
+
+        // 如果選的是完成或處理中，要排除掉退款單 (除非退款被拒絕後恢復正常狀態)
+        // 但這裡簡單邏輯：只要有退款狀態就不算 Completed/Pending
+        if (statusFilter === "COMPLETED") {
+          if (isRefund || !order.is_completed) return false;
+        }
+
+        if (statusFilter === "PENDING") {
+          // 處理中：未完成且沒有退款狀態
+          if (isRefund || order.is_completed) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [orders, statusFilter, deliveryFilter, activeSearchId]);
+
   if (isLoading) {
-    return <div className={styles.container} style={{ color: "black" }}>載入中...</div>;
+    return (
+      <div className={styles.container} style={{ color: "black" }}>
+        載入中...
+      </div>
+    );
   }
 
   if (isError || !orders) {
-    return <div className={styles.container} style={{ color: "black" }}>無法載入訂單資料</div>;
+    return (
+      <div className={styles.container} style={{ color: "black" }}>
+        無法載入訂單資料
+      </div>
+    );
   }
 
   const handleToggleExpand = (orderId: number) => {
@@ -105,12 +192,54 @@ export default function OrderTab() {
     <div className={styles.container}>
       <h1>訂單管理</h1>
 
-      {orders.length === 0 ? (
-        <div className={styles.empty}>暫無訂單</div>
+      <div className={styles.filters}>
+        <div className={styles.searchGroup}>
+          <input
+            type="text"
+            placeholder="輸入訂單編號..."
+            value={inputSearchId}
+            onChange={(e) => setInputSearchId(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className={styles.searchInput}
+          />
+          <button className={styles.searchBtn} onClick={handleSearch}>
+            搜尋
+          </button>
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+          className={styles.filterSelect}
+        >
+          <option value="ALL">全部狀態</option>
+          <option value="PENDING">處理中</option>
+          <option value="COMPLETED">已完成</option>
+          <option value="REFUND">退款相關</option>
+        </select>
+
+        <select
+          value={deliveryFilter}
+          onChange={(e) => setDeliveryFilter(e.target.value as DeliveryFilter)}
+          className={styles.filterSelect}
+        >
+          <option value="ALL">全部配送方式</option>
+          <option value="DELIVERY">外送</option>
+          <option value="PICKUP">自取</option>
+        </select>
+      </div>
+
+      {filteredOrders.length === 0 ? (
+        <div className={styles.empty}>
+          {orders.length > 0 ? "沒有符合篩選條件的訂單" : "暫無訂單"}
+        </div>
       ) : (
         <div className={styles.orderList}>
-          {orders.map((order: any) => (
-            <div id={`order-${order.order_id}`} key={order.order_id} className={styles.orderCard}>
+          {filteredOrders.map((order: any) => (
+            <div
+              id={`order-${order.order_id}`}
+              key={order.order_id}
+              className={styles.orderCard}
+            >
               <div
                 className={`${styles.orderHeader} ${
                   expandedOrderId === order.order_id ? styles.active : ""
@@ -271,6 +400,13 @@ export default function OrderTab() {
           ))}
         </div>
       )}
+      <button
+        className={`${styles.scrollTopBtn} ${showScrollBtn ? styles.show : ""}`}
+        onClick={scrollToTop}
+        title="回到頂部"
+      >
+        ↑
+      </button>
       <RefundModal
         isOpen={!!refundModalOrder}
         onClose={() => setRefundModalOrder(null)}
