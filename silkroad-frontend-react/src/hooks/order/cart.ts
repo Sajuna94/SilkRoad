@@ -81,8 +81,8 @@ export const useAddToCart = () => {
 			return res.data;
 		},
 		onSuccess: () => {
-			// 刷新購物車快取（訪客和登入用戶都使用相同的 query key）
-			qc.invalidateQueries({ queryKey: ["cartItems"] });
+			// 立即在背景重新獲取購物車數據，而不是等到購物車頁面掛載
+			qc.refetchQueries({ queryKey: ["cartItems"] });
 		},
 	});
 };
@@ -108,7 +108,7 @@ export const useRemoveFromCart = () => {
 			return res.data;
 		},
 		onSuccess: () => {
-			qc.invalidateQueries({ queryKey: ["cartItems"] });
+			qc.refetchQueries({ queryKey: ["cartItems"] });
 		},
 	});
 };
@@ -126,8 +126,8 @@ export const useUpdateCartItem = () => {
 			return res.data;
 		},
 		onSuccess: () => {
-			// Invalidate the cart query to refetch updated cart data
-			qc.invalidateQueries({ queryKey: ["cartItems"] });
+			// 立即在背景重新獲取購物車數據
+			qc.refetchQueries({ queryKey: ["cartItems"] });
 		},
 	});
 };
