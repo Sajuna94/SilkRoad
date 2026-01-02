@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useCurrentUser } from "@/hooks/auth/user";
 import StarRating from "../../atoms/StarRating";
 import styles from "./ReviewItem.module.scss";
 
@@ -17,9 +18,16 @@ export default function ReviewItem({
   date,
 }: ReviewItemProps) {
   const navigate = useNavigate();
+  const { data: currentUser } = useCurrentUser();
 
   const handleClick = () => {
-    navigate(`/vendor/dashboard?orderId=${orderId}#3`);
+    if (!orderId) return;
+
+    if (currentUser?.role === "vendor") {
+      navigate(`/vendor/dashboard?orderId=${orderId}#3`);
+    } else {
+      navigate(`/orders?selected=${orderId}`);
+    }
   };
   return (
     <div className={styles.card} onClick={handleClick} style={{ cursor: "pointer" }}>
