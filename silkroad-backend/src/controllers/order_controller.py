@@ -428,16 +428,21 @@ def update_orderinfo():
         return jsonify({"message": "伺服器內部錯誤", "success": False}), 500
     
 def view_all_user_orders():
+    from sqlalchemy.orm import joinedload
+
     data = request.get_json()
     request_user_id = data.get("user_id")
 
     if not request_user_id:
         return jsonify({"message": "缺少 user_id", "success": False}), 400
-    
+
     try:
-        # 1. 抓取該使用者的所有訂單
-        orders = Order.query.filter_by(user_id=request_user_id).order_by(Order.id.desc()).all()
-        
+        # 1. 抓取該使用者的所有訂單，使用 eager loading 避免 N+1 查詢問題
+        orders = Order.query.filter_by(user_id=request_user_id)\
+            .options(joinedload(Order.items).joinedload(Order_Item.product))\
+            .order_by(Order.id.desc()).all()
+
+        print("database query completed")
         all_orders_data = []
         
         for order in orders:
@@ -479,6 +484,8 @@ def view_all_user_orders():
         return jsonify({"message": "系統錯誤", "error": str(e), "success": False}), 500
 
 def view_all_vendor_orders():
+    from sqlalchemy.orm import joinedload
+
     data = request.get_json()
     request_vendor_id = data.get("vendor_id")
 
@@ -486,8 +493,10 @@ def view_all_vendor_orders():
         return jsonify({"message": "缺少 vendor_id", "success": False}), 400
 
     try:
-        # 抓取該 vendor 的所有訂單
-        orders = Order.query.filter_by(vendor_id=request_vendor_id).order_by(Order.id.desc()).all()
+        # 抓取該 vendor 的所有訂單，使用 eager loading 避免 N+1 查詢問題
+        orders = Order.query.filter_by(vendor_id=request_vendor_id)\
+            .options(joinedload(Order.items).joinedload(Order_Item.product))\
+            .order_by(Order.id.desc()).all()
 
         all_orders_data = []
 
