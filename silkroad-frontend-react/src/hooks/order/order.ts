@@ -6,6 +6,7 @@ import type {
   CreateOrderResponse,
   OrderDetailResponse,
   UpdateOrderInput,
+  CheckReviewStatusResponse
 } from "@/types/order";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -125,5 +126,19 @@ export const useVendorOrders = (vendorId?: number) => {
       });
       return res.data.data;
     },
+  });
+};
+
+export const useCheckReviewStatus = (orderId?: number) => {
+  return useQuery<CheckReviewStatusResponse, AxiosError<ApiErrorBody>>({
+    queryKey: ["review-status", orderId],
+    enabled: !!orderId,
+    queryFn: async () => {
+      const res = await api.post("/order/check_review", {
+        order_id: orderId,
+      });
+      return res.data;
+    },
+    staleTime: 1000 * 60 * 5, // 5分鐘內不重新抓取
   });
 };

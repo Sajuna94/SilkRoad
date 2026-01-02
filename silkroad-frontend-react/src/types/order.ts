@@ -136,3 +136,21 @@ export interface InvalidDiscountPolicyInput {
   policy_id: number;
   vendor_id: number;
 }
+
+export interface CheckReviewStatusInput {
+  order_id: number;
+}
+
+export interface ReviewData {
+  review_id: number;
+  rating: number;
+  content: string;
+  created_at: string;
+}
+
+export interface CheckReviewStatusResponse {
+  success: boolean;
+  message: string;
+  has_reviewed: boolean;
+  data: ReviewData | null;
+}
