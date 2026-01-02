@@ -27,6 +27,7 @@ export const useUserOrders = (userId?: number) => {
       // 根據後端: res.data = { data: result_list, success: true, ... }
       return res.data.data;
     },
+    refetchInterval: 5000,
   });
 };
 
