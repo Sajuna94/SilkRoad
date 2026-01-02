@@ -82,9 +82,9 @@ $dark-text: #111827;
 }
 
 .scrollTopBtn {
-  position: fixed;
-  bottom: 40px;
-  right: 40px;
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -259,6 +259,11 @@ $dark-text: #111827;
     background: #f3f4f6;
     color: $gray-text;
     border: 1px solid rgba($gray-text, 0.2);
+  }
+  &.delivering {
+    background: #e6f5ff;
+    color: #075985;
+    border: 1px solid rgba(7, 89, 133, 0.12);
   }
 }
 

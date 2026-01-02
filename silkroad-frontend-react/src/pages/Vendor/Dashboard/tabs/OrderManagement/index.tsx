@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useVendorOrders, useUpdateOrder } from "@/hooks/order/order";
@@ -28,6 +29,8 @@ export default function OrderTab() {
   const [activeSearchId, setActiveSearchId] = useState("");
 
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  // track completed items per order locally
+  const [completedItems, setCompletedItems] = useState<Record<number, Set<number>>>({});
 
   const location = useLocation();
 
@@ -45,6 +48,16 @@ export default function OrderTab() {
       }
     }
   }, [location.search]);
+
+  // initialize completedItems when orders load
+  useEffect(() => {
+    if (!orders) return;
+    const init: Record<number, Set<number>> = {};
+    orders.forEach((o: any) => {
+      init[o.order_id] = new Set<number>();
+    });
+    setCompletedItems(init);
+  }, [orders]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -135,6 +148,23 @@ export default function OrderTab() {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
   };
 
+  const toggleItemCompleted = (orderId: number, itemId: number, checked: boolean) => {
+    setCompletedItems((prev) => {
+      const copy: Record<number, Set<number>> = { ...prev };
+      const set = new Set(copy[orderId] ? Array.from(copy[orderId]) : []);
+      if (checked) set.add(itemId); else set.delete(itemId);
+      copy[orderId] = set;
+
+      // if all items are checked, mark order completed via API
+      const order = orders?.find((o: any) => o.order_id === orderId);
+      if (order && set.size === order.items.length && !order.is_completed) {
+        updateOrder.mutate({ order_id: orderId, is_completed: true });
+      }
+
+      return copy;
+    });
+  };
+
   const handleUpdateStatus = (
     orderId: number,
     field: "is_completed" | "is_delivered",
@@ -151,6 +181,10 @@ export default function OrderTab() {
       return (
         <span className={`${styles.status} ${styles.refunded}`}>已退款</span>
       );
+    }
+    // 外送且尚未完成 => 派送中
+    if (order.is_delivered && !order.is_completed && !order.refund_status) {
+      return <span className={`${styles.status} ${styles.delivering}`}>派送中</span>;
     }
     if (order.is_completed) {
       return (
@@ -280,6 +314,19 @@ export default function OrderTab() {
                         {order.payment_methods === "cash" ? "現金" : "餘額"}
                       </span>
                     </div>
+                    {order.is_delivered && (
+                      <div className={styles.infoItem}>
+                        <span className={styles.label}>地址</span>
+                        <span className={styles.value}>
+                          {(
+                            (order as any).address ||
+                            (order as any).delivery_address ||
+                            (order as any).user_address ||
+                            "未提供地址"
+                          )}
+                        </span>
+                      </div>
+                    )}
                     {order.note && (
                       <div
                         className={styles.infoItem}
@@ -299,29 +346,32 @@ export default function OrderTab() {
                     </h4>
                     <div className={styles.scrollableList}>
                       {order.items.map((item: any) => (
-                        <div
-                          key={item.order_item_id}
-                          className={styles.itemRow}
-                        >
+                        <div key={item.order_item_id} className={styles.itemRow}>
                           <img
                             src={item.product_image}
                             alt={item.product_name}
                             className={styles.itemThumb}
                           />
                           <div className={styles.itemContent}>
-                            <div className={styles.itemName}>
-                              {item.product_name}
-                            </div>
+                            <div className={styles.itemName}>{item.product_name}</div>
                             <div className={styles.itemSpecs}>
-                              {item.selected_size} / {item.selected_ice} /{" "}
-                              {item.selected_sugar}
+                              {item.selected_size} / {item.selected_ice} / {item.selected_sugar}
                             </div>
                           </div>
                           <div className={styles.itemMeta}>
-                            <span className={styles.qty}>x{item.quantity}</span>
-                            <span className={styles.subtotal}>
-                              ${item.subtotal}
-                            </span>
+                            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <input
+                                type="checkbox"
+                                checked={
+                                  !!(completedItems[order.order_id] && completedItems[order.order_id].has(item.order_item_id))
+                                }
+                                onChange={(e) =>
+                                  toggleItemCompleted(order.order_id, item.order_item_id, e.target.checked)
+                                }
+                              />
+                              <span className={styles.qty}>x{item.quantity}</span>
+                            </label>
+                            <span className={styles.subtotal}>${item.subtotal}</span>
                           </div>
                         </div>
                       ))}
@@ -400,13 +450,17 @@ export default function OrderTab() {
           ))}
         </div>
       )}
-      <button
-        className={`${styles.scrollTopBtn} ${showScrollBtn ? styles.show : ""}`}
-        onClick={scrollToTop}
-        title="回到頂部"
-      >
-        ↑
-      </button>
+      {typeof document !== "undefined" &&
+        createPortal(
+          <button
+            className={`${styles.scrollTopBtn} ${showScrollBtn ? styles.show : ""}`}
+            onClick={scrollToTop}
+            title="回到頂部"
+          >
+            ↑
+          </button>,
+          document.body
+        )}
       <RefundModal
         isOpen={!!refundModalOrder}
         onClose={() => setRefundModalOrder(null)}
