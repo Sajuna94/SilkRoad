@@ -83,6 +83,15 @@ export default function SalesDashboard() {
     }
   }, [granularity, seriesMap]);
 
+  const granLabelMap: Record<string, string> = {
+    daily: '每日',
+    weekly: '每週',
+    monthly: '月度',
+    yearly: '年度',
+  };
+
+  const chartTitle = `${granLabelMap[granularity] ?? granularity}利潤趨勢`;
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>利潤報表</h1>
@@ -117,7 +126,7 @@ export default function SalesDashboard() {
           </div>
 
           <div className={styles.chartSection}>
-            <h2 className={styles.subtitle}>{`${granularity.charAt(0).toUpperCase() + granularity.slice(1)} 利潤趨勢`}</h2>
+            <h2 className={styles.subtitle}>{chartTitle}</h2>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={data}>
                 <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
