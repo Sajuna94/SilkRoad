@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useUserOrders } from "@/hooks/order/order";
@@ -65,12 +65,16 @@ const OrderCardDetails = ({ items }: { items: OrderDetailItem[] }) => {
 
 export default function History() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedIdParam = searchParams.get("selected");
+
   const { data: currentUser } = useCurrentUser();
   const customerId = currentUser?.id || 0;
 
   const { data: orders, isLoading, error } = useUserOrders(customerId);
 
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -82,13 +86,28 @@ export default function History() {
     [orders]
   );
 
-  // 當 currentIndex 改變時，同步更新選中的 Order ID
   useEffect(() => {
-    if (carouselOrders.length > 0) {
-      const newSelectedOrder = carouselOrders[currentIndex];
-      setSelectedOrderId(newSelectedOrder?.order_id || null);
+    // 只有當資料存在，且尚未初始化過時才執行
+    if (carouselOrders.length > 0 && !isInitialized) {
+      if (selectedIdParam) {
+        const targetId = parseInt(selectedIdParam, 10);
+        const index = carouselOrders.findIndex((o) => o.order_id === targetId);
+
+        if (index !== -1) {
+          setCurrentIndex(index);
+        } else {
+          // 找不到 ID，預設回 0
+          setCurrentIndex(0);
+        }
+      } else {
+        // 沒有參數，預設回 0
+        setCurrentIndex(0);
+      }
+
+      // 標記已初始化，之後 carouselOrders 更新或 currentIndex 改變都不再執行此邏輯
+      setIsInitialized(true);
     }
-  }, [carouselOrders, currentIndex]);
+  }, [carouselOrders, selectedIdParam, isInitialized]);
 
   const handleCardClick = useCallback((index: number) => {
     setCurrentIndex(index);
@@ -104,14 +123,6 @@ export default function History() {
     setReviewingOrderId(orderId);
     setIsReviewModalOpen(true);
   };
-
-  // 初始載入設定
-  useEffect(() => {
-    if (carouselOrders.length > 0) {
-      // 如果想要從最新的開始，就設為 0
-      setCurrentIndex(0);
-    }
-  }, [carouselOrders.length]); // 只在長度改變時觸發
 
   if (isLoading)
     return (
