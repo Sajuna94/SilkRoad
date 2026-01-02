@@ -6,7 +6,7 @@ import type {
   CreateOrderResponse,
   OrderDetailResponse,
   UpdateOrderInput,
-  CheckReviewStatusResponse
+  CheckReviewStatusResponse,
 } from "@/types/order";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -27,7 +27,6 @@ export const useUserOrders = (userId?: number) => {
       // 根據後端: res.data = { data: result_list, success: true, ... }
       return res.data.data;
     },
-    refetchInterval: 5000,
   });
 };
 
