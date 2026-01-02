@@ -825,7 +825,6 @@ def view_customer_discounts():
     data = request.get_json()
     # 如果有傳 vendor_id，就只看該店家的券；若無，則看全平台
     target_vendor_id = data.get("vendor_id")
-    
     today = date.today()
 
     try:
@@ -834,8 +833,6 @@ def view_customer_discounts():
             Order.user_id == current_user_id,
             Order.policy_id.isnot(None)
         ).distinct().all()
-        
-        # 轉換為簡單的 ID 列表: [1, 5, 12...]
         used_ids = [row[0] for row in used_policies_query]
 
         # 2. 構建查詢條件
