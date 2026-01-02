@@ -328,7 +328,9 @@ def login_user():
             "address": getattr(user, 'address', None),
             "is_active": getattr(user, 'is_active', True),
             "description": getattr(user, 'description', ""),
-            "manager": manager_info
+            "logo_url": getattr(user, 'logo_url', None),
+            "revenue": getattr(user, 'revenue', 0),
+            "vendor_manager": manager_info
         }
 
     # 5-4. Admin 或其他角色
@@ -583,7 +585,7 @@ def current_user():
             "description": getattr(user, 'description', ""),
             "logo_url": getattr(user, 'logo_url', None),
             "revenue": getattr(user, 'revenue', 0),
-            "manager": manager_info
+            "vendor_manager": manager_info
         }
 
     # Admin 或其他角色

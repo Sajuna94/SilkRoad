@@ -1432,7 +1432,7 @@ def get_info(vendor_id : int):
             "revenue": vendor.revenue,
             "address": vendor.address,
             "vendor_manager_id": vendor.vendor_manager_id,
-            # "logo_url": vendor.logo_url,
+            "logo_url": vendor.logo_url,
             "description": vendor.description,
             "is_active": vendor.is_active,
             "name": vendor.name
@@ -1441,10 +1441,38 @@ def get_info(vendor_id : int):
 
 @require_login(role=["vendor"])
 def update_vendor_logo():
-    logo_file = request.files.get('logo')
-    if not logo_file or not logo_file.filename:
+    """
+    更新 Vendor 的 Logo URL
+    前端應先使用 Cloudinary 上傳圖片取得 URL，再傳送到此 API
+
+    Payload:
+    {
+        "logo_url": "https://res.cloudinary.com/..."
+    }
+
+    Return:
+    {
+        "success": true,
+        "message": "Logo updated successfully",
+        "data": {
+            "logo_url": "https://res.cloudinary.com/..."
+        }
+    }
+    """
+    data = request.get_json()
+
+    if not data or 'logo_url' not in data:
         return jsonify({
-            "message": "Logo file is required.",
+            "message": "logo_url is required in request body.",
+            "success": False
+        }), 400
+
+    logo_url = data.get('logo_url')
+
+    # 基本驗證：確保是有效的 URL
+    if not logo_url or not isinstance(logo_url, str):
+        return jsonify({
+            "message": "Invalid logo_url format.",
             "success": False
         }), 400
 
@@ -1457,17 +1485,21 @@ def update_vendor_logo():
             "success": False
         }), 404
 
-    logo_filename = secure_filename(logo_file.filename)
-    logo_path = os.path.join("path/to/logo/directory", logo_filename)  # Specify your path
-    logo_file.save(logo_path)
+    try:
+        vendor.logo_url = logo_url
+        db.session.commit()
 
-    vendor.logo_url = logo_path  # Or just the filename based on your storage strategy
-    db.session.commit()
+        return jsonify({
+            "message": "Logo updated successfully.",
+            "success": True,
+            "data": {
+                "logo_url": vendor.logo_url
+            },
+        }), 200
 
-    return jsonify({
-        "message": "Logo updated successfully.",
-        "success": True,
-        "data": {
-            "logo_url": vendor.logo_url
-        },
-    }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500

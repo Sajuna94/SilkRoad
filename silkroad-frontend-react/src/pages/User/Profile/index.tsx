@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useCurrentUser, useLogout, useUpdateUser } from "@/hooks/auth/user";
 import { useUpdateVendorDescription, useUpdateVendorManagerInfo, useUpdateVendorLogo } from "@/hooks/auth/vendor";
+import { useCloudinaryUpload } from "@/hooks/utils/cloudinary";
 import { useNavigate } from "react-router-dom";
 import styles from "./Profile.module.scss";
 import { UserRole } from "@/types/user";
@@ -16,6 +17,7 @@ export default function Profile() {
   const updateVendorDescMutation = useUpdateVendorDescription();
   const updateVendorManagerMutation = useUpdateVendorManagerInfo();
   const updateVendorLogoMutation = useUpdateVendorLogo();
+  const cloudinaryUploadMutation = useCloudinaryUpload();
 
   const user = userQuery.data;
 
@@ -133,9 +135,12 @@ export default function Profile() {
 
         // 更新 logo（如果有選擇新文件）
         if (logoFile) {
-          const formData = new FormData();
-          formData.append('logo', logoFile);
-          await updateVendorLogoMutation.mutateAsync(formData);
+          // 先上傳到 Cloudinary
+          const cloudinaryResult = await cloudinaryUploadMutation.mutateAsync(logoFile);
+          // 再將 URL 傳給後端儲存
+          await updateVendorLogoMutation.mutateAsync({
+            logo_url: cloudinaryResult.secure_url
+          });
           setLogoFile(null);
         }
       }

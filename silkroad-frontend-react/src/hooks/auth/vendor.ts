@@ -190,13 +190,9 @@ export const useUpdateVendorManagerInfo = () => {
 export const useUpdateVendorLogo = () => {
   const qc = useQueryClient();
 
-  return useMutation<any, ApiErrorBody, FormData>({
-    mutationFn: async (formData) => {
-      const res = await api.patch("/vendor/logo", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+  return useMutation<any, ApiErrorBody, { logo_url: string }>({
+    mutationFn: async (payload) => {
+      const res = await api.patch("/vendor/logo", payload);
       return res.data;
     },
     onSuccess: () => {
