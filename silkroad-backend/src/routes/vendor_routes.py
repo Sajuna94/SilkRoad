@@ -15,7 +15,7 @@ from controllers import (
     update_vendor_manager_info,
     get_info,
     view_customer_discounts,
-    #update_vendor_logo,
+    update_vendor_logo,
 )
 vendor_routes = Blueprint('vendor', __name__)
 
@@ -422,6 +422,6 @@ else:
     "success": False
 }
 """
-#vendor_routes.route('/logo', methods=['PATCH'])(update_vendor_logo)
+vendor_routes.route('/logo', methods=['PATCH'])(update_vendor_logo)
 
 vendor_routes.route('/<int:vendor_id>', methods=['GET'])(get_info)
