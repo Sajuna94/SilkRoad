@@ -5,7 +5,7 @@ import type {
   CreateOrderInput,
   CreateOrderResponse,
   OrderDetailResponse,
-  UpdateOrderInput
+  UpdateOrderInput,
 } from "@/types/order";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
@@ -17,22 +17,27 @@ export const useUserOrders = (userId?: number) => {
   return useQuery<OrderSummary[], AxiosError<ApiErrorBody>>({
     queryKey: ["orders", userId],
     // 只有當 userId 存在時才執行 query
-    enabled: !!userId, 
+    enabled: !!userId,
     queryFn: async () => {
       // 後端要求 POST 方法，並且 body 帶 user_id
-      const res = await api.post("/order/view_user_orders", { 
-        user_id: userId 
+      const res = await api.post("/order/view_user_orders", {
+        user_id: userId,
       });
       // 根據後端: res.data = { data: result_list, success: true, ... }
       return res.data.data;
     },
+    refetchInterval: 5000,
   });
 };
 
 // ------------------------------------------
 // 2. 取得單筆訂單詳細內容 (/view)
 // ------------------------------------------
-export const useOrderDetails = (orderId?: number, userId?: number, vendorId?: number) => {
+export const useOrderDetails = (
+  orderId?: number,
+  userId?: number,
+  vendorId?: number
+) => {
   return useQuery<OrderDetailResponse, AxiosError<ApiErrorBody>>({
     queryKey: ["order", orderId],
     enabled: !!orderId && !!userId, // 確保有 id 才打 API
@@ -41,14 +46,14 @@ export const useOrderDetails = (orderId?: number, userId?: number, vendorId?: nu
       const res = await api.post("/order/view", {
         order_id: orderId,
         user_id: userId,
-        vendor_id: vendorId // 根據你的後端註解，這可能也是必填
+        vendor_id: vendorId, // 根據你的後端註解，這可能也是必填
       });
-      
+
       // 後端回傳格式: { data: [...items], order_info: {...}, success: true }
       // 我們將其整合成一個物件回傳
       return {
         order_info: res.data.order_info,
-        data: res.data.data
+        data: res.data.data,
       };
     },
   });
@@ -60,7 +65,11 @@ export const useOrderDetails = (orderId?: number, userId?: number, vendorId?: nu
 export const useCreateOrder = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<CreateOrderResponse, AxiosError<ApiErrorBody>, CreateOrderInput>({
+  return useMutation<
+    CreateOrderResponse,
+    AxiosError<ApiErrorBody>,
+    CreateOrderInput
+  >({
     mutationFn: async (newOrderData) => {
       // 後端要求 POST /trans
       const res = await api.post("/order/trans", newOrderData);
@@ -68,7 +77,9 @@ export const useCreateOrder = () => {
     },
     onSuccess: (_, variables) => {
       // 建立成功後，讓訂單列表失效，觸發重新抓取
-      queryClient.invalidateQueries({ queryKey: ["orders", variables.customer_id] });
+      queryClient.invalidateQueries({
+        queryKey: ["orders", variables.customer_id],
+      });
       // 讓購物車失效，因為結帳後購物車會被清空
       queryClient.invalidateQueries({ queryKey: ["cart"] });
       // 註：用戶餘額會在後端更新，前端顯示會在下次登入時更新
@@ -90,7 +101,9 @@ export const useUpdateOrder = () => {
     onSuccess: async (_, variables) => {
       // 更新成功後，等待資料重新獲取完成
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["order", variables.order_id] }),
+        queryClient.invalidateQueries({
+          queryKey: ["order", variables.order_id],
+        }),
         queryClient.invalidateQueries({ queryKey: ["orders"] }),
         queryClient.invalidateQueries({ queryKey: ["vendor-orders"] }),
         // 註：用戶餘額會在後端更新，前端顯示會在下次登入時更新
@@ -108,7 +121,7 @@ export const useVendorOrders = (vendorId?: number) => {
     enabled: !!vendorId,
     queryFn: async () => {
       const res = await api.post("/order/view_vendor_orders", {
-        vendor_id: vendorId
+        vendor_id: vendorId,
       });
       return res.data.data;
     },
