@@ -1255,6 +1255,98 @@ def get_public_vendors():
             "success": False
         }), 500
 
+
+def get_vendor_sales(vendor_id: int):
+    """Compute sales summary for a vendor using order items.
+
+    Returns monthly list with: year, month, gross_revenue, discount, net_revenue, cost_estimate, profit, orders
+    and overall summary with totals.
+    """
+    try:
+        # default estimated cost ratio when no cost model exists
+        COST_RATIO = 0.6
+
+        orders = (
+            Order.query
+            .filter_by(vendor_id=vendor_id)
+            .filter(Order.is_completed == True)
+            .all()
+        )
+
+        total_gross = 0
+        total_discount = 0
+        total_orders = 0
+
+        monthly = {}
+
+        for o in orders:
+            # ignore fully refunded orders
+            if o.refund_status == 'refunded':
+                continue
+
+            total_orders += 1
+
+            # compute gross revenue from order items
+            gross = 0
+            for it in getattr(o, 'items', []):
+                qty = getattr(it, 'quantity', 0) or 0
+                price = getattr(it, 'price', 0) or 0
+                gross += price * qty
+
+            total_gross += gross
+            total_discount += (o.discount_amount or 0)
+
+            if o.created_at:
+                key = (o.created_at.year, o.created_at.month)
+            else:
+                key = (1970, 1)
+
+            entry = monthly.get(key)
+            if not entry:
+                entry = {"year": key[0], "month": key[1], "gross_revenue": 0, "discount": 0, "orders": 0}
+                monthly[key] = entry
+
+            entry['gross_revenue'] += gross
+            entry['discount'] += (o.discount_amount or 0)
+            entry['orders'] += 1
+
+        monthly_list = [v for k, v in sorted(monthly.items(), key=lambda kv: (kv[0][0], kv[0][1]))]
+
+        # enrich monthly entries with net, cost and profit
+        for m in monthly_list:
+            revenue = m.get('gross_revenue', 0)
+            discount = m.get('discount', 0)
+            net = revenue - discount
+            cost = int(round(revenue * COST_RATIO))
+            profit = net - cost
+            m['revenue'] = revenue
+            m['net_revenue'] = net
+            m['cost_estimate'] = cost
+            m['profit'] = profit
+
+        summary = {
+            'total_gross_revenue': total_gross,
+            'total_discount': total_discount,
+            'total_net_revenue': total_gross - total_discount,
+            'estimated_cost': int(round(total_gross * COST_RATIO)),
+            'estimated_profit': int(round((total_gross - total_discount) - (total_gross * COST_RATIO))),
+            'orders_count': total_orders,
+        }
+
+        return (
+            jsonify({
+                'success': True,
+                'message': 'vendor sales summary',
+                'summary': summary,
+                'monthly': monthly_list,
+            }),
+            200,
+        )
+
+    except Exception as e:
+        print(f"get_vendor_sales error: {e}")
+        return jsonify({'message': 'system error', 'error': str(e), 'success': False}), 500
+
 @require_login(role=["vendor"])
 def update_vendor_description():
     """

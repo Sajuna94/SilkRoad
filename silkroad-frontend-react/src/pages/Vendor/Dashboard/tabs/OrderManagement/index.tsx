@@ -19,7 +19,7 @@ export default function OrderTab() {
   const [refundModalOrder, setRefundModalOrder] = useState<any | null>(null);
 
   if (isLoading) {
-    return <div className={styles.container}>載入中...</div>;
+    return <div className={styles.container} style={{ color: "black" }}>載入中...</div>;
   }
 
   if (isError || !orders) {

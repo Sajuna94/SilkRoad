@@ -16,6 +16,7 @@ from controllers import (
     get_info,
     view_customer_discounts,
     update_vendor_logo,
+    get_vendor_sales,
 )
 vendor_routes = Blueprint('vendor', __name__)
 
@@ -110,6 +111,7 @@ vendor_routes.route("/product/add", methods=["POST"])(add_product)
 # """
 
 vendor_routes.route("/<int:vendor_id>/view_products", methods=["GET"])(view_vendor_products)
+vendor_routes.route("/<int:vendor_id>/sales_summary", methods=["GET"])(get_vendor_sales)
 """
 function:
     獲得vendor中所有product的簡單資訊狀態
@@ -427,3 +429,37 @@ else:
 vendor_routes.route('/logo', methods=['PATCH'])(update_vendor_logo)
 
 vendor_routes.route('/<int:vendor_id>', methods=['GET'])(get_info)
+
+vendor_routes.route("/sales_summary", methods=["GET"])(get_vendor_sales)
+'''
+expects
+{
+    "vendor_id": int
+}
+returns
+{
+    "message": String,
+    "success": bool,
+    "sales_summary": { (if successful)
+        "total_sales": float,
+        "total_orders": int,
+        "top_selling_products": [
+            {
+                "product_id": int,
+                "name": string,
+                "units_sold": int,
+                "revenue_generated": float
+            },
+            ...
+        ],
+        "sales_by_date": [
+            {
+                "date": string (YYYY-MM-DD),
+                "total_sales": float,
+                "total_orders": int
+            },
+            ...
+        ]
+    }
+}
+'''
