@@ -1257,14 +1257,19 @@ def get_public_vendors():
 
 
 def get_vendor_sales(vendor_id: int):
-    """Compute weekly sales summary and top-selling drinks for a vendor.
+    """Compute sales summary for a vendor with requested granularity.
 
+    Query param: granularity in ['daily','weekly','monthly','yearly'] (default 'weekly')
     Returns JSON with:
-      - 'weekly': list of { year, week, week_label, gross_revenue, discount, net_revenue, orders }
+      - 'series': list of { label, gross_revenue, discount, net_revenue, orders }
       - 'top_drinks': list of { product_id, product_name, quantity, revenue }
       - 'summary': totals
     """
     try:
+        gran = (request.args.get('granularity') or 'weekly').lower()
+        if gran not in ('daily', 'weekly', 'monthly', 'yearly'):
+            gran = 'weekly'
+
         COST_RATIO = 0.6
 
         orders = (
@@ -1278,29 +1283,24 @@ def get_vendor_sales(vendor_id: int):
         total_discount = 0
         total_orders = 0
 
-        weekly = {}
+        buckets = {}
         product_sales = {}
 
         for o in orders:
-            # ignore fully refunded orders
             if o.refund_status == 'refunded':
                 continue
 
             total_orders += 1
-
-            # compute gross revenue from order items and collect product stats
             gross = 0
             for it in getattr(o, 'items', []):
                 qty = getattr(it, 'quantity', 0) or 0
                 price = getattr(it, 'price', 0) or 0
                 gross += price * qty
 
-                # product info
                 pid = getattr(it, 'product_id', None)
                 pname = None
                 if getattr(it, 'product', None):
                     pname = getattr(it.product, 'name', None)
-
                 if pid is not None:
                     ps = product_sales.get(pid)
                     if not ps:
@@ -1312,40 +1312,55 @@ def get_vendor_sales(vendor_id: int):
             total_gross += gross
             total_discount += (o.discount_amount or 0)
 
-            if o.created_at:
-                y, w, _ = o.created_at.isocalendar()
-                key = (y, w)
+            dt = o.created_at
+            if not dt:
+                # fallback bucket
+                key = ('1970', 0)
             else:
-                key = (1970, 1)
+                if gran == 'daily':
+                    key = (dt.year, dt.month, dt.day)
+                elif gran == 'weekly':
+                    y, w, _ = dt.isocalendar()
+                    key = (y, w)
+                elif gran == 'monthly':
+                    key = (dt.year, dt.month)
+                else:  # yearly
+                    key = (dt.year,)
 
-            entry = weekly.get(key)
+            entry = buckets.get(key)
             if not entry:
-                entry = {'year': key[0], 'week': key[1], 'gross_revenue': 0, 'discount': 0, 'orders': 0}
-                weekly[key] = entry
+                entry = {'gross_revenue': 0, 'discount': 0, 'orders': 0}
+                buckets[key] = entry
 
             entry['gross_revenue'] += gross
             entry['discount'] += (o.discount_amount or 0)
             entry['orders'] += 1
 
-        # prepare weekly list sorted by year-week
-        weekly_list = []
-        for k, v in sorted(weekly.items(), key=lambda kv: (kv[0][0], kv[0][1])):
-            year, week = k
+        # build series sorted by key
+        series = []
+        def key_sort(k):
+            return k
+
+        for k, v in sorted(buckets.items(), key=lambda kv: key_sort(kv[0])):
+            # create human friendly label
+            if gran == 'daily':
+                year, month, day = k
+                label = f"{year:04d}-{month:02d}-{day:02d}"
+            elif gran == 'weekly':
+                year, week = k
+                label = f"{year}-W{week}"
+            elif gran == 'monthly':
+                year, month = k
+                label = f"{year:04d}-{month:02d}"
+            else:
+                (year,) = k
+                label = f"{year}"
+
             revenue = v.get('gross_revenue', 0)
             discount = v.get('discount', 0)
             net = revenue - discount
-            week_label = f"{year}-W{week}"
-            weekly_list.append({
-                'year': year,
-                'week': week,
-                'week_label': week_label,
-                'gross_revenue': revenue,
-                'discount': discount,
-                'net_revenue': net,
-                'orders': v.get('orders', 0),
-            })
+            series.append({'label': label, 'gross_revenue': revenue, 'discount': discount, 'net_revenue': net, 'orders': v.get('orders', 0)})
 
-        # compute top drinks by quantity
         top_drinks = sorted(product_sales.values(), key=lambda x: x['quantity'], reverse=True)[:10]
 
         summary = {
@@ -1360,10 +1375,11 @@ def get_vendor_sales(vendor_id: int):
         return (
             jsonify({
                 'success': True,
-                'message': 'vendor weekly sales summary',
+                'message': 'vendor sales summary',
                 'summary': summary,
-                'weekly': weekly_list,
+                'series': series,
                 'top_drinks': top_drinks,
+                'granularity': gran,
             }),
             200,
         )
