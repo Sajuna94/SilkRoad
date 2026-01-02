@@ -42,7 +42,10 @@ export default function OrderDetail() {
     return (
       <div className={styles.container}>
         <h1>無法載入訂單資訊</h1>
-        <button onClick={() => navigate(`/orders?selected=${orderId}`)}>
+        <button
+          onClick={() => navigate(`/orders`)}
+          style={{ padding: "12px", gap: "8px", marginTop: "16px" }}
+        >
           返回訂單列表
         </button>
       </div>

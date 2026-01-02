@@ -28,8 +28,8 @@ export default function ReviewItem({
 
       <div className={styles.footer}>
         <div className={styles.orderInfo}>
-          訂單編號：
-          <Link to={`/orders/${orderId}`}>#{orderId}</Link>
+          訂單編號：#{orderId}
+          {/* <Link to={`/orders/${orderId}`}>#{orderId}</Link> */}
         </div>
 
         <div className={styles.date}>{date}</div>

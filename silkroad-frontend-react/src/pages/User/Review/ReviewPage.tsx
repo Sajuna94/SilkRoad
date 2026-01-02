@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useParams } from "react-router-dom"; 
+import { useParams } from "react-router-dom";
 import ReviewItem from "@/components/molecules/ReviewItem";
 import styles from "./ReviewPage.module.scss";
 import { useVendorReviews } from "@/hooks/store/review";
@@ -11,7 +11,12 @@ export default function ReviewPage() {
   const { vendorId } = useParams<{ vendorId: string }>();
   const vendorIdNum = vendorId ? parseInt(vendorId, 10) : 0;
 
-  const { data: reviews = [], isLoading, isError, error } = useVendorReviews(vendorIdNum);
+  const {
+    data: reviews = [],
+    isLoading,
+    isError,
+    error,
+  } = useVendorReviews(vendorIdNum);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
@@ -52,7 +57,7 @@ export default function ReviewPage() {
     let result = [...reviews];
 
     if (searchTerm) {
-      result = result.filter((r) => 
+      result = result.filter((r) =>
         r.order_id?.toString().includes(searchTerm)
       );
     }
@@ -89,13 +94,14 @@ export default function ReviewPage() {
     return result;
   }, [reviews, searchTerm, ratingFilter, startDate, endDate, sortOption]);
 
-  if (isLoading) return <div className={styles.pageContainer}>載入評論中...</div>;
-  
+  if (isLoading)
+    return <div className={styles.pageContainer}>載入評論中...</div>;
+
   if (isError) {
     console.error("Fetch Review Error:", error);
     return (
       <div className={styles.pageContainer}>
-        讀取評論失敗，請確認後端資料庫與 API 已更新。
+        讀取評論失敗，請稍後再試。
         <br />
         <small>(Vendor ID: {vendorIdNum})</small>
       </div>
