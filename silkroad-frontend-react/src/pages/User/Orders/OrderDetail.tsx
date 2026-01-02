@@ -42,7 +42,9 @@ export default function OrderDetail() {
     return (
       <div className={styles.container}>
         <h1>無法載入訂單資訊</h1>
-        <button onClick={() => navigate("/orders")}>返回訂單列表</button>
+        <button onClick={() => navigate(`/orders?selected=${orderId}`)}>
+          返回訂單列表
+        </button>
       </div>
     );
   }
@@ -73,7 +75,10 @@ export default function OrderDetail() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1>訂單詳情</h1>
-        <button className={styles.backBtn} onClick={() => navigate("/orders")}>
+        <button
+          className={styles.backBtn}
+          onClick={() => navigate(`/orders?selected=${orderId}`)}
+        >
           返回訂單列表
         </button>
       </div>

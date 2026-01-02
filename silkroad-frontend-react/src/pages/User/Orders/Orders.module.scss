@@ -1,20 +1,17 @@
-:root {
-  --color-item-quantity: #9d2cb4;
-  --carousel-radius: 800px;
-  --card-width: 200px;
-  --card-height: 400px;
-}
-
+$card-width: 200px;
+$card-height: 400px;
 $color-item-chose: #70f7da;
+$color-item-quantity: #9d2cb4;
 
 .historySection {
   padding-top: 60px;
   display: flex;
   flex-grow: 1;
   flex-direction: column;
-  max-width: 980px;
   margin: auto;
+  max-width: 100%;
   min-height: 0;
+  position: relative;
 }
 
 .title {
@@ -25,18 +22,23 @@ $color-item-chose: #70f7da;
 }
 
 .carouselContainer {
-  // 文字會失真不知道怎麼處理
-  perspective: 8000px;
   width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  margin-bottom: 20px;
-  height: 500px;
+  height: 600px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.carouselTrack {
+  position: relative;
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  position: relative;
-  z-index: 1;
 }
 
 .carousel {
@@ -49,27 +51,25 @@ $color-item-chose: #70f7da;
 
 .orderCard {
   position: absolute;
-  top: 0;
+  // top: 0;
+  top: 50%;
   left: 50%;
+  margin-top: calc(-1 * $card-height / 2);
+  margin-left: calc(-1 * $card-width / 2);
 
-  backface-visibility: hidden;
-
-  display: flex;
-  flex-direction: column;
-
-  width: var(--card-width);
-  height: var(--card-height);
+  width: $card-width;
+  height: $card-height;
 
   padding: 16px;
   border: 1px solid #ccc;
   border-radius: 10px;
-  cursor: pointer;
   background: #fff;
+  cursor: pointer;
+  transition: all 1s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 
-  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-
-  // 調整卡片定位，使其中心對齊旋轉軸
-  margin-left: calc(-1 * var(--card-width) / 2);
+  display: flex;
+  flex-direction: column;
 }
 
 .orderInfo {
@@ -98,7 +98,7 @@ $color-item-chose: #70f7da;
 /* 被選中的訂單 */
 .active {
   border: solid 3px $color-item-chose;
-  box-shadow: 0 0 15px rgba(112, 247, 218, 0.5);
+  box-shadow: 0 10px 30px rgba(112, 247, 218, 0.5);
 }
 
 .detailWrapper {
@@ -115,37 +115,6 @@ $color-item-chose: #70f7da;
     background: #ccc;
     border-radius: 4px;
   }
-}
-
-.navButtonLeft,
-.navButtonRight {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 20;
-  padding: 15px 20px;
-  background: rgba(0, 0, 0, 0.4);
-  color: white;
-  border-radius: 50%;
-  font-size: 1.5rem;
-  cursor: pointer;
-  border: none;
-  line-height: 1;
-  transition: background-color 0.3s;
-
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.7);
-  }
-}
-
-.navButtonLeft {
-  left: 30px;
-}
-
-.navButtonRight {
-  right: 30px;
 }
 
 .orderTotal {
@@ -241,6 +210,7 @@ $color-item-chose: #70f7da;
   gap: 16px;
   margin-top: 12px;
   padding-top: 12px;
+  border-top: 1px dashed #eee;
 }
 
 .textLink {
@@ -250,7 +220,7 @@ $color-item-chose: #70f7da;
   cursor: pointer;
   font-size: 0.9rem;
   font-family: inherit;
-  transition: all 0.2s;
+  transition: 0.5s;
 
   text-decoration: underline;
   text-underline-offset: 4px;
@@ -328,5 +298,40 @@ $color-item-chose: #70f7da;
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+.controls {
+  position: absolute;
+  bottom: 0;
+  width: 90%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.btnBase {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: 0.5s;
+  font-weight: bold;
+}
+
+.jumpBtn {
+  @extend .btnBase;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  background-color: transparent;
+  color: #333;
+  border: 2px solid #333;
+
+  &:hover {
+    background-color: #333;
+    color: white;
   }
 }

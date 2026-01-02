@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $primary-color: #4f7cc5;
 $success-color: #10b981;
 $warning-color: #f59e0b;
@@ -288,7 +290,7 @@ $dark-text: #111827;
     box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 
     &:hover {
-      background: darken($primary-color, 5%);
+      background: color.adjust($primary-color, $lightness: -5%);
       transform: translateY(-1px);
     }
     &:active {
