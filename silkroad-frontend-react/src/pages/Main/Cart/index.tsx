@@ -118,6 +118,34 @@ export default function Cart() {
     }
   };
 
+  const handleClearCart = async () => {
+    if (items.length === 0) return;
+
+    if (!confirm("確定要清空購物車嗎？這將移除所有商品。")) return;
+
+    try {
+      // 由於沒有專門的 clear API，先用 Promise.all 平行刪除所有項目
+      // 如果後端有提供 useClearCart，請改用該 mutation
+      await Promise.all(
+        items.map((item) =>
+          removeFromCartMutation.mutateAsync({
+            cart_item_id: item.cart_item_id,
+          })
+        )
+      );
+
+      alert("購物車已清空");
+      // 成功後，React Query 會自動重抓資料 (因為 useRemoveFromCart 應該有設 invalidateQueries)
+      // 或者手動清空狀態
+      setItems([]);
+      setTotalAmount(0);
+      setSelectedPolicy(null); // 清空購物車後，折扣券也要重置
+    } catch (err) {
+      console.error("清空購物車失敗", err);
+      alert("清空部分商品失敗，請重試");
+    }
+  };
+
   // F. 過濾可用的折扣券
   const getAvailablePolicies = (): DiscountPolicy[] => {
     if (!discountPoliciesQuery.data || !currentUser) return [];
@@ -272,7 +300,15 @@ export default function Cart() {
         <div className={styles["cartOperation"]}>
           <Link to="/home">繼續加點</Link>
           <span>|</span>
-          <a onClick={() => alert("功能開發中")}>清空購物車?</a>
+          <a
+            onClick={handleClearCart}
+            style={{
+              cursor: items.length > 0 ? "pointer" : "not-allowed",
+              opacity: items.length > 0 ? 1 : 0.5,
+            }}
+          >
+            清空購物車
+          </a>
         </div>
 
         <div className={styles["totalArea"]}>
