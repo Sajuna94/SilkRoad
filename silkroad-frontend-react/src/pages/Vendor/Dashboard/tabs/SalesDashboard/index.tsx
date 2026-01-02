@@ -14,7 +14,6 @@ import {
   Legend,
 } from "recharts";
 
-// 模擬 API 回傳的利潤資料
 const mockProfitData = [
   { month: "1月", revenue: 50000, cost: 30000, profit: 20000 },
   { month: "2月", revenue: 60000, cost: 35000, profit: 25000 },
