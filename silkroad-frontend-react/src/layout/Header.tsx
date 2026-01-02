@@ -80,7 +80,7 @@ export default function Header() {
 
           {user && user.role === "vendor" && (
             <li>
-              <Link to="/vendor/reviews">查看評論</Link>
+              <Link to={`/vendor/${user.id}/reviews`}>查看評論</Link>
             </li>
           )}
         </ul>
