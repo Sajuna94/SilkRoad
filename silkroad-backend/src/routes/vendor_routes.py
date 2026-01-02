@@ -234,17 +234,17 @@ data包含
 
 '''
 
-vendor_routes.route("/view_discount", methods=["POST"])(view_customer_discounts)
+vendor_routes.route("/view_customer_discounts", methods=["POST"])(view_customer_discounts)
 '''
 需要{
-    "vendor_id": int
+    "customer_id": int
 }
 
 回傳
 
 失敗
 {
-    "message": "請先登入 或 系統錯誤訊息",
+    "message": "找不到該客戶的會員資料 或 系統錯誤訊息",
     "success": False
 }
 or
@@ -252,21 +252,23 @@ or
 成功
 {
     "success": True,
+    "user_current_level": 1,
     "count": 2,
     "data": [
         {
             "policy_id": int,
             "vendor_id": int,
+            "vendor_name": str,
+            "status": str, used or available
             "code": str,
             "type": str,
             "value": float,
-            "min_purchase": int,
-            "max_discount": int,
-            "expiry_date": int,
-            "status": str 'used' 或 'available'
+            "min_purchase": int DEFAULT 0,
+            "membership_limit": int DEFAULT 0,
+            "expiry_date": str
         },
         {
-        ...... 可能有多個
+            ......
         }
     ]
 }
