@@ -48,6 +48,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
     const [vendorId, setVendorId] = useState<number | undefined>(undefined);
     const [productId, setProductId] = useState<number | undefined>(undefined);
     const [modalOpenTrigger, setModalOpenTrigger] = useState(0);
+    const [detailLoaded, setDetailLoaded] = useState(false);
 
     const { data: productDetail, isLoading: isLoadingDetail } = useProductDetail(vendorId, productId);
 
@@ -61,20 +62,21 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
     useEffect(() => {
       if (productDetail && modalOpenTrigger > 0) {
         setProduct(productDetail);
-        
+        setDetailLoaded(true);
+
         // 處理 Size 預設值 (取第一個選項)
         // 注意：API 回傳的 productDetail.options.size 是一個物件陣列
         const firstSize = productDetail?.options?.size?.[0] || defaultSize;
-        
+
         const initial = initialFormStateRef.current;
-        
+
         setForm((prevForm) => ({
           size: initial?.size || firstSize,
           ice: initial?.ice || productDetail?.options?.ice?.[0] || "",
           sugar: initial?.sugar || productDetail?.options?.sugar?.[0] || "",
           quantity: prevForm.quantity,
         }));
-        
+
         initialFormStateRef.current = undefined;
       }
     }, [productDetail, modalOpenTrigger]);
@@ -83,6 +85,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
       open: (newProduct: Product, newQuantity = 1, formState?: Partial<FormState>) => {
         initialFormStateRef.current = formState;
         setModalOpenTrigger((prev) => prev + 1);
+        setDetailLoaded(false); // Reset detail loaded state
 
         setProduct(newProduct);
         setVendorId(newProduct.vendor_id);
@@ -102,6 +105,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
         dialogRef.current?.close();
         setVendorId(undefined);
         setProductId(undefined);
+        setDetailLoaded(false);
         initialFormStateRef.current = undefined;
       },
       getForm: () => form,
@@ -124,7 +128,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
           <img src={product.image_url} alt={product.name} />
         </picture>
         <form>
-          {needFetch && isLoadingDetail ? (
+          {needFetch && !detailLoaded ? (
             <div className={styles["loading"]}>載入商品詳情中...</div>
           ) : (
             <>
@@ -138,7 +142,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
                 <div className={styles["desc"]}>{product.description}</div>
               </header>
               <div className={styles["content"]}>
-                
+
                 {/* [修改] Size 下拉選單：傳入物件陣列 */}
                 <OptionDropdown
                   id="size"
@@ -178,7 +182,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={pending || isLoadingDetail}
+                  disabled={pending || (needFetch && !detailLoaded)}
                 >
                   {pending ? "處理中..." : submitText} - NT$ {totalPrice}
                 </button>
