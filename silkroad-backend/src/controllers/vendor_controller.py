@@ -122,19 +122,7 @@ def get_products():
     data = []
 
     for p in products:
-        # --- 修改開始：實作「順序計價法」 ---
-        # 1. 先拆分字串取得列表 ["S", "M", "L"]
-        raw_sizes = [s.strip() for s in (p.sizes_option.options.split(",") if p.sizes_option else []) if s.strip()]
-        
-        # 2. 自動計算價格 (Index * 10) -> [{"name": "S", "price": 0}, {"name": "M", "price": 10}]
-        sizes_data = []
-        for index, name in enumerate(raw_sizes):
-            sizes_data.append({
-                "name": name,
-                "price": index * 10  # 核心邏輯：依照順序，每多一層加 10 元
-            })
-        # --- 修改結束 ---
-
+        sizes = [s.strip() for s in (p.sizes_option.options.split(",") if p.sizes_option else []) if s.strip()]
         sugars = [s.strip() for s in (p.sugar_option.options.split(",") if p.sugar_option else []) if s.strip()]
         ices = [s.strip() for s in (p.ice_option.options.split(",") if p.ice_option else []) if s.strip()]
 
@@ -145,7 +133,7 @@ def get_products():
             "price": p.price,
             "description": p.description,
             "options": {
-                "size": sizes_data, # 注意：現在這裡回傳的是物件列表，前端要改用 .name 和 .price 讀取
+                "size": sizes,
                 "sugar": sugars,
                 "ice": ices,
             },
@@ -305,34 +293,19 @@ def update_products():
             elif "options" in col_name:
                 value_list = [v.strip() for v in str(value).split(",") if v.strip()]
 
-                # 判定是要處理哪種選項
+                # 特別處理 size_options -> sizes_option (注意複數)
                 if col_name == "size_options":
-                    option_attr_name = "sizes_option" # Model 中的屬性名稱
-                    OptionClass = Sizes_Option        # 對應的 Model 類別
-                elif col_name == "sugar_options":
-                    option_attr_name = "sugar_option"
-                    OptionClass = Sugar_Option
-                elif col_name == "ice_options":
-                    option_attr_name = "ice_option"
-                    OptionClass = Ice_Option
+                    option_attr_name = "sizes_option"
                 else:
-                    return jsonify({"message": "Unknown option type", "success": False}), 400
+                    option_attr_name = col_name.replace("_options", "_option")
 
-                # 嘗試獲取現有的選項物件
                 option_obj = getattr(product, option_attr_name, None)
-                
-                # --- 修改開始 ---
-                # 如果沒有找到選項物件，則建立一個新的
                 if not option_obj:
-                    # 建立新物件 (注意：這裡假設你的 Model 建構子可以接受 product_id 和 options)
-                    new_option = OptionClass(product_id=product.id, options="")
-                    db.session.add(new_option)
-                    option_obj = new_option # 將變數指向新建立的物件
-                
-                # 設定新的值
+                    return jsonify({
+                        "message": f"Product {product_id} has no {option_attr_name}",
+                        "success": False
+                    }), 400
                 option_obj.set_options_list(value_list)
-                # --- 修改結束 ---
-
             else:
                 setattr(product, col_name, value)
         except ValueError:
