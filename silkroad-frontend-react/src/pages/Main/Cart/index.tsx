@@ -298,7 +298,9 @@ export default function Cart() {
       {/* 頁腳：總計和結帳按鈕 */}
       <footer>
         <div className={styles["cartOperation"]}>
-          <Link to="/home">繼續加點</Link>
+          <Link to={items.length > 0 ? `/vendor/${vendorId}` : "/home"}>
+            繼續加點
+          </Link>
           <span>|</span>
           <a
             onClick={handleClearCart}
