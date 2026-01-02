@@ -12,6 +12,7 @@ dependencies = [
     "pymysql>=1.1.2",
     "pytest>=8.4.2",
     "python-dotenv>=1.1.1",
+    "pytz>=2025.2",
 ]
 
 [tool.pytest.ini_options]
