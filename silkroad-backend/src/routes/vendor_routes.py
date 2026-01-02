@@ -14,7 +14,8 @@ from controllers import (
     update_vendor_description,
     update_vendor_manager_info,
     get_info,
-    view_customer_discounts
+    view_customer_discounts,
+    #update_vendor_logo,
 )
 vendor_routes = Blueprint('vendor', __name__)
 

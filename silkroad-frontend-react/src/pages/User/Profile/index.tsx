@@ -3,11 +3,9 @@ import { useCurrentUser, useLogout, useUpdateUser } from "@/hooks/auth/user";
 import { useUpdateVendorDescription, useUpdateVendorManagerInfo, useUpdateVendorLogo } from "@/hooks/auth/vendor";
 import { useNavigate } from "react-router-dom";
 import styles from "./Profile.module.scss";
-
 import { UserRole } from "@/types/user";
 
-const DEFAULT_AVATAR =
-  "https://ui-avatars.com/api/?background=random&color=fff&name=";
+const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=random&color=fff&name=";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -28,13 +26,11 @@ export default function Profile() {
   });
 
   const [vendorDesc, setVendorDesc] = useState("");
-
   const [managerForm, setManagerForm] = useState({
     name: "",
     email: "",
     phone_number: "",
   });
-
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
@@ -113,6 +109,7 @@ export default function Profile() {
       const basicData: { name?: string; phone_number?: string; address?: string } = {
         name: formData.name,
         phone_number: formData.phone_number,
+		address: formData.address
       };
 
       // 2. Customer/Vendor 需要更新 address
@@ -173,13 +170,7 @@ export default function Profile() {
     // 如果有預覽圖片（新上傳的），優先使用預覽
     if (logoPreview) return logoPreview;
     
-    // 如果是商家且有logo_url，使用logo
-    if (user.role === UserRole.VENDOR && user.logo_url) {
-      return user.logo_url;
-    }
-    
-    // 否則使用默認頭像
-    return `${DEFAULT_AVATAR}${user.name}`;
+    return user.role === UserRole.VENDOR && user.logo_url ? user.logo_url : `${DEFAULT_AVATAR}${user.name}`;
   };
 
   return (

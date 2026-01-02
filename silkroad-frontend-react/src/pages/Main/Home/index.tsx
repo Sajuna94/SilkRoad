@@ -26,7 +26,8 @@ export default function Home() {
                 id: String(v.id),
                 name: v.name,
                 description: v.description,
-                logoUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${v.id}`,
+                // Use the logo_url from vendor data
+                logoUrl: v.logo_url || `https://api.dicebear.com/7.x/identicon/svg?seed=${v.id}`, // Fallback to a default if logo_url is not available
             })) ?? [];
 
     // Announcement mapping

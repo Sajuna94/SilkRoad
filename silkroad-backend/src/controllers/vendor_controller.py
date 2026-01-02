@@ -1424,122 +1424,35 @@ def get_info(vendor_id : int):
         }
     }), 200
 
-UPLOAD_FOLDER = 'static/uploads/logos'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 @require_login(role=["vendor"])
 def update_vendor_logo():
-    """
-    更新 Vendor 的 logo 圖片
-    接收 multipart/form-data 格式的文件上傳
-    """
-    current_user_id = session.get('user_id')
-    current_role = session.get('role')
-
-    if not current_user_id or current_role != 'vendor':
+    logo_file = request.files.get('logo')
+    if not logo_file or not logo_file.filename:
         return jsonify({
-            "success": False, 
-            "message": "Unauthorized: Only vendors can perform this action"
-        }), 403
-
-    if 'logo' not in request.files:
-        return jsonify({
-            "success": False,
-            "message": "No logo file provided"
+            "message": "Logo file is required.",
+            "success": False
         }), 400
 
-    file = request.files['logo']
+    vendor_id = session["user_id"]
+    vendor = Vendor.query.get(vendor_id)
 
-    if file.filename == '':
+    if not vendor:
         return jsonify({
-            "success": False,
-            "message": "No file selected"
-        }), 400
+            "message": "Vendor not found.",
+            "success": False
+        }), 404
 
-    if not allowed_file(file.filename):
-        return jsonify({
-            "success": False,
-            "message": f"Invalid file type. Allowed types: {', '.join(ALLOWED_EXTENSIONS)}"
-        }), 400
+    logo_filename = secure_filename(logo_file.filename)
+    logo_path = os.path.join("path/to/logo/directory", logo_filename)  # Specify your path
+    logo_file.save(logo_path)
 
-    file.seek(0, os.SEEK_END)  # 移動到文件末尾
-    file_size = file.tell()    # 獲取文件大小
-    file.seek(0)               # 重置文件指針
-    
-    if file_size > 5 * 1024 * 1024:  # 5MB
-        return jsonify({
-            "success": False,
-            "message": "File size too large. Maximum size is 5MB"
-        }), 400
+    vendor.logo_url = logo_path  # Or just the filename based on your storage strategy
+    db.session.commit()
 
-    try:
-        # 查詢 Vendor
-        vendor = Vendor.query.get(current_user_id)
-        if not vendor:
-            return jsonify({
-                "success": False, 
-                "message": "Vendor not found"
-            }), 404
-
-        # 確保上傳目錄存在
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-        # 生成唯一的文件名
-        file_extension = file.filename.rsplit('.', 1)[1].lower()
-        unique_filename = f"{current_user_id}_{uuid.uuid4().hex[:8]}.{file_extension}"
-        
-        # 安全的文件名
-        safe_filename = secure_filename(unique_filename)
-        file_path = os.path.join(UPLOAD_FOLDER, safe_filename)
-
-        # 如果vendor已經有logo，刪除舊文件
-        if vendor.logo_url:
-            old_filename = vendor.logo_url.split('/')[-1]  # 從URL中提取文件名
-            old_file_path = os.path.join(UPLOAD_FOLDER, old_filename)
-            try:
-                if os.path.exists(old_file_path):
-                    os.remove(old_file_path)
-                    print(f"Deleted old logo file: {old_file_path}")
-            except OSError as e:
-                print(f"Error deleting old logo file: {e}")
-                # 不阻止新文件的上傳
-
-        # 保存新文件
-        file.save(file_path)
-
-        # 生成相對URL路徑
-        logo_url = f"/static/uploads/logos/{safe_filename}"
-
-        # 更新數據庫
-        vendor.logo_url = logo_url
-        db.session.commit()
-
-        return jsonify({
-            "success": True,
-            "message": "Logo uploaded successfully",
-            "data": {
-                "logo_url": logo_url,
-                "vendor_id": current_user_id
-            }
-        }), 200
-
-    except Exception as e:
-        db.session.rollback()
-        
-        # 如果數據庫操作失敗，嘗試刪除已上傳的文件
-        if 'file_path' in locals() and os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-                print(f"Cleaned up uploaded file after database error: {file_path}")
-            except OSError:
-                pass
-
-        print(f"Logo upload error: {e}")
-        return jsonify({
-            "success": False, 
-            "message": "Failed to upload logo. Please try again."
-        }), 500
+    return jsonify({
+        "message": "Logo updated successfully.",
+        "success": True,
+        "data": {
+            "logo_url": vendor.logo_url
+        },
+    }), 200
