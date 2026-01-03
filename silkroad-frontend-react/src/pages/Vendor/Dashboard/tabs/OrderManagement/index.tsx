@@ -359,7 +359,8 @@ export default function OrderTab() {
                             </div>
                           </div>
                           <div className={styles.itemMeta}>
-                            <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <label className={styles.itemCheckLabel}>
+                              <span className={styles.qty}>x{item.quantity}</span>
                               <input
                                 type="checkbox"
                                 checked={
@@ -369,7 +370,6 @@ export default function OrderTab() {
                                   toggleItemCompleted(order.order_id, item.order_item_id, e.target.checked)
                                 }
                               />
-                              <span className={styles.qty}>x{item.quantity}</span>
                             </label>
                             <span className={styles.subtotal}>${item.subtotal}</span>
                           </div>
