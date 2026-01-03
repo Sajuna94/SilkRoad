@@ -7,7 +7,7 @@ import styles from "./OrderManagement.module.scss";
 import type { VendorOrderSummary } from "@/types/order";
 import RefundModal from "../RefundModal/RefundModal";
 
-type StatusFilter = "ALL" | "COMPLETED" | "PENDING" | "REFUND";
+type StatusFilter = "ALL" | "COMPLETED" | "PENDING" | "REFUND" | "DELIVERING";
 type DeliveryFilter = "ALL" | "DELIVERY" | "PICKUP";
 
 export default function OrderTab() {
@@ -104,23 +104,29 @@ export default function OrderTab() {
       if (deliveryFilter === "DELIVERY" && !order.is_delivered) return false;
       if (deliveryFilter === "PICKUP" && order.is_delivered) return false;
 
-      // 訂單狀態篩選
+      // 訂單狀態篩選（更新邏輯：處理中->派送中/已完成 取決於配送方式）
       if (statusFilter !== "ALL") {
         const isRefund =
           order.refund_status === "refunded" ||
           order.refund_status === "pending"; // 退款相關歸在同一類
 
-        if (statusFilter === "REFUND" && !isRefund) return false;
-
-        // 如果選的是完成或處理中，要排除掉退款單 (除非退款被拒絕後恢復正常狀態)
-        // 但這裡簡單邏輯：只要有退款狀態就不算 Completed/Pending
-        if (statusFilter === "COMPLETED") {
-          if (isRefund || !order.is_completed) return false;
+        if (statusFilter === "REFUND") {
+          if (!isRefund) return false;
         }
 
         if (statusFilter === "PENDING") {
-          // 處理中：未完成且沒有退款狀態
+          // 處理中：尚未完成處理且非退款
           if (isRefund || order.is_completed) return false;
+        }
+
+        if (statusFilter === "DELIVERING") {
+          // 派送中：外送訂單且處理已完成（vendor 已標記完成），且非退款
+          if (isRefund || !order.is_delivered || !order.is_completed) return false;
+        }
+
+        if (statusFilter === "COMPLETED") {
+          // 已完成（針對自取）：非外送且處理已完成，且非退款
+          if (isRefund || order.is_delivered || !order.is_completed) return false;
         }
       }
 
@@ -176,29 +182,6 @@ export default function OrderTab() {
     });
   };
 
-  const renderOrderStatus = (order: VendorOrderSummary) => {
-    if (order.refund_status === "refunded") {
-      return (
-        <span className={`${styles.status} ${styles.refunded}`}>已退款</span>
-      );
-    }
-    // 外送且尚未完成 => 派送中
-    if (order.is_delivered && !order.is_completed && !order.refund_status) {
-      return <span className={`${styles.status} ${styles.delivering}`}>派送中</span>;
-    }
-    if (order.is_completed) {
-      return (
-        <span className={`${styles.status} ${styles.completed}`}>已完成</span>
-      );
-    }
-    if (order.refund_status === "pending") {
-      return (
-        <span className={`${styles.status} ${styles.waiting}`}>退款申請中</span>
-      );
-    }
-    return <span className={`${styles.status} ${styles.pending}`}>處理中</span>;
-  };
-
   const handleRefundAction = (
     orderId: number,
     status: "refunded" | "rejected"
@@ -217,9 +200,36 @@ export default function OrderTab() {
           setRefundModalOrder(null);
           alert(status === "refunded" ? "已同意退款" : "已拒絕退款");
         },
-        onError: (err) => alert("操作失敗: " + err.message),
+        onError: (err: any) => alert("操作失敗: " + (err?.message || err)),
       }
     );
+  };
+
+  const renderOrderStatus = (order: VendorOrderSummary) => {
+    // 退款優先顯示
+    if (order.refund_status === "refunded") {
+      return (
+        <span className={`${styles.status} ${styles.refunded}`}>已退款</span>
+      );
+    }
+    if (order.refund_status === "pending") {
+      return (
+        <span className={`${styles.status} ${styles.waiting}`}>退款申請中</span>
+      );
+    }
+
+    // 處理中 / 派送中 / 已完成 的流程：
+    // - 當尚未由商家標記完成 (is_completed === false)：顯示「處理中」
+    // - 當已標記完成 (is_completed === true)：如果是外送顯示「派送中」，否則顯示「已完成」
+    if (!order.is_completed) {
+      return <span className={`${styles.status} ${styles.pending}`}>處理中</span>;
+    }
+
+    if (order.is_delivered) {
+      return <span className={`${styles.status} ${styles.delivering}`}>派送中</span>;
+    }
+
+    return <span className={`${styles.status} ${styles.completed}`}>已完成</span>;
   };
 
   return (
@@ -247,6 +257,7 @@ export default function OrderTab() {
         >
           <option value="ALL">全部狀態</option>
           <option value="PENDING">處理中</option>
+          <option value="DELIVERING">派送中</option>
           <option value="COMPLETED">已完成</option>
           <option value="REFUND">退款相關</option>
         </select>
@@ -433,7 +444,7 @@ export default function OrderTab() {
                               >
                                 {updateOrder.isPending
                                   ? "處理中..."
-                                  : "標記為完成 (自取)"}
+                                  : "標記為完成"}
                               </button>
                             )
                           ) : (
