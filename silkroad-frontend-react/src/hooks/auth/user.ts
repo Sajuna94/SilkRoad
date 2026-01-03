@@ -78,7 +78,7 @@ export const useLogout = () => {
       // 重置查詢標記，允許重新查詢
       resetQueryFlag();
       // 清除用戶數據
-      qc.setQueryData(["user"], undefined);
+      // qc.setQueryData(["user"], undefined);
       qc.clear();
     },
   });
@@ -100,6 +100,7 @@ export const useCurrentUser = () => {
 			hasEverQueried = true;
 			try {
 				const res = await api.get("/user/current_user");
+				console.log(res);
 				return res.data.data;
 			} catch (error) {
 				// 即使失敗也不要再次查詢

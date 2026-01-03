@@ -207,7 +207,8 @@ def register_step2(role):
                 "address": new_user.address,
                 "membership_level": new_user.membership_level,
                 "is_active": new_user.is_active,
-                "stored_balance": new_user.stored_balance
+                "stored_balance": new_user.stored_balance,
+                "created_at": new_user.created_at,
             }
         
         elif target_role == 'vendor':
@@ -222,6 +223,7 @@ def register_step2(role):
                 "address": new_user.address,
                 "is_active": new_user.is_active,
                 "description": new_user.description,
+                "created_at": new_user.created_at,
                 "manager": {
                     "id": final_manager.id,
                     "name": final_manager.name,
