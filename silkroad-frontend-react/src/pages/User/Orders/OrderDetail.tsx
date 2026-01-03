@@ -196,8 +196,9 @@ export default function OrderDetail() {
         </div>
       </div>
 
-      {/* 只有在「未完成」且「無退款狀態」時才顯示確認按鈕 */}
+      {/* 只有在「配送中」且「未完成」且「無退款狀態」時才顯示確認按鈕 */}
       {order_info.is_delivered &&
+        order_info.deliver_status === 'delivering' &&
         !order_info.is_completed &&
         !order_info.refund_status && (
           <div className={styles.section}>
