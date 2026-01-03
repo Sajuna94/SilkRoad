@@ -264,93 +264,6 @@ def clean_cart():
             "success": False
         }), 500
 
-
-#================ guest user ================
-@require_login(role=["guest"]) # 假設你有 guest 裝飾器，或者直接拿掉裝飾器
-def add_to_cart_guest():
-    data = request.get_json()
-    
-    vendor_id = data.get("vendor_id")
-    product_id = data.get("product_id") 
-    quantity = data.get("quantity")   
-    selected_sugar = data.get("selected_sugar")
-    selected_ice = data.get("selected_ice")
-    
-    # --- [修改 1] 處理 selected_size (物件轉字串) ---
-    raw_size = data.get("selected_size")
-    selected_size_str = ""
-    
-    if isinstance(raw_size, dict):
-        selected_size_str = raw_size.get("name", "")
-    else:
-        selected_size_str = str(raw_size)
-    # ---------------------------------------------
-    
-    if not vendor_id:
-        return jsonify({"message": "缺少 vendor_id ", "success": False}), 400
-        
-    # 注意：這裡驗證要用 selected_size_str
-    if not all([product_id, quantity, selected_sugar, selected_ice, selected_size_str]):
-        return jsonify({
-            "message": "缺少必要欄位 (product_id, quantity, selected_sugar...)",
-            "success": False
-        }), 400
-
-    if "cart" not in session:
-        session["cart"] = {
-            "vendor_id" : vendor_id,
-            "items" : []
-        }
-        
-    if vendor_id != session["cart"]["vendor_id"]:
-        session["cart"] = {
-            "vendor_id" : vendor_id,
-            "items" : []
-        }
-        
-    session["cart"]["items"].append({
-        "tmp_cart_item_id": str(uuid.uuid4())[:8],
-        "product_id": product_id,
-        "quantity": quantity,
-        "selected_sugar": selected_sugar,
-        "selected_ice": selected_ice,
-        
-        # [關鍵] 存入處理過的字串
-        "selected_size": selected_size_str
-    })
-    
-    session.modified = True
-    
-    return jsonify({"message": "新增商品成功", "success": True}), 200
-
-def remove_from_cart_guest():
-    data = request.get_json()
-    
-    cart_item_id = data.get("cart_item_id")
-
-    if "cart" not in session or session["cart"]["items"] == []:
-        return jsonify({"message": "empty cart",
-                        "success": False
-                        }), 404
-        
-    original_length = len(session["cart"]["items"])
-    session["cart"]["items"] = [
-        item for item in session["cart"]["items"] 
-        if item["tmp_cart_item_id"] != cart_item_id
-    ]
-
-    if len(session["cart"]["items"]) < original_length:
-        session.modified = True
-        return jsonify({
-            "message": "刪除商品成功",
-            "success": True
-        }), 200
-    else:
-        return jsonify({
-            "message": "找不到該商品",
-            "success": False
-        }), 404
-    
 @require_login(["customer"])
 def update_cart_item():
     """
@@ -455,6 +368,92 @@ def update_cart_item():
             "success": False
         }), 500
 
+#================ guest user ================
+def add_to_cart_guest():
+    data = request.get_json()
+    
+    vendor_id = data.get("vendor_id")
+    product_id = data.get("product_id") 
+    quantity = data.get("quantity")   
+    selected_sugar = data.get("selected_sugar")
+    selected_ice = data.get("selected_ice")
+    
+    # --- [修改 1] 處理 selected_size (物件轉字串) ---
+    raw_size = data.get("selected_size")
+    selected_size_str = ""
+    
+    if isinstance(raw_size, dict):
+        selected_size_str = raw_size.get("name", "")
+    else:
+        selected_size_str = str(raw_size)
+    # ---------------------------------------------
+    
+    if not vendor_id:
+        return jsonify({"message": "缺少 vendor_id ", "success": False}), 400
+        
+    # 注意：這裡驗證要用 selected_size_str
+    if not all([product_id, quantity, selected_sugar, selected_ice, selected_size_str]):
+        return jsonify({
+            "message": "缺少必要欄位 (product_id, quantity, selected_sugar...)",
+            "success": False
+        }), 400
+
+    if "cart" not in session:
+        session["cart"] = {
+            "vendor_id" : vendor_id,
+            "items" : []
+        }
+        
+    if vendor_id != session["cart"]["vendor_id"]:
+        session["cart"] = {
+            "vendor_id" : vendor_id,
+            "items" : []
+        }
+        
+    session["cart"]["items"].append({
+        "tmp_cart_item_id": str(uuid.uuid4())[:8],
+        "product_id": product_id,
+        "quantity": quantity,
+        "selected_sugar": selected_sugar,
+        "selected_ice": selected_ice,
+        
+        # [關鍵] 存入處理過的字串
+        "selected_size": selected_size_str
+    })
+    
+    session.modified = True
+    
+    return jsonify({"message": "新增商品成功", "success": True}), 200
+
+def remove_from_cart_guest():
+    data = request.get_json()
+    
+    cart_item_id = data.get("cart_item_id")
+
+    if "cart" not in session or session["cart"]["items"] == []:
+        return jsonify({"message": "empty cart",
+                        "success": False
+                        }), 404
+        
+    original_length = len(session["cart"]["items"])
+    session["cart"]["items"] = [
+        item for item in session["cart"]["items"] 
+        if item["tmp_cart_item_id"] != cart_item_id
+    ]
+
+    if len(session["cart"]["items"]) < original_length:
+        session.modified = True
+        return jsonify({
+            "message": "刪除商品成功",
+            "success": True
+        }), 200
+    else:
+        return jsonify({
+            "message": "找不到該商品",
+            "success": False
+        }), 404
+    
+
 def view_cart_guest(*args, **kwargs):
     if "cart" not in session or session["cart"]["items"] == []:
         return jsonify({
@@ -529,5 +528,107 @@ def view_cart_guest(*args, **kwargs):
         "total_amount": total_price, # 注意：我把這裡的 key 統一改成 total_amount 跟會員版一樣，若前端用 total_price 請自行改回
         "data": result
     }), 200
+
+def update_cart_item_guest():
+    """
+    Update an existing cart item for guest users (session-based cart).
+
+    Expected payload:
+    {
+        "cart_item_id": str (required - the tmp_cart_item_id),
+        "quantity": int (optional),
+        "selected_sugar": str (optional),
+        "selected_ice": str (optional),
+        "selected_size": str or dict (optional)
+    }
+
+    Returns:
+    {
+        "message": str,
+        "success": bool
+    }
+    """
+    data = request.get_json()
+
+    # Check if guest cart exists
+    if "cart" not in session or not session["cart"]["items"]:
+        return jsonify({
+            "message": "購物車是空的",
+            "success": False
+        }), 404
+
+    # Get cart_item_id (required)
+    cart_item_id = data.get("cart_item_id")
+    if not cart_item_id:
+        return jsonify({
+            "message": "缺少 cart_item_id",
+            "success": False
+        }), 400
+
+    # Get optional update fields
+    quantity = data.get("quantity")
+    selected_sugar = data.get("selected_sugar")
+    selected_ice = data.get("selected_ice")
+    selected_size = data.get("selected_size")
+
+    # At least one field should be provided for update
+    if not any([quantity is not None, selected_sugar, selected_ice, selected_size]):
+        return jsonify({
+            "message": "至少需要提供一個更新欄位 (quantity, selected_sugar, selected_ice, selected_size)",
+            "success": False
+        }), 400
+
+    # Find the cart item in session
+    cart_item = None
+    for item in session["cart"]["items"]:
+        if item["tmp_cart_item_id"] == cart_item_id:
+            cart_item = item
+            break
+
+    if not cart_item:
+        return jsonify({
+            "message": "找不到該購物車項目",
+            "success": False
+        }), 404
+
+    try:
+        # Validate and update quantity if provided
+        if quantity is not None:
+            if not isinstance(quantity, int) or quantity <= 0:
+                return jsonify({
+                    "message": "數量必須為正整數",
+                    "success": False
+                }), 400
+            cart_item["quantity"] = quantity
+
+        # Update customization options if provided
+        if selected_sugar is not None:
+            cart_item["selected_sugar"] = selected_sugar
+
+        if selected_ice is not None:
+            cart_item["selected_ice"] = selected_ice
+
+        if selected_size is not None:
+            # Handle selected_size (could be dict or string)
+            if isinstance(selected_size, dict):
+                cart_item["selected_size"] = selected_size.get("name", "")
+            else:
+                cart_item["selected_size"] = str(selected_size)
+
+        # Mark session as modified to ensure changes are saved
+        session.modified = True
+
+        return jsonify({
+            "message": "購物車項目更新成功",
+            "success": True
+        }), 200
+
+    except Exception as e:
+        print(f"Error updating guest cart item: {e}")
+        return jsonify({
+            "message": "系統錯誤，更新失敗",
+            "error": str(e),
+            "success": False
+        }), 500
 
 

@@ -4,6 +4,7 @@ from controllers import (
     remove_from_cart_guest,
     remove_from_cart,
     update_cart_item,
+    update_cart_item_guest,
     view_cart,
     view_cart_guest,
     clean_cart
@@ -86,16 +87,16 @@ data包含
 }
 '''
 
-cart_routes.route('/update', methods=['POST'])(update_cart_item)
+cart_routes.route('/update', methods=['POST'])(switcher(update_cart_item, update_cart_item_guest))
 '''
 更新購物車項目的數量和/或客製化選項
 
 需要{
-    "cart_item_id": int (必需),
+    "cart_item_id": int (登入用戶) 或 str (訪客用戶的 tmp_cart_item_id) (必需),
     "quantity": int (可選),
     "selected_sugar": str (可選),
     "selected_ice": str (可選),
-    "selected_size": str (可選)
+    "selected_size": str or dict (可選)
 }
 
 可能會回傳:
