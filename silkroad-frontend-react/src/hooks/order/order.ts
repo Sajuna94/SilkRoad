@@ -39,7 +39,7 @@ export const useOrderDetails = (
   userId?: number,
   vendorId?: number
 ) => {
-  return useQuery<OrderDetailResponse, AxiosError<ApiErrorBody>>({
+  return useQuery<OrderDetailResponse, ApiErrorBody>({
     queryKey: ["order", orderId],
     enabled: !!orderId && !!userId, // 確保有 id 才打 API
     queryFn: async () => {
@@ -68,7 +68,7 @@ export const useCreateOrder = () => {
 
   return useMutation<
     CreateOrderResponse,
-    AxiosError<ApiErrorBody>,
+    ApiErrorBody,
     CreateOrderInput
   >({
     mutationFn: async (newOrderData) => {
@@ -94,7 +94,7 @@ export const useCreateOrder = () => {
 export const useUpdateOrder = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<any, AxiosError<ApiErrorBody>, UpdateOrderInput>({
+  return useMutation<any, ApiErrorBody, UpdateOrderInput>({
     mutationFn: async (updateData) => {
       const res = await api.post("/order/update", updateData);
       return res.data;
@@ -117,7 +117,7 @@ export const useUpdateOrder = () => {
 // 5. 取得 Vendor 的所有訂單列表 (/view_vendor_orders)
 // ------------------------------------------
 export const useVendorOrders = (vendorId?: number) => {
-  return useQuery<VendorOrderSummary[], AxiosError<ApiErrorBody>>({
+  return useQuery<VendorOrderSummary[], ApiErrorBody>({
     queryKey: ["vendor-orders", vendorId],
     enabled: !!vendorId,
     queryFn: async () => {
@@ -130,7 +130,7 @@ export const useVendorOrders = (vendorId?: number) => {
 };
 
 export const useCheckReviewStatus = (orderId?: number) => {
-  return useQuery<CheckReviewStatusResponse, AxiosError<ApiErrorBody>>({
+  return useQuery<CheckReviewStatusResponse, ApiErrorBody>({
     queryKey: ["review-status", orderId],
     enabled: !!orderId,
     queryFn: async () => {

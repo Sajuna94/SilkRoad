@@ -253,10 +253,18 @@ export default function History() {
                             className={`${styles.textLink} ${styles.reviewLink}`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleOpenReview(order.order_id);
+                              if (order.has_reviewed && order.vendor_id) {
+                                // 已評論：跳轉到評論頁面，並滾動到該評論
+                                const reviewPath = `/vendor/${order.vendor_id}/reviews`;
+                                const queryParams = order.review_id ? `?highlight=${order.review_id}` : '';
+                                navigate(reviewPath + queryParams);
+                              } else {
+                                // 未評論：打開評論彈窗
+                                handleOpenReview(order.order_id);
+                              }
                             }}
                           >
-                            撰寫評論
+                            {order.has_reviewed ? "瀏覽評論" : "撰寫評論"}
                           </button>
                         )}
                     </div>

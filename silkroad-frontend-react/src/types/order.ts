@@ -8,6 +8,7 @@ export interface CreateOrderInput {
   note: string;
   payment_methods: string; // 'cash' 或 'button'
   is_delivered: boolean; // true=外送, false=自取
+	shipping_address?: string;
 }
 
 // 建立訂單的回傳
@@ -31,6 +32,10 @@ export interface OrderSummary {
   refund_status: string | null;
   created_at: string;
   note?: string;
+
+  // ★ 評論狀態
+  has_reviewed: boolean;
+  review_id: number | null;
 
   // ★ 新增這行：後端回傳了 items 陣列
   items: OrderDetailItem[];
