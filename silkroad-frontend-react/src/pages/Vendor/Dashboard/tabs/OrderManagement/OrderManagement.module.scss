@@ -369,9 +369,16 @@ $dark-text: #111827;
     text-align: right;
 
     .qty {
-      display: block;
+      display: inline-block;
       font-size: 0.85rem;
       color: $gray-text;
+      margin-right: 8px;
+    }
+    .itemCheckLabel {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
     }
     .subtotal {
       display: block;
