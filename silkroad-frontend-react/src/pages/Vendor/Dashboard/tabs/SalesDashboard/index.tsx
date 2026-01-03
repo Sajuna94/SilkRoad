@@ -133,7 +133,7 @@ export default function SalesDashboard() {
                 <XAxis dataKey="label" />
                 <YAxis />
                 <Tooltip />
-                <Line type="monotone" dataKey="revenue" stroke="#82ca9d" />
+                <Line type="linear" dataKey="revenue" stroke="#82ca9d" />
               </LineChart>
             </ResponsiveContainer>
           </div>

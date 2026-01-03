@@ -237,41 +237,45 @@ export default function OrderTab() {
       <h1>訂單管理</h1>
 
       <div className={styles.filters}>
-        <div className={styles.searchGroup}>
-          <input
-            type="text"
-            placeholder="輸入訂單編號..."
-            value={inputSearchId}
-            onChange={(e) => setInputSearchId(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className={styles.searchInput}
-          />
-          <button className={styles.searchBtn} onClick={handleSearch}>
-            搜尋
-          </button>
-        </div>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-          className={styles.filterSelect}
-        >
-          <option value="ALL">全部狀態</option>
-          <option value="PENDING">處理中</option>
-          <option value="DELIVERING">派送中</option>
-          <option value="COMPLETED">已完成</option>
-          <option value="REFUND">退款相關</option>
-        </select>
+			<div className={styles.filterLeft}>
+				<select
+					value={statusFilter}
+					onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+					className={styles.filterSelect}
+				>
+					<option value="ALL">全部狀態</option>
+					<option value="PENDING">處理中</option>
+					<option value="DELIVERING">派送中</option>
+					<option value="COMPLETED">已完成</option>
+					<option value="REFUND">退款相關</option>
+				</select>
 
-        <select
-          value={deliveryFilter}
-          onChange={(e) => setDeliveryFilter(e.target.value as DeliveryFilter)}
-          className={styles.filterSelect}
-        >
-          <option value="ALL">全部配送方式</option>
-          <option value="DELIVERY">外送</option>
-          <option value="PICKUP">自取</option>
-        </select>
-      </div>
+				<select
+					value={deliveryFilter}
+					onChange={(e) => setDeliveryFilter(e.target.value as DeliveryFilter)}
+					className={styles.filterSelect}
+				>
+					<option value="ALL">全部配送方式</option>
+					<option value="DELIVERY">外送</option>
+					<option value="PICKUP">自取</option>
+				</select>
+			</div>
+
+			<div className={styles.searchGroup}>
+				<input
+					type="text"
+					placeholder="輸入訂單編號..."
+					value={inputSearchId}
+					onChange={(e) => setInputSearchId(e.target.value)}
+					onKeyDown={handleKeyDown}
+					className={styles.searchInput}
+				/>
+				<button className={styles.searchBtn} onClick={handleSearch}>
+					搜尋
+				</button>
+			</div>
+		</div>
+
 
       {filteredOrders.length === 0 ? (
         <div className={styles.empty}>

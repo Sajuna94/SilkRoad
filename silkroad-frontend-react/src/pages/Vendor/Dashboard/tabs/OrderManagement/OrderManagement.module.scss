@@ -228,6 +228,25 @@ $dark-text: #111827;
   }
 }
 
+.filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; // ⭐ 關鍵
+  gap: 12px;
+}
+
+.filterLeft {
+  display: flex;
+  gap: 12px;
+}
+
+.searchGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
 .arrow {
   display: inline-block;
   width: 8px;
