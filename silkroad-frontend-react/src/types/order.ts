@@ -33,6 +33,10 @@ export interface OrderSummary {
   created_at: string;
   note?: string;
 
+  // ★ 評論狀態
+  has_reviewed: boolean;
+  review_id: number | null;
+
   // ★ 新增這行：後端回傳了 items 陣列
   items: OrderDetailItem[];
 }

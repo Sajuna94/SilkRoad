@@ -460,9 +460,15 @@ def view_all_user_orders():
             .options(joinedload(Order.items).joinedload(Order_Item.product))\
             .order_by(Order.id.desc()).all()
 
+        # 1.5 批量查詢所有訂單的評論（避免 N+1 查詢）
+        order_ids = [order.id for order in orders]
+        reviews = Review.query.filter(Review.order_id.in_(order_ids)).all()
+        # 建立 order_id -> review 的映射
+        review_map = {review.order_id: review for review in reviews}
+
         print("database query completed")
         all_orders_data = []
-        
+
         for order in orders:
             # 2. 針對「每一筆訂單」建立其商品清單
             items_in_this_order = []
@@ -471,8 +477,8 @@ def view_all_user_orders():
                 items_in_this_order.append({
                     "order_item_id": item.id,
                     "product_id": item.product_id,
-                    "product_name": product.name if product else "未知商品", 
-                    "product_image": product.image_url if product else None, 
+                    "product_name": product.name if product else "未知商品",
+                    "product_image": product.image_url if product else None,
                     "price": item.price,
                     "quantity": item.quantity,
                     "subtotal": item.price * item.quantity,
@@ -480,7 +486,12 @@ def view_all_user_orders():
                     "selected_ice": item.selected_ice,
                     "selected_size": item.selected_size
                 })
-            
+
+            # 2.5 從映射中查找該訂單的評論（記憶體查找，不查詢資料庫）
+            review = review_map.get(order.id)
+            has_reviewed = review is not None
+            review_id = review.id if review else None
+
             # 3. 將訂單摘要與商品詳情打包
             all_orders_data.append({
                 "order_id": order.id,
@@ -490,7 +501,9 @@ def view_all_user_orders():
                 "is_completed": order.is_completed,
                 "refund_status": str(order.refund_status) if order.refund_status else None,
                 "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                "items": items_in_this_order, 
+                "has_reviewed": has_reviewed,
+                "review_id": review_id,
+                "items": items_in_this_order,
                 "address_info": order.address_info
             })
 

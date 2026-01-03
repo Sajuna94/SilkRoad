@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import ReviewItem from "@/components/molecules/ReviewItem";
 import styles from "./ReviewPage.module.scss";
 import { useVendorReviews } from "@/hooks/store/review";
@@ -9,6 +9,8 @@ type DateRangeOption = "custom" | "week" | "month" | "quarter" | "year";
 
 export default function ReviewPage() {
   const { vendorId } = useParams<{ vendorId: string }>();
+  const [searchParams] = useSearchParams();
+  const highlightReviewId = searchParams.get("highlight");
   const vendorIdNum = vendorId ? parseInt(vendorId, 10) : 0;
 
   const {
@@ -17,6 +19,8 @@ export default function ReviewPage() {
     isError,
     error,
   } = useVendorReviews(vendorIdNum);
+
+  const reviewRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
 
   const [searchTerm, setSearchTerm] = useState("");
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
@@ -50,6 +54,30 @@ export default function ReviewPage() {
     setEndDate(end.toISOString().split("T")[0]);
     setStartDate(start.toISOString().split("T")[0]);
   };
+
+  // 滾動到高亮的評論
+  useEffect(() => {
+    if (highlightReviewId && reviews.length > 0) {
+      const reviewId = parseInt(highlightReviewId, 10);
+      const reviewElement = reviewRefs.current[reviewId];
+
+      if (reviewElement) {
+        // 延遲一下，確保 DOM 已渲染完成
+        setTimeout(() => {
+          reviewElement.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          // 添加高亮效果
+          reviewElement.style.transition = "background-color 0.3s ease";
+          reviewElement.style.backgroundColor = "#fff3cd";
+          setTimeout(() => {
+            reviewElement.style.backgroundColor = "";
+          }, 2000);
+        }, 300);
+      }
+    }
+  }, [highlightReviewId, reviews]);
 
   const processedReviews = useMemo(() => {
     if (!reviews) return [];
@@ -219,17 +247,23 @@ export default function ReviewPage() {
       <div className={styles.reviewGrid}>
         {processedReviews.length > 0 ? (
           processedReviews.map((review) => (
-            <ReviewItem
+            <div
               key={review.review_id}
-              reviewId={review.review_id}
-              rating={review.rating}
-              comment={review.content}
-              orderId={review.order_id ?? undefined}
-              date={review.created_at.replace("T", " ")}
-              customerId={review.customer_id}
-              vendorId={review.vendor_id}
-              vendorPageId={vendorIdNum}
-            />
+              ref={(el) => {
+                reviewRefs.current[review.review_id] = el;
+              }}
+            >
+              <ReviewItem
+                reviewId={review.review_id}
+                rating={review.rating}
+                comment={review.content}
+                orderId={review.order_id ?? undefined}
+                date={review.created_at.replace("T", " ")}
+                customerId={review.customer_id}
+                vendorId={review.vendor_id}
+                vendorPageId={vendorIdNum}
+              />
+            </div>
           ))
         ) : (
           <div className={styles.emptyState}>沒有符合條件的評論</div>
