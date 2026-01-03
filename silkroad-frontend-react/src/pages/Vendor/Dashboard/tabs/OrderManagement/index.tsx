@@ -351,8 +351,10 @@ export default function OrderTab() {
                               type="checkbox"
                               className={styles.thumbCheckbox}
                               checked={
+                                order.is_completed ||
                                 !!(completedItems[order.order_id] && completedItems[order.order_id].has(item.order_item_id))
                               }
+                              disabled={order.is_completed}
                               onChange={(e) =>
                                 toggleItemCompleted(order.order_id, item.order_item_id, e.target.checked)
                               }
