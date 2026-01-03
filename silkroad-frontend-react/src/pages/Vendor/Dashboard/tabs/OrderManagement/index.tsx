@@ -317,12 +317,14 @@ export default function OrderTab() {
                       <div className={styles.infoItem}>
                         <span className={styles.label}>地址</span>
                         <span className={styles.value}>
-                          {(
-                            (order as any).address ||
-                            (order as any).delivery_address ||
-                            (order as any).user_address ||
-                            "未提供地址"
-                          )}
+                          {((order as any).address_info && (order as any).address_info !== null && (order as any).address_info !== "")
+                            ? (order as any).address_info
+                            : (
+                                (order as any).address ||
+                                (order as any).delivery_address ||
+                                (order as any).user_address ||
+                                "未提供地址"
+                              )}
                         </span>
                       </div>
                     )}
