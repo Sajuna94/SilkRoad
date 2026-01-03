@@ -1,14 +1,35 @@
 import { useState } from "react";
 import styles from "./TopUpPage.module.scss";
 import { useTopUp, useCurrentUser } from "@/hooks/auth/user";
+import { FaFileInvoice } from "react-icons/fa";
+
+const LEVEL_CONFIG = [
+  { threshold: 10, label: "銅", color: "#cd7f32" },
+  { threshold: 20, label: "銀", color: "#c0c0c0" },
+  { threshold: 50, label: "金", color: "#ffd700" },
+  { threshold: 100, label: "鑽石", color: "#b9f2ff" },
+];
 
 export default function TopUpPage() {
   const topUpMutation = useTopUp();
   const { data: currentUser, isLoading, isError } = useCurrentUser();
-
   const [manualAmount, setManualAmount] = useState<string>("");
 
-  // Loading 狀態
+  // 假資料
+  const currentOrderCount = 100;
+
+  const maxThreshold = LEVEL_CONFIG[LEVEL_CONFIG.length - 1].threshold;
+
+  const getPercent = (value: number) =>
+    Math.min((value / maxThreshold) * 100, 100);
+
+  const getCurrentIconColor = () => {
+    const activeLevel = [...LEVEL_CONFIG]
+      .reverse()
+      .find((l) => currentOrderCount >= l.threshold);
+    return activeLevel ? activeLevel.color : "#888";
+  };
+
   if (isLoading) {
     return (
       <div className={styles.container}>
@@ -18,7 +39,6 @@ export default function TopUpPage() {
     );
   }
 
-  // 未登入或錯誤狀態
   if (isError || !currentUser) {
     return (
       <div className={styles.container}>
@@ -30,7 +50,6 @@ export default function TopUpPage() {
     );
   }
 
-  // 非 customer
   if (currentUser.role !== "customer") {
     return (
       <div className={styles.container}>
@@ -42,7 +61,6 @@ export default function TopUpPage() {
     );
   }
 
-  // 安全獲取餘額
   const balance = currentUser.stored_balance ?? 0;
 
   const handleManualSubmit = () => {
@@ -52,7 +70,6 @@ export default function TopUpPage() {
     if (val <= 0) return alert("金額必須大於 0");
     if (val > 999999) return alert("單次上限為 999999");
 
-    // 呼叫 API
     topUpMutation.mutate(
       { amount: val },
       {
@@ -74,6 +91,41 @@ export default function TopUpPage() {
       <div className={styles.balanceCard}>
         <span>目前餘額</span>
         <div className={styles.amount}>$ {balance.toLocaleString()}</div>
+      </div>
+
+      <div className={styles.progressSection}>
+        <div className={styles.iconWrapper}>
+          <FaFileInvoice size={48} style={{ color: getCurrentIconColor() }} />
+          <span className={styles.orderCount}>
+            已完成 {currentOrderCount} 筆訂單
+          </span>
+        </div>
+
+        <div className={styles.progressBarWrapper}>
+          <div className={styles.track}>
+            <div
+              className={styles.fill}
+              style={{ width: `${getPercent(currentOrderCount)}%` }}
+            />
+          </div>
+
+          <div className={styles.pointsContainer}>
+            {LEVEL_CONFIG.map((config) => (
+              <div
+                key={config.threshold}
+                className={styles.pointWrapper}
+                style={{ left: `${getPercent(config.threshold)}%` }}
+              >
+                <div
+                  className={`${styles.dot} ${
+                    currentOrderCount >= config.threshold ? styles.active : ""
+                  }`}
+                />
+                <span className={styles.pointLabel}>{config.threshold}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className={styles.section}>
