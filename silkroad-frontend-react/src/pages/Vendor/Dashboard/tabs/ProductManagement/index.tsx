@@ -125,6 +125,7 @@ export default function ProductTab() {
         onSubmit={async () => {
           modalRef.current?.close();
         }}
+        needFetch={false}
       />
       <ProductEditModal
         ref={editModalRef}
