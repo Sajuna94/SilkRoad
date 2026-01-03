@@ -180,6 +180,7 @@ CREATE TABLE `order`.`orders` (
     `is_delivered` boolean NOT NULL,
     `created_at` timestamp NOT NULL DEFAULT(now()),
     `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '資料最後更新時間',
+    `address_info` varchar(255) COMMENT '地址資訊',
     FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`),
     FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`),
     FOREIGN KEY (`policy_id`) REFERENCES `order`.`discount_policies` (`id`)
@@ -219,4 +220,3 @@ CREATE TABLE `order`.`cart_items` (
     FOREIGN KEY (`cart_id`) REFERENCES `order`.`carts` (`customer_id`),
     FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`)
 );
-

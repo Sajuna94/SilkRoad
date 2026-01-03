@@ -12,6 +12,7 @@ order_routes.route('/trans', methods=['POST'])(trans_to_order)
     #     "note":text(str),
     #     "payment_methods":enum(str),
     #     "is_delivered":boolean,
+    #     "shipping_address":string (外送時必填)
     #     }
 
         # 可能會回傳:
@@ -52,7 +53,8 @@ order_routes.route('/view', methods=['POST'])(view_order)
     #        "refund_at": order.refund_at, 格式： YYYY-MM-DD HH:mm:ss
     #        "is_completed": order.is_completed,
     #        "is_delivered": order.is_delivered,
-    #        "total_price": order.total_price
+    #        "total_price": order.total_price,
+    #        "address_info": order.address_info
     #        }
     #
         #   data包含
@@ -134,7 +136,8 @@ result_list 包含一個或多個
     "is_delivered": order.is_delivered, (boolean)
     "payment_methods": str(order.payment_methods), (ENUM(str))
     "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S') if hasattr(order, 'created_at') else None, (timestamp(str))
-    "note": order.note (text(str))
+    "note": order.note (text(str)),
+    "address_info": order.address_info (str)
 }
 """
 
@@ -161,6 +164,7 @@ result_list 包含一個或多個
     "payment_methods": str(order.payment_methods), (ENUM(str))
     "refund_status": str(order.refund_status) if order.refund_status else None, (ENUM(str))
     "note": order.note, (text(str))
+    "address_info": order.address_info (str)
     "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S'), (timestamp(str))
     "items": [
         {

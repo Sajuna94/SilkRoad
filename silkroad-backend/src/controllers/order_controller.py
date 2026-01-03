@@ -51,18 +51,17 @@ def do_discount(total_price_accumulated, policy_id, user_id):
     return max(final_price, 0)
 
 
-def generate_new_order(cart, policy_id, note, payment_methods, is_delivered):
+def generate_new_order(cart, policy_id, note, payment_methods, is_delivered, address_info):
     user_id = cart.customer_id
     vendor_id = cart.vendor_id
     total_price_accumulated = 0
-
 
     try:
         new_order = Order(
             user_id = user_id,
             vendor_id = vendor_id,
             policy_id = policy_id,
-            total_price =0,
+            total_price = 0,
             discount_amount = 0,
             note = note,
             payment_methods = payment_methods,
@@ -70,14 +69,17 @@ def generate_new_order(cart, policy_id, note, payment_methods, is_delivered):
             refund_at = None,
             is_completed = False,
             is_delivered = is_delivered,
+            # --- [修改 5] 寫入地址資訊 ---
+            address_info = address_info
         )
         
         db.session.add(new_order)
         db.session.flush()
 
         for item in cart.items:
-                item_price = store_and_calculate_item(new_order, item)
-                total_price_accumulated += item_price
+            # 確保 store_and_calculate_item 有包含我們先前討論的尺寸加價邏輯
+            item_price = store_and_calculate_item(new_order, item)
+            total_price_accumulated += item_price
 
         final_price = do_discount(total_price_accumulated, policy_id, user_id)
         new_order.total_price = final_price
@@ -116,7 +118,7 @@ def generate_new_order(cart, policy_id, note, payment_methods, is_delivered):
         return jsonify({"message": f"系統錯誤，訂單建立失敗: {str(e)}", 
                         "success": False
                        }), 500
-
+    
 def store_and_calculate_item(new_order, item):
     product = item.product
     if not product:
@@ -159,17 +161,17 @@ def store_and_calculate_item(new_order, item):
     
     return items_price
 
-
 def trans_to_order():
     data = request.get_json()
     """
     預計傳給我{
-    "customer_id":XXX,
-    "vendor_id":XXX,
-    "policy_id":XXX,
-    "note":XXX,
-    "payment_methods":XXX,
-    "is_delivered":XXX,
+    "customer_id":int,
+    "vendor_id":int,
+    "policy_id":int,
+    "note":string,
+    "payment_methods":enum('cash','button'),
+    "is_delivered":bool,
+    "shipping_address":string (外送時必填)
     }
     """
 
@@ -198,8 +200,23 @@ def trans_to_order():
     note = data.get("note")
     payment_methods = data.get("payment_methods")
     is_delivered = data.get("is_delivered", False)  # 預設為 False (自取)
+    
+    # --- [修改 1] 獲取地址資訊 ---
+    address_info = data.get("shipping_address")
 
-    return generate_new_order(cart, policy_id, note, payment_methods, is_delivered)
+    # --- [修改 2] 加入外送地址驗證邏輯 ---
+    if is_delivered and not address_info:
+        return jsonify({
+            "message": "選擇外送時，配送地址 (shipping_address) 為必填欄位",
+            "success": False
+        }), 400
+    
+    # 如果是自取，強制清空地址 (選擇性邏輯，看你是否想保留)
+    if not is_delivered:
+        address_info = None
+
+    # --- [修改 3] 將 address_info 傳遞給下一個函式 ---
+    return generate_new_order(cart, policy_id, note, payment_methods, is_delivered, address_info)
 
 def view_order():
     data = request.get_json()
@@ -276,7 +293,8 @@ def view_order():
             "refund_at": order.refund_at.strftime('%Y-%m-%d %H:%M:%S') if order.refund_at else None,
             "is_completed": order.is_completed,
             "is_delivered": order.is_delivered,
-            "total_price": order.total_price
+            "total_price": order.total_price,
+            "address_info": order.address_info
         })
         
         return jsonify({
@@ -472,7 +490,8 @@ def view_all_user_orders():
                 "is_completed": order.is_completed,
                 "refund_status": str(order.refund_status) if order.refund_status else None,
                 "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                "items": items_in_this_order 
+                "items": items_in_this_order, 
+                "address_info": order.address_info
             })
 
         return jsonify({
@@ -530,7 +549,8 @@ def view_all_vendor_orders():
                 "refund_status": str(order.refund_status) if order.refund_status else None,
                 "note": order.note,
                 "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                "items": items_in_this_order
+                "items": items_in_this_order,
+                "address_info": order.address_info
             })
 
         return jsonify({
