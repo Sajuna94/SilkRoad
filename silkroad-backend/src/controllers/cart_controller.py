@@ -67,6 +67,20 @@ def add_to_cart():
             "success": False
         }), 400
     
+    existing_item = Cart_Item.query.filter_by(
+    cart_id=customer_id,
+    product_id=product_id,
+    selected_sugar=selected_sugar,
+    selected_ice=selected_ice,
+    selected_size=selected_size_str
+    ).first()
+
+    if existing_item:
+        # 如果找到了，就直接增加數量，不新增紀錄
+        existing_item.quantity += quantity
+        db.session.commit()
+        return jsonify({"message": "商品數量已更新", "success": True}), 200
+    
     
     new_cart_item = Cart_Item(
         cart_id = cart_id,
@@ -351,6 +365,19 @@ def update_cart_item():
         if selected_size is not None:
             cart_item.selected_size = selected_size
 
+        duplicate_item = Cart_Item.query.filter(
+            Cart_Item.cart_id == customer_id,
+            Cart_Item.product_id == cart_item.product_id,
+            Cart_Item.selected_sugar == cart_item.selected_sugar,
+            Cart_Item.selected_ice == cart_item.selected_ice,
+            Cart_Item.selected_size == cart_item.selected_size,
+            Cart_Item.id != cart_item.id
+        ).first()
+
+        if duplicate_item:
+            duplicate_item.quantity += cart_item.quantity
+            db.session.delete(cart_item)
+
         # Commit changes
         db.session.commit()
 
@@ -409,6 +436,17 @@ def add_to_cart_guest():
             "vendor_id" : vendor_id,
             "items" : []
         }
+
+    for item in session["cart"]["items"]:
+        if (item["product_id"] == product_id and 
+            item["selected_sugar"] == selected_sugar and 
+            item["selected_ice"] == selected_ice and 
+            item["selected_size"] == selected_size_str):
+            
+            # 如果規格一樣，直接加數量並回傳，不執行後面的 append
+            item["quantity"] += quantity
+            session.modified = True
+            return jsonify({"message": "商品數量已更新", "success": True}), 200
         
     session["cart"]["items"].append({
         "tmp_cart_item_id": str(uuid.uuid4())[:8],
@@ -614,6 +652,20 @@ def update_cart_item_guest():
                 cart_item["selected_size"] = selected_size.get("name", "")
             else:
                 cart_item["selected_size"] = str(selected_size)
+
+        for other_item in session["cart"]["items"]:
+            # 確保不是在跟自己比對 (ID 不同)，但規格 (Product, Sugar, Ice, Size) 完全相同
+            if (other_item["tmp_cart_item_id"] != cart_item_id and
+                other_item["product_id"] == cart_item["product_id"] and
+                other_item["selected_sugar"] == cart_item["selected_sugar"] and
+                other_item["selected_ice"] == cart_item["selected_ice"] and
+                other_item["selected_size"] == cart_item["selected_size"]):
+                
+                # 合併數量到另一個項目
+                other_item["quantity"] += cart_item["quantity"]
+                # 從購物車中移除當前這個「被修改後變得重複」的項目
+                session["cart"]["items"].remove(cart_item)
+                break
 
         # Mark session as modified to ensure changes are saved
         session.modified = True
