@@ -81,9 +81,9 @@ export default function TopUpPage() {
         <div className={styles.inputGroup}>
           <input
             type="number"
-            min="0"
+            min="1"
             max="999999"
-            placeholder="輸入 0 - 999999"
+            placeholder="輸入 1 - 999999"
             value={manualAmount}
             onChange={(e) => setManualAmount(e.target.value)}
             className={styles.input}

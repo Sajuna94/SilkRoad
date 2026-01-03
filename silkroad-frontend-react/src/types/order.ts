@@ -8,6 +8,7 @@ export interface CreateOrderInput {
   note: string;
   payment_methods: string; // 'cash' 或 'button'
   is_delivered: boolean; // true=外送, false=自取
+	shipping_address?: string;
 }
 
 // 建立訂單的回傳

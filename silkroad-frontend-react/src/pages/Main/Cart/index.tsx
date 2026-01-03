@@ -236,6 +236,7 @@ export default function Cart() {
         note: note.trim(),
         payment_methods: paymentMethod,
         is_delivered: deliveryMethod === "delivery",
+        shipping_address: address || "",
       };
 
       const result = await createOrderMutation.mutateAsync(payload);
