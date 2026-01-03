@@ -54,7 +54,7 @@ const OrderCardDetails = ({ items }: { items: OrderDetailItem[] }) => {
             <div>{item.selected_sugar}</div>
           </div>
           <div className={styles.price}>
-            <div className={styles.quantity}>x{item.quantity}</div>
+            <div className={styles.quantity}>{item.quantity}</div>
             <div className={styles.subtotal}>${item.subtotal}</div>
           </div>
         </div>
@@ -65,9 +65,10 @@ const OrderCardDetails = ({ items }: { items: OrderDetailItem[] }) => {
 
 export default function History() {
   const navigate = useNavigate();
-  const [searchParams
+  const [
+    searchParams,
     // , setSearchParams
-] = useSearchParams();
+  ] = useSearchParams();
   const selectedIdParam = searchParams.get("selected");
 
   const { data: currentUser } = useCurrentUser();
@@ -75,7 +76,7 @@ export default function History() {
 
   const { data: orders, isLoading, error } = useUserOrders(customerId);
 
-//   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  //   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -256,7 +257,9 @@ export default function History() {
                               if (order.has_reviewed && order.vendor_id) {
                                 // 已評論：跳轉到評論頁面，並滾動到該評論
                                 const reviewPath = `/vendor/${order.vendor_id}/reviews`;
-                                const queryParams = order.review_id ? `?highlight=${order.review_id}` : '';
+                                const queryParams = order.review_id
+                                  ? `?highlight=${order.review_id}`
+                                  : "";
                                 navigate(reviewPath + queryParams);
                               } else {
                                 // 未評論：打開評論彈窗
