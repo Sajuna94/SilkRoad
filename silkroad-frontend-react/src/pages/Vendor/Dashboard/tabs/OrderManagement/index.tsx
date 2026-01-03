@@ -292,8 +292,7 @@ export default function OrderTab() {
                     {order.is_delivered ? "外送" : "自取"}
                   </span>
 
-                  <span className={styles.price}>${order.total_price}</span>
-
+                  <span className={styles.headerTotalPrice}>{'$' + order.total_price}</span>
                   {/* 狀態顯示 (包含已退款邏輯) */}
                   {renderOrderStatus(order)}
                   <span
@@ -340,18 +339,32 @@ export default function OrderTab() {
 
                   <hr className={styles.divider} />
 
-                  <div className={styles.itemSection}>
+                    <div className={styles.itemSection}>
                     <h4 className={styles.sectionTitle}>
                       商品明細 ({order.items.length})
                     </h4>
                     <div className={styles.scrollableList}>
                       {order.items.map((item: any) => (
                         <div key={item.order_item_id} className={styles.itemRow}>
-                          <img
-                            src={item.product_image}
-                            alt={item.product_name}
-                            className={styles.itemThumb}
-                          />
+                          <div className={styles.checkContainer}>
+                            <input
+                              type="checkbox"
+                              className={styles.thumbCheckbox}
+                              checked={
+                                !!(completedItems[order.order_id] && completedItems[order.order_id].has(item.order_item_id))
+                              }
+                              onChange={(e) =>
+                                toggleItemCompleted(order.order_id, item.order_item_id, e.target.checked)
+                              }
+                            />
+                          </div>
+                          <div className={styles.itemThumbWrap}>
+                            <img
+                              src={item.product_image}
+                              alt={item.product_name}
+                              className={styles.itemThumb}
+                            />
+                          </div>
                           <div className={styles.itemContent}>
                             <div className={styles.itemName}>{item.product_name}</div>
                             <div className={styles.itemSpecs}>
@@ -359,19 +372,8 @@ export default function OrderTab() {
                             </div>
                           </div>
                           <div className={styles.itemMeta}>
-                            <label className={styles.itemCheckLabel}>
-                              <span className={styles.qty}>x{item.quantity}</span>
-                              <input
-                                type="checkbox"
-                                checked={
-                                  !!(completedItems[order.order_id] && completedItems[order.order_id].has(item.order_item_id))
-                                }
-                                onChange={(e) =>
-                                  toggleItemCompleted(order.order_id, item.order_item_id, e.target.checked)
-                                }
-                              />
-                            </label>
-                            <span className={styles.subtotal}>${item.subtotal}</span>
+														<span className={styles.subtotal}>{'$' + item.subtotal}</span>
+                            <span className={styles.qty}>x{item.quantity}</span>
                           </div>
                         </div>
                       ))}
@@ -401,6 +403,10 @@ export default function OrderTab() {
                       ) : (
                         // 正常流程 (無退款 or 退款被拒絕後恢復正常流程)
                         <>
+                          <div className={styles.totalPriceAboveActions}>
+                            <span className={styles.totalPriceLabel}>總價：</span>
+                            <span className={styles.totalPriceValue}>{'$$' + order.total_price}</span>
+                          </div>
                           {!order.is_delivered ? (
                             order.is_completed ? (
                               <button

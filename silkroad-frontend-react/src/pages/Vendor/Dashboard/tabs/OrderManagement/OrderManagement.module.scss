@@ -19,7 +19,7 @@ $dark-text: #111827;
 
   h1 {
     font-size: 1.8rem;
-    font-weight: 700;
+    font-weight: 600;
     color: $dark-text;
     margin-bottom: 24px;
     padding-left: 12px;
@@ -167,6 +167,7 @@ $dark-text: #111827;
   padding: 16px 20px;
   cursor: pointer;
   transition: background-color 0.2s;
+  position: relative;
 
   &.active {
     background-color: #f9fafb;
@@ -180,7 +181,7 @@ $dark-text: #111827;
 
     .orderId {
       font-size: 1.1rem;
-      font-weight: 700;
+      font-weight: 600;
       color: $dark-text;
     }
     .orderDate {
@@ -193,22 +194,36 @@ $dark-text: #111827;
     display: flex;
     align-items: center;
     gap: 12px;
+      .price {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: $dark-text;
+        min-width: 80px;
+        text-align: right;
+      }
 
-    .price {
-      font-size: 1.2rem;
+    /* Header total price shown in the markup as `headerTotalPrice` */
+    .headerTotalPrice {
+      font-size: 1.25rem;
       font-weight: 700;
-      color: $dark-text;
-      min-width: 80px;
+      color: #000; /* 黑色字體 */
+      min-width: 90px;
       text-align: right;
+      display: inline-block;
     }
 
+    /* Make delivery badge fixed width so all orders align */
     .deliveryTag {
-      font-size: 0.8rem;
-      padding: 4px 8px;
+      font-size: 0.85rem;
+      padding: 6px 10px;
       background: #eff6ff;
       color: #0d0e4e;
-      border-radius: 4px;
+      border-radius: 6px;
       font-weight: 500;
+      min-width: 64px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
   }
 }
@@ -228,11 +243,11 @@ $dark-text: #111827;
   }
 }
 
-.status {
+  .status {
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 500;
   min-width: 80px;
   text-align: center;
 
@@ -338,13 +353,35 @@ $dark-text: #111827;
   border-radius: 8px;
   border: 1px solid #eee;
 
-  .itemThumb {
-    width: 50px;
-    height: 50px;
-    border-radius: 6px;
-    object-fit: cover;
-    background: #f3f4f6;
-  }
+    .checkContainer {
+      flex: 0 0 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .itemThumb {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #f3f4f6;
+    }
+
+    .itemThumbWrap {
+      width: 50px;
+      height: 50px;
+      flex: 0 0 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 4px; 
+    }
+
+    .thumbCheckbox {
+      width: 18px;
+      height: 18px;
+    }
 
   .itemContent {
     flex: 1;
@@ -352,7 +389,7 @@ $dark-text: #111827;
 
     .itemName {
       font-size: 0.95rem;
-      font-weight: 600;
+      font-weight: 500;
       color: $dark-text;
       white-space: nowrap;
       overflow: hidden;
@@ -374,17 +411,42 @@ $dark-text: #111827;
       color: $gray-text;
       margin-right: 8px;
     }
-    .itemCheckLabel {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 8px;
-    }
     .subtotal {
       display: block;
-      font-weight: 600;
+      font-weight: 500;
       color: $dark-text;
     }
+  }
+
+  .orderFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 0;
+  }
+
+  .orderPrice {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #000;
+  }
+
+  .totalPriceAboveActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 8px 0;
+    border-top: 0;
+  }
+
+  .totalPriceLabel {
+    color: $dark-text;
+    font-weight: 600;
+  }
+
+  .totalPriceValue {
+    font-weight: 600;
+    color: #000;
   }
 }
 
