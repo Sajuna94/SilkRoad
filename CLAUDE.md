@@ -76,9 +76,9 @@ node src/utils/compress.js
 ### Monorepo Coordination
 
 **Frontend-Backend Communication:**
-- Development: Frontend proxy to `http://localhost:5000` (see commented proxy in `vite.config.ts`)
+- Development: Frontend proxy to `http://127.0.0.1:5000` (enabled in `vite.config.ts`)
 - Production: Frontend calls `https://silkroad-lhyz.onrender.com`
-- API client: `silkroad-frontend-react/src/api/instance.ts` (axios with credentials)
+- API client: `silkroad-frontend-react/src/api/instance.ts` (axios with credentials, 10s timeout)
 
 **Deployment:**
 - Backend: Render (https://silkroad-lhyz.onrender.com)
@@ -92,10 +92,21 @@ node src/utils/compress.js
 - Controllers (`src/controllers/`): Business logic
 - Models (`src/models/`): SQLAlchemy ORM with polymorphic User hierarchy
 
+**Blueprint Structure:**
+- `/api/user`: User authentication and profile (user_routes)
+- `/api/cart`: Shopping cart operations (cart_routes)
+- `/api/order`: Order management (order_routes)
+- `/api/admin`: Admin operations (admin_routes)
+- `/api/vendor`: Vendor operations (vendor_routes)
+- `/api/customer`: Customer operations (customer_routes)
+- `/api/test`: Testing utilities (test_routes)
+
 **Authentication:**
 - Session-based (Flask sessions with `withCredentials: true`)
 - `@require_login(role)` decorator in `src/utils/login_verify.py`
 - Session keys: `user_id`, `role`
+- Session lifetime: 24 hours (configurable in `app.py`)
+- Session cookie: `flask_session` (HttpOnly, SameSite=Lax for dev)
 
 **API Response Format:**
 ```python
@@ -111,6 +122,10 @@ node src/utils/compress.js
 - Polymorphic User model (Admin, Customer, Vendor)
 - Models use `register()` classmethod pattern
 - Reference schema: `silkroad-backend/sql/main.sql`
+
+**File Uploads:**
+- Upload endpoint: `/uploads/<filename>` serves files from `silkroad-backend/uploads/`
+- Static file serving configured in `app.py`
 
 ### Frontend Architecture (React + TypeScript)
 
@@ -147,6 +162,11 @@ node src/utils/compress.js
 - SCSS modules (e.g., `ReviewPage.module.scss`)
 - Global styles in `index.css`
 - Component-scoped styles
+
+**Build Configuration:**
+- React Compiler enabled via `babel-plugin-react-compiler` for performance optimization
+- Path alias `@/` maps to `src/` directory
+- Production base path: `/SilkRoad` for GitHub Pages deployment
 
 ### Shared Utilities
 
@@ -226,6 +246,14 @@ const apiBaseURL = window.location.hostname === "localhost"
   : "https://silkroad-lhyz.onrender.com";
 ```
 
+**Error Handling with Axios Interceptor:**
+```typescript
+// Interceptor automatically logs errors by status code
+// 400: Bad Request, 401: Unauthorized, 403: Forbidden
+// 404: Not Found, 500: Server Error, 501: Not Implemented
+// Errors are re-thrown for React Query to handle
+```
+
 ## Testing
 
 ### Backend Tests
@@ -275,22 +303,26 @@ Currently no automated tests configured. Manual testing via:
 
 ### Starting Development
 
-1. **Backend first:**
+1. **Backend setup:**
    ```bash
    cd silkroad-backend
    uv sync
-   # Create .env with DATABASE_URL
+
+   # Create .env file with required variables:
+   # DATABASE_URL=mysql://<username>:<password>@<host>:<port>/<db_name>
+   # SESSION_KEY=<random-secret-key>
+
    uv run src/app.py
    ```
 
-2. **Frontend:**
+2. **Frontend setup:**
    ```bash
    cd silkroad-frontend-react
    npm install
    npm run dev
    ```
 
-3. **(Optional) Enable proxy:** Uncomment proxy config in `silkroad-frontend-react/vite.config.ts` to avoid CORS during development.
+3. **Development proxy:** Vite proxy is already enabled in `vite.config.ts`, routing `/api` requests to `http://127.0.0.1:5000`.
 
 ### Making Changes
 
@@ -317,14 +349,38 @@ Backend database is auto-initialized via `db.create_all()` in `src/app.py`. When
 4. Update `silkroad-backend/sql/main.sql` reference schema
 5. Add unit tests in `tests/unit/test_models.py`
 
-## CORS Configuration
+## Environment Configuration
+
+### Backend Environment Variables (`.env`)
+
+Required variables in `silkroad-backend/.env`:
+```bash
+DATABASE_URL=mysql://<username>:<password>@<host>:<port>/<db_name>
+SESSION_KEY=<random-secret-key>  # Use a long random string
+```
+
+### CORS Configuration
 
 Backend CORS enabled for:
 - `https://sajuna94.github.io` (production frontend)
 - `http://localhost:5173` (development frontend)
-- `http://localhost:5000` (API)
 
-Configured in `silkroad-backend/src/app.py`.
+Configured in `silkroad-backend/src/app.py` with:
+- `supports_credentials=True` for session cookies
+- Allowed methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
+- Allowed headers: Content-Type, Authorization
+
+### Deployment
+
+**Frontend (GitHub Pages):**
+- Built files deployed to `gh-pages` branch
+- Accessible at https://sajuna94.github.io/SilkRoad/
+- Base path `/SilkRoad` configured in `vite.config.ts`
+
+**Backend (Render):**
+- Deployed at https://silkroad-lhyz.onrender.com
+- Environment variables set in Render dashboard
+- Session cookie configured for production (Secure=True for HTTPS)
 
 ## TypeScript Path Aliases
 
@@ -340,9 +396,9 @@ Configured in `vite.config.ts` and `tsconfig.app.json`.
 ## Common Issues
 
 **CORS errors during development:**
-- Ensure backend is running on `http://localhost:5000`
+- Ensure backend is running on `http://localhost:5000` or `http://127.0.0.1:5000`
 - Check CORS config in `silkroad-backend/src/app.py`
-- Consider enabling Vite proxy (uncomment in `vite.config.ts`)
+- Vite proxy should route `/api` requests automatically
 
 **Session authentication not working:**
 - Verify `withCredentials: true` in API client (`src/api/instance.ts`)

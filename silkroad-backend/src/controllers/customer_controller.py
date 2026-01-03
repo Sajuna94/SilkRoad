@@ -78,6 +78,5 @@ def post_vendor_review():
         }), 201
 
     except Exception as e:
-        db.session.rollback()
-        print(f"Error posting review: {e}") 
+        db.session.rollback() 
         return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500

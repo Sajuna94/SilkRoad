@@ -98,7 +98,6 @@ def add_to_cart():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        print(f"Error adding to cart: {e}") # 建議印出錯誤以便除錯
         return jsonify({"message": f"資料庫錯誤: {str(e)}", "success": False}), 500
     
     return jsonify({"message": "新增商品成功", "success": True}), 200
@@ -143,7 +142,6 @@ def remove_from_cart():
 
     except Exception as e:
         db.session.rollback()
-        print(f"Error removing item: {e}")
         return jsonify({"message": "系統錯誤，移除失敗", "error": str(e)}), 500
 
 @require_login(["customer"])
@@ -153,8 +151,6 @@ def view_cart(cart_id : int):
     if cart_id == 0: 
         customer_id = session.get('user_id')
 
-    print(customer_id)
-    
     if not customer_id:
         return jsonify({"message": "缺少 customer_id", "success": False}), 400
 
@@ -233,7 +229,6 @@ def view_cart(cart_id : int):
         }), 200
 
     except Exception as e:
-        print(f"Error details: {e}")
         return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
     
 @require_login(["customer"])
@@ -271,7 +266,6 @@ def clean_cart():
 
     except Exception as e:
         db.session.rollback()
-        print(f"Error cleaning cart: {e}")
         return jsonify({
             "message": "系統錯誤，清空失敗",
             "error": str(e),
@@ -388,7 +382,6 @@ def update_cart_item():
 
     except Exception as e:
         db.session.rollback()
-        print(f"Error updating cart item: {e}")
         return jsonify({
             "message": "系統錯誤，更新失敗",
             "error": str(e),
@@ -676,7 +669,6 @@ def update_cart_item_guest():
         }), 200
 
     except Exception as e:
-        print(f"Error updating guest cart item: {e}")
         return jsonify({
             "message": "系統錯誤，更新失敗",
             "error": str(e),

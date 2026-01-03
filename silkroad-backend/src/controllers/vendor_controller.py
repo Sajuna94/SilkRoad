@@ -146,7 +146,6 @@ def get_products():
 @require_login(role=["vendor"])
 def add_product():
     data: dict = request.get_json() or {}
-    print(data)
 
     # Define required top-level fields and types
     required_fields = {
@@ -191,7 +190,6 @@ def add_product():
     # Convert comma-separated string to list for storage
     for key in options_required:
         options[key] = [opt.strip() for opt in options[key].split(",") if opt.strip()]
-    print(options)
 
     vendor_id = session["user_id"]
     vendor = Vendor.query.get(vendor_id)
@@ -211,8 +209,6 @@ def add_product():
         is_listed=False,
         image_url=data.get("image_url"),
     )
-
-    print(new_product)
 
     try:
         db.session.add(new_product)
@@ -721,7 +717,6 @@ def add_discount_policy():
             return jsonify({"message": "商家 ID 無效", "success": False}), 400
         else:
             # 記錄詳細錯誤到伺服器日誌
-            print(f"Discount policy creation error: {str(e)}")
             return jsonify({"message": "新增折價券失敗，請稍後再試", "success": False}), 500
 
 
@@ -789,7 +784,6 @@ def view_discount_policy():
             }
         )
     except Exception as e:
-        print(f"Error details: {e}")
         return jsonify({"message": "系統錯誤", "error": str(e)}), 500
 
 @require_login(role=["customer"])
@@ -822,10 +816,12 @@ def view_customer_discounts():
             return jsonify({"message": "找不到該客戶的會員資料", "success": False}), 404
         user_level = customer_info.membership_level
 
-        # 2. 獲取該用戶全平台的使用紀錄
+        # 2. 獲取該用戶全平台的使用紀錄（排除已退款的訂單）
         used_policies_query = db.session.query(Order.policy_id).filter(
             Order.user_id == customer_id,
-            Order.policy_id.isnot(None)
+            Order.policy_id.isnot(None),
+            # 修正：正確處理 NULL 值，只排除明確標記為 'refunded' 的訂單
+            or_(Order.refund_status.is_(None), Order.refund_status != 'refunded')
         ).distinct().all()
         used_ids = [row[0] for row in used_policies_query]
 
@@ -852,7 +848,7 @@ def view_customer_discounts():
         result = []
         for policy, vendor_name in policies_with_names:
             status = "used" if policy.id in used_ids else "available"
-            
+
             result.append({
                 "policy_id": policy.id,
                 "vendor_id": policy.vendor_id,     # 商家 ID
@@ -878,7 +874,6 @@ def view_customer_discounts():
         }), 200
 
     except Exception as e:
-        print(f"Error: {e}")
         return jsonify({"message": "系統錯誤", "error": str(e), "success": False}), 500
     
 def invalid_discount_policy():
@@ -922,7 +917,6 @@ def invalid_discount_policy():
 
     except Exception as e:
         db.session.rollback()
-        print(f"Error details: {e}")
         return (
             jsonify(
                 {"message": "系統錯誤，停用失敗", "error": str(e), "success": False}
@@ -1183,7 +1177,6 @@ def update_discount_policy():
             return jsonify({"message": "商家 ID 無效", "success": False}), 400
         else:
             # 記錄詳細錯誤到伺服器日誌
-            print(f"Discount policy update error: {str(e)}")
             return jsonify({"message": "更新折價券失敗，請稍後再試", "success": False}), 500
 
 
@@ -1359,7 +1352,6 @@ def get_vendor_sales(vendor_id: int):
         )
 
     except Exception as e:
-        print(f"get_vendor_sales error: {e}")
         return jsonify({'message': 'system error', 'error': str(e), 'success': False}), 500
 
 @require_login(role=["vendor"])
@@ -1420,7 +1412,6 @@ def update_vendor_description():
 
     except Exception as e:
         db.session.rollback() # 發生錯誤時回滾，避免 DB 鎖死
-        print(f"Update Error: {e}")
         return jsonify({
             "success": False, 
             "message": "Database error occurred"
@@ -1498,7 +1489,6 @@ def update_vendor_manager_info():
                 old_manager_to_delete = Vendor_Manager.query.get(old_manager_id)
                 if old_manager_to_delete:
                     db.session.delete(old_manager_to_delete)
-                    print(f"Cleaned up orphaned manager ID: {old_manager_id}")
 
         db.session.commit()
 

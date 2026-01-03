@@ -2,6 +2,7 @@ from flask import jsonify, request,session
 from config import db
 from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy, Customer, Vendor,Review
 from datetime import date, datetime
+from sqlalchemy import or_
 
 def do_discount(total_price_accumulated, policy_id, user_id):
 
@@ -11,21 +12,21 @@ def do_discount(total_price_accumulated, policy_id, user_id):
     discount = Discount_Policy.query.get(policy_id)
     if not discount:
         raise ValueError("無效的折價券 ID")
-    
+
     customer = Customer.query.get(user_id)
     if not customer:
         raise ValueError("找不到該顧客資訊，無法驗證會員等級")
-    
+
     membership_level = customer.membership_level
 
     today = date.today()
 
     if discount.is_available == False:
         raise ValueError("折價券已停用")
-    
+
     if discount.start_date and discount.start_date > today:
         raise ValueError(f"折價券尚未生效，請於 {discount.start_date.isoformat()} 後使用")
-    
+
     if discount.expiry_date and discount.expiry_date < today:
          raise ValueError("折價券已過期")
 
@@ -34,12 +35,25 @@ def do_discount(total_price_accumulated, policy_id, user_id):
 
     if discount.min_purchase and total_price_accumulated < discount.min_purchase:
         raise ValueError(f"未達折價券低消限制 (${discount.min_purchase})")
+
+    # --- 檢查折價券是否已被使用過 ---
+    existing_order = Order.query.filter_by(
+        user_id=user_id,
+        policy_id=policy_id
+    ).filter(
+        # 修正：正確處理 NULL 值，只排除明確標記為 'refunded' 的訂單
+        or_(Order.refund_status.is_(None), Order.refund_status != 'refunded')
+    ).first()
+
+    if existing_order:
+        raise ValueError("此折價券已使用過，不可重複使用")
     
     discount_amount = 0
     discount_type = str(discount.type).lower()
-    
+
     if str(discount_type) == 'percent':
-        discount_amount = total_price_accumulated - (total_price_accumulated * discount.value)
+        # value 是整數（例如 20 代表 20%），需要除以 100 轉換為小數
+        discount_amount = total_price_accumulated * (discount.value / 100)
     elif str(discount_type) == 'fixed':
         discount_amount = discount.value
     
@@ -57,39 +71,53 @@ def generate_new_order(cart, policy_id, note, payment_methods, is_delivered, add
     total_price_accumulated = 0
 
     try:
+        # --- 步驟 1: 先計算購物車總價（不創建訂單） ---
+        for item in cart.items:
+            product = item.product
+            if not product:
+                raise ValueError(f"商品 ID {item.product_id} 不存在")
+
+            # 計算單價 (含尺寸加價)
+            size_delta = 0
+            selected_size_str = item.selected_size
+
+            if product.sizes_option and product.sizes_option.options:
+                size_list = [s.strip() for s in product.sizes_option.options.split(',') if s.strip()]
+                if selected_size_str in size_list:
+                    index = size_list.index(selected_size_str)
+                    size_delta = index * 10
+
+            unit_price = product.price + size_delta
+            total_price_accumulated += unit_price * item.quantity
+
+        # --- 步驟 2: 驗證並計算折扣（在創建訂單之前） ---
+        final_price = do_discount(total_price_accumulated, policy_id, user_id)
+
+        # --- 步驟 3: 折扣驗證通過後，才創建訂單 ---
         new_order = Order(
             user_id = user_id,
             vendor_id = vendor_id,
             policy_id = policy_id,
-            total_price = 0,
-            discount_amount = 0,
+            total_price = final_price,  # 直接設置最終價格
+            discount_amount = total_price_accumulated - final_price,  # 計算折扣金額
             note = note,
             payment_methods = payment_methods,
             refund_status = None,
             refund_at = None,
             is_completed = False,
             is_delivered = is_delivered,
-            # --- [修改 5] 寫入地址資訊 ---
             address_info = address_info,
-            # --- 配送狀態：外送訂單初始為 None（等店家標記準備完成），自取訂單不需要此狀態 ---
             deliver_status = None
         )
-        
+
         db.session.add(new_order)
         db.session.flush()
 
+        # --- 步驟 4: 創建訂單項目 ---
         for item in cart.items:
-            # 確保 store_and_calculate_item 有包含我們先前討論的尺寸加價邏輯
-            item_price = store_and_calculate_item(new_order, item)
-            total_price_accumulated += item_price
+            store_and_calculate_item(new_order, item)
 
-        final_price = do_discount(total_price_accumulated, policy_id, user_id)
-        new_order.total_price = final_price
-
-        discount_applied = total_price_accumulated - final_price
-        new_order.discount_amount = discount_applied
-
-        # 如果使用儲值餘額支付，扣除餘額
+        # --- 步驟 5: 如果使用儲值餘額支付，扣除餘額 ---
         if payment_methods == 'button':
             customer = Customer.query.filter_by(user_id=user_id).first()
             if not customer:
@@ -305,9 +333,8 @@ def view_order():
             "order_info": order_info,            
             "message": "order items view",
             "success": True,         
-        })       
+        })
     except Exception as e:
-        print(f"Error details: {e}")
         return jsonify({'message': '系統錯誤', 'error': str(e)}), 500
 
 def update_orderinfo():
@@ -370,7 +397,6 @@ def update_orderinfo():
 
                 refund_amount = order.total_price
                 customer.stored_balance += refund_amount
-                print(f"[退款] 訂單 #{order.id}, 用戶 {order.user_id}, 退款金額 ${refund_amount}, 退款後餘額 ${customer.stored_balance}")
 
             # 如果訂單已完成，減少商家營業額
             if order.is_completed:
@@ -378,7 +404,6 @@ def update_orderinfo():
                 if vendor:
                     revenue_decrease = order.total_price
                     vendor.revenue -= revenue_decrease
-                    print(f"[退款] 商家 {order.vendor_id}, 減少營業額 ${revenue_decrease}, 退款後營業額 ${vendor.revenue}")
 
         elif refund_status != 'refunded' and refund_at is not None:
              return jsonify({"message": "refund_status 不為 'refunded'",
@@ -397,7 +422,6 @@ def update_orderinfo():
                 if vendor:
                     revenue_increase = order.total_price
                     vendor.revenue += revenue_increase
-                    print(f"[完成訂單] 商家 {order.vendor_id}, 增加營業額 ${revenue_increase}, 完成後營業額 ${vendor.revenue}")
 
             order.is_completed = is_completed
 
@@ -454,7 +478,6 @@ def update_orderinfo():
         
     except Exception as e:
         db.session.rollback()
-        print(f"更新訂單時發生錯誤: {e}")
         return jsonify({"message": "伺服器內部錯誤", "success": False}), 500
     
 def view_all_user_orders():
@@ -478,7 +501,6 @@ def view_all_user_orders():
         # 建立 order_id -> review 的映射
         review_map = {review.order_id: review for review in reviews}
 
-        print("database query completed")
         all_orders_data = []
 
         for order in orders:
@@ -623,5 +645,4 @@ def check_order_review_status():
         }), 200
 
     except Exception as e:
-        print(f"Check review status error: {e}")
         return jsonify({"message": "系統錯誤", "error": str(e), "success": False}), 500

@@ -83,6 +83,10 @@ export const useCreateOrder = () => {
       });
       // 讓購物車失效，因為結帳後購物車會被清空
       queryClient.invalidateQueries({ queryKey: ["cart"] });
+      // 讓折扣券列表失效，更新使用狀態
+      queryClient.invalidateQueries({
+        queryKey: ["customerDiscountPolicies", variables.customer_id],
+      });
       // 註：用戶餘額會在後端更新，前端顯示會在下次登入時更新
     },
   });

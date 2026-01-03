@@ -43,7 +43,7 @@ export const useViewDiscountPolicies = (vendorId: number) => {
  */
 export const useViewCustomerDiscountPolicies = (customerId: number) => {
   return useQuery<ViewCustomerDiscountPoliciesResponse, ApiErrorBody>({
-    queryKey: ["discountPolicies", customerId],
+    queryKey: ["customerDiscountPolicies", customerId],
     queryFn: async () => {
       const res = await api.get("/vendor/view_customer_discounts");
       return res.data;

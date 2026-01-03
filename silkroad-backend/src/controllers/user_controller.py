@@ -282,7 +282,6 @@ def login_user():
     session["user_id"] = user.id
     session["role"] = user.role
     session.modified = True # 確保 session 被更新
-    print('session', session)
 
     # 4.5 [購物車合併] 如果是 Customer 且有訪客購物車，合併到資料庫
     if user.role == 'customer':
@@ -341,7 +340,7 @@ def login_user():
             except Exception as e:
                 # 如果合併失敗，記錄錯誤但不影響登入流程
                 db.session.rollback()
-                print(f"購物車合併失敗: {str(e)}")
+                pass  # 購物車合併失敗時繼續登入流程
 
     # 5. [關鍵修改] 根據角色組裝回傳資料
     response_data = {}

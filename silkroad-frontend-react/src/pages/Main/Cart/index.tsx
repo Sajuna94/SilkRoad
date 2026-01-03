@@ -47,10 +47,10 @@ export default function Cart() {
   const createOrderMutation = useCreateOrder();
   const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
 
-  // 取得折扣券列表（需要 vendor_id，僅登入用戶）
+  // 取得折扣券列表（僅登入用戶）
   const vendorId = items.length > 0 ? items[0].vendor_id : undefined;
   const discountPoliciesQuery = useViewCustomerDiscountPolicies(
-    currentUser && vendorId ? vendorId : 0
+    currentUser?.id || 0
   );
 
   // C. 初次掛載時執行
@@ -154,20 +154,17 @@ export default function Cart() {
     today.setHours(0, 0, 0, 0);
 
     return discountPoliciesQuery.data.data.filter((policy) => {
-      // 檢查是否可用
-      //   if (!policy.is_available) return false;
+      // 檢查是否已使用過（最優先檢查）
+      if (policy.status === "used") return false;
+
+      // 檢查折扣券是否屬於當前購物車的商家
+      if (vendorId && policy.vendor_id !== vendorId) return false;
 
       // 檢查到期日
       if (policy.expiry_date) {
         const expiryDate = new Date(policy.expiry_date);
         if (expiryDate < today) return false;
       }
-
-      // 檢查開始日期
-      //   if (policy.start_date) {
-      //     const startDate = new Date(policy.start_date);
-      //     if (startDate > today) return false;
-      //   }
 
       // 檢查會員等級
       if (
