@@ -154,3 +154,25 @@ export interface CheckReviewStatusResponse {
   has_reviewed: boolean;
   data: ReviewData | null;
 }
+
+// --- 客戶折扣券查詢成功回傳 ---
+export interface CustomerDiscountPolicy {
+  policy_id: number;
+  vendor_id: number;
+  vendor_name: string;
+  status: "used" | "available";
+  code: string;
+  type: string;
+  value: number;
+  min_purchase: number;
+	max_discount: number | null;
+  membership_limit: number;
+  expiry_date: string;
+}
+
+export interface ViewCustomerDiscountPoliciesResponse {
+  success: true;
+  user_current_level: number;
+  count: number;
+  data: CustomerDiscountPolicy[];
+}

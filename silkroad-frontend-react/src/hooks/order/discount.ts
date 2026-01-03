@@ -5,6 +5,7 @@ import type {
   ViewDiscountPoliciesInput,
   ViewDiscountPoliciesResponse,
   InvalidDiscountPolicyInput,
+	ViewCustomerDiscountPoliciesResponse,
 } from "@/types/order";
 
 // Add discount policy response
@@ -29,12 +30,28 @@ export const useViewDiscountPolicies = (vendorId: number) => {
     queryKey: ["discountPolicies", vendorId],
     queryFn: async () => {
       const payload: ViewDiscountPoliciesInput = { vendor_id: vendorId };
+			console.log("aa", payload);
       const res = await api.post("/vendor/view_discount", payload);
       return res.data;
     },
     enabled: !!vendorId, // Only run query if vendorId is provided
   });
 };
+
+/**
+ * Hook to fetch discount policies for a customer
+ */
+export const useViewCustomerDiscountPolicies = (customerId: number) => {
+  return useQuery<ViewCustomerDiscountPoliciesResponse, ApiErrorBody>({
+    queryKey: ["discountPolicies", customerId],
+    queryFn: async () => {
+      const res = await api.get("/vendor/view_customer_discounts");
+      return res.data;
+    },
+    enabled: !!customerId,
+  });
+};
+
 
 /**
  * Hook to add a new discount policy
