@@ -1,0 +1,141 @@
+@use "sass:color";
+$color-primary: #8a3e3e;
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modalContent {
+  background-color: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+  h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.3rem;
+    color: #333;
+    text-align: center;
+  }
+
+  .policyList {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: #ddd;
+      border-radius: 4px;
+    }
+  }
+
+  .policyItem {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #fff;
+
+    &:hover {
+      border-color: $color-primary;
+      background-color: #fffbfb;
+    }
+
+    &.selected {
+      border-color: $color-primary;
+      background-color: #fff5f5;
+      box-shadow: 0 0 0 1px $color-primary;
+    }
+
+    .policyHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+
+      .policyCode {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .policyValue {
+        color: $color-primary;
+        font-weight: bold;
+        font-size: 1.1rem;
+      }
+    }
+
+    .policyDetails {
+      font-size: 0.85rem;
+      color: #666;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+  }
+
+  .closeBtn {
+    margin-top: 20px;
+    padding: 10px;
+    width: 100%;
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
+}
+
+.couponInputGroup {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  .input {
+    flex: 1;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+
+  .applyBtn {
+    padding: 0 20px;
+    background-color: $color-primary;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    &:hover {
+      background: color.adjust($color-primary, $lightness: -10%);
+    }
+  }
+}

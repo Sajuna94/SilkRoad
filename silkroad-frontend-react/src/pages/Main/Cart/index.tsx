@@ -5,6 +5,7 @@ import {
   ProductModal,
   type ProductModalRef,
 } from "@/components/molecules/ProductModal";
+import { PolicyModal } from "@/components/molecules/PolicyModal/PolicyModal";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import { Link } from "react-router-dom";
 
@@ -35,9 +36,8 @@ export default function Cart() {
   );
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "button">("cash");
-  const [selectedPolicy, setSelectedPolicy] = useState<CustomerDiscountPolicy | null>(
-    null
-  );
+  const [selectedPolicy, setSelectedPolicy] =
+    useState<CustomerDiscountPolicy | null>(null);
   const [showPolicyModal, setShowPolicyModal] = useState(false);
 
   // B. Hooks
@@ -155,7 +155,7 @@ export default function Cart() {
 
     return discountPoliciesQuery.data.data.filter((policy) => {
       // 檢查是否可用
-    //   if (!policy.is_available) return false;
+      //   if (!policy.is_available) return false;
 
       // 檢查到期日
       if (policy.expiry_date) {
@@ -164,10 +164,10 @@ export default function Cart() {
       }
 
       // 檢查開始日期
-    //   if (policy.start_date) {
-    //     const startDate = new Date(policy.start_date);
-    //     if (startDate > today) return false;
-    //   }
+      //   if (policy.start_date) {
+      //     const startDate = new Date(policy.start_date);
+      //     if (startDate > today) return false;
+      //   }
 
       // 檢查會員等級
       if (
@@ -606,66 +606,66 @@ function Sidebar({
   );
 }
 
-function PolicyModal({
-  policies,
-  selectedPolicy,
-  onSelect,
-  onClose,
-}: {
-  policies: CustomerDiscountPolicy[];
-  selectedPolicy: CustomerDiscountPolicy | null;
-  onSelect: (policy: CustomerDiscountPolicy | null) => void;
-  onClose: () => void;
-}) {
-  const handleSelect = (policy: CustomerDiscountPolicy) => {
-    onSelect(policy);
-    onClose();
-  };
+// function PolicyModal({
+//   policies,
+//   selectedPolicy,
+//   onSelect,
+//   onClose,
+// }: {
+//   policies: CustomerDiscountPolicy[];
+//   selectedPolicy: CustomerDiscountPolicy | null;
+//   onSelect: (policy: CustomerDiscountPolicy | null) => void;
+//   onClose: () => void;
+// }) {
+//   const handleSelect = (policy: CustomerDiscountPolicy) => {
+//     onSelect(policy);
+//     onClose();
+//   };
 
-  return (
-    <div className={styles["modal"]} onClick={onClose}>
-      <div
-        className={styles["modalContent"]}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2>選擇折扣券</h2>
-        <div className={styles["policyList"]}>
-          {policies.map((policy) => (
-            <div
-              key={policy.policy_id}
-              className={`${styles["policyItem"]} ${
-                selectedPolicy?.policy_id === policy.policy_id
-                  ? styles["selected"]
-                  : ""
-              }`}
-              onClick={() => handleSelect(policy)}
-            >
-              <div className={styles["policyHeader"]}>
-                <span className={styles["policyCode"]}>
-                  {policy.code || `折扣券 #${policy.policy_id}`}
-                </span>
-                <span className={styles["policyValue"]}>
-                  {policy.type === "percent"
-                    ? `${policy.value}% OFF`
-                    : `$${policy.value} OFF`}
-                </span>
-              </div>
-              <div className={styles["policyDetails"]}>
-                {policy.min_purchase > 0 && (
-                  <div>最低消費：${policy.min_purchase}</div>
-                )}
-                {policy.max_discount && (
-                  <div>最高折抵：${policy.max_discount}</div>
-                )}
-                {policy.expiry_date && <div>到期日：{policy.expiry_date}</div>}
-              </div>
-            </div>
-          ))}
-        </div>
-        <button className={styles["closeBtn"]} onClick={onClose}>
-          關閉
-        </button>
-      </div>
-    </div>
-  );
-}
+//   return (
+//     <div className={styles["modal"]} onClick={onClose}>
+//       <div
+//         className={styles["modalContent"]}
+//         onClick={(e) => e.stopPropagation()}
+//       >
+//         <h2>選擇折扣券</h2>
+//         <div className={styles["policyList"]}>
+//           {policies.map((policy) => (
+//             <div
+//               key={policy.policy_id}
+//               className={`${styles["policyItem"]} ${
+//                 selectedPolicy?.policy_id === policy.policy_id
+//                   ? styles["selected"]
+//                   : ""
+//               }`}
+//               onClick={() => handleSelect(policy)}
+//             >
+//               <div className={styles["policyHeader"]}>
+//                 <span className={styles["policyCode"]}>
+//                   {policy.code || `折扣券 #${policy.policy_id}`}
+//                 </span>
+//                 <span className={styles["policyValue"]}>
+//                   {policy.type === "percent"
+//                     ? `${policy.value}% OFF`
+//                     : `$${policy.value} OFF`}
+//                 </span>
+//               </div>
+//               <div className={styles["policyDetails"]}>
+//                 {policy.min_purchase > 0 && (
+//                   <div>最低消費：${policy.min_purchase}</div>
+//                 )}
+//                 {policy.max_discount && (
+//                   <div>最高折抵：${policy.max_discount}</div>
+//                 )}
+//                 {policy.expiry_date && <div>到期日：{policy.expiry_date}</div>}
+//               </div>
+//             </div>
+//           ))}
+//         </div>
+//         <button className={styles["closeBtn"]} onClick={onClose}>
+//           關閉
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
