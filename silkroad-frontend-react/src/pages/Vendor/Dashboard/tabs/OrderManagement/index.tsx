@@ -161,10 +161,19 @@ export default function OrderTab() {
       if (checked) set.add(itemId); else set.delete(itemId);
       copy[orderId] = set;
 
-      // if all items are checked, mark order completed via API
+      // if all items are checked, mark order completed or ready for delivery
       const order = orders?.find((o: any) => o.order_id === orderId);
       if (order && set.size === order.items.length && !order.is_completed) {
-        updateOrder.mutate({ order_id: orderId, is_completed: true });
+        // 外送訂單：標記為準備完成（配送中）
+        if (order.is_delivered) {
+          updateOrder.mutate({
+            order_id: orderId,
+            deliver_status: 'delivering'
+          });
+        } else {
+          // 自取訂單：直接標記完成
+          updateOrder.mutate({ order_id: orderId, is_completed: true });
+        }
       }
 
       return copy;
@@ -180,6 +189,34 @@ export default function OrderTab() {
       order_id: orderId,
       [field]: value,
     });
+  };
+
+  const renderOrderStatus = (order: VendorOrderSummary) => {
+    if (order.refund_status === "refunded") {
+      return (
+        <span className={`${styles.status} ${styles.refunded}`}>已退款</span>
+      );
+    }
+    if (order.is_completed) {
+      return (
+        <span className={`${styles.status} ${styles.completed}`}>已完成</span>
+      );
+    }
+    if (order.refund_status === "pending") {
+      return (
+        <span className={`${styles.status} ${styles.waiting}`}>退款申請中</span>
+      );
+    }
+    // 外送訂單的配送狀態
+    if (order.is_delivered && !order.is_completed && !order.refund_status) {
+      const deliverStatus = (order as any).deliver_status;
+      if (deliverStatus === 'delivering') {
+        return <span className={`${styles.status} ${styles.delivering}`}>配送中</span>;
+      }
+      // deliver_status 是 null，表示還在準備
+      return <span className={`${styles.status} ${styles.pending}`}>準備中</span>;
+    }
+    return <span className={`${styles.status} ${styles.pending}`}>處理中</span>;
   };
 
   const handleRefundAction = (
@@ -203,33 +240,6 @@ export default function OrderTab() {
         onError: (err: any) => alert("操作失敗: " + (err?.message || err)),
       }
     );
-  };
-
-  const renderOrderStatus = (order: VendorOrderSummary) => {
-    // 退款優先顯示
-    if (order.refund_status === "refunded") {
-      return (
-        <span className={`${styles.status} ${styles.refunded}`}>已退款</span>
-      );
-    }
-    if (order.refund_status === "pending") {
-      return (
-        <span className={`${styles.status} ${styles.waiting}`}>退款申請中</span>
-      );
-    }
-
-    // 處理中 / 派送中 / 已完成 的流程：
-    // - 當尚未由商家標記完成 (is_completed === false)：顯示「處理中」
-    // - 當已標記完成 (is_completed === true)：如果是外送顯示「派送中」，否則顯示「已完成」
-    if (!order.is_completed) {
-      return <span className={`${styles.status} ${styles.pending}`}>處理中</span>;
-    }
-
-    if (order.is_delivered) {
-      return <span className={`${styles.status} ${styles.delivering}`}>派送中</span>;
-    }
-
-    return <span className={`${styles.status} ${styles.completed}`}>已完成</span>;
   };
 
   return (
@@ -458,10 +468,25 @@ export default function OrderTab() {
                                 <span className={styles.textSuccess}>
                                   顧客已確認送達
                                 </span>
-                              ) : (
+                              ) : (order as any).deliver_status === 'delivering' ? (
                                 <span className={styles.textWarning}>
-                                  等待顧客確認送達
+                                  配送中 - 等待顧客確認送達
                                 </span>
+                              ) : (
+                                <button
+                                  className={`${styles.actionBtn} ${styles.btnPrimary}`}
+                                  onClick={() =>
+                                    updateOrder.mutate({
+                                      order_id: order.order_id,
+                                      deliver_status: 'delivering'
+                                    })
+                                  }
+                                  disabled={updateOrder.isPending}
+                                >
+                                  {updateOrder.isPending
+                                    ? "處理中..."
+                                    : "標記為準備完成 (外送)"}
+                                </button>
                               )}
                             </div>
                           )}

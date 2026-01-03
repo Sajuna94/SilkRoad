@@ -23,6 +23,7 @@ class Order(db.Model):
     updated_at      = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     discount_amount = db.Column(db.Integer, nullable=False, default=0)
     address_info    = db.Column(db.String(255))
+    deliver_status  = db.Column(Enum('delivering', 'delivered'), nullable=True)
     items           = db.relationship("Order_Item", back_populates="order", cascade="all, delete-orphan")
 
     @property

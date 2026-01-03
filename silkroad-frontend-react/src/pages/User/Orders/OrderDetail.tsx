@@ -23,6 +23,7 @@ export default function OrderDetail() {
     updateOrder.mutate({
       order_id: orderIdNum,
       is_completed: true,
+      deliver_status: 'delivered',
     });
   };
 
@@ -97,6 +98,22 @@ export default function OrderDetail() {
             <span className={styles.label}>配送方式：</span>
             <span>{order_info.is_delivered ? "外送" : "自取"}</span>
           </div>
+          {order_info.is_delivered && order_info.deliver_status && (
+            <div className={styles.infoItem}>
+              <span className={styles.label}>配送狀態：</span>
+              <span
+                className={
+                  order_info.deliver_status === "delivered"
+                    ? styles.completed
+                    : styles.pending
+                }
+              >
+                {order_info.deliver_status === "delivered"
+                  ? "已送達"
+                  : "配送中"}
+              </span>
+            </div>
+          )}
           <div className={styles.infoItem}>
             <span className={styles.label}>支付方式：</span>
             <span>

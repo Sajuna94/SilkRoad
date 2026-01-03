@@ -70,7 +70,9 @@ def generate_new_order(cart, policy_id, note, payment_methods, is_delivered, add
             is_completed = False,
             is_delivered = is_delivered,
             # --- [修改 5] 寫入地址資訊 ---
-            address_info = address_info
+            address_info = address_info,
+            # --- 配送狀態：外送訂單初始為 None（等店家標記準備完成），自取訂單不需要此狀態 ---
+            deliver_status = None
         )
         
         db.session.add(new_order)
@@ -294,7 +296,8 @@ def view_order():
             "is_completed": order.is_completed,
             "is_delivered": order.is_delivered,
             "total_price": order.total_price,
-            "address_info": order.address_info
+            "address_info": order.address_info,
+            "deliver_status": order.deliver_status
         })
         
         return jsonify({
@@ -334,8 +337,10 @@ def update_orderinfo():
     refund_at = data.get("refund_at") #格式： YYYY-MM-DD HH:mm:ss
     is_completed = data.get("is_completed")
     is_delivered = data.get("is_delivered")
+    deliver_status = data.get("deliver_status")
 
     able_refund_status = ['pending', 'refunded', 'rejected', None]
+    able_deliver_status = ['delivering', 'delivered', None]
 
     try:
         if refund_status is not None:
@@ -402,6 +407,12 @@ def update_orderinfo():
                                 "success": False}), 400
             order.is_delivered = is_delivered
 
+        if deliver_status is not None:
+            if deliver_status not in able_deliver_status:
+                return jsonify({"message": "deliver_status 傳值錯誤，必須是 'delivering', 'delivered' 或 None",
+                                "success": False}), 400
+            order.deliver_status = deliver_status
+
         db.session.commit()
         # return jsonify({"message": "訂單資訊更新成功",
         #                 "success": True}), 200
@@ -430,7 +441,8 @@ def update_orderinfo():
             "refund_at": order.refund_at.strftime('%Y-%m-%d %H:%M:%S') if order.refund_at else None,
             "is_completed": order.is_completed,
             "is_delivered": order.is_delivered,
-            "total_price": order.total_price
+            "total_price": order.total_price,
+            "deliver_status": order.deliver_status
         })
         
         return jsonify({
@@ -504,7 +516,8 @@ def view_all_user_orders():
                 "has_reviewed": has_reviewed,
                 "review_id": review_id,
                 "items": items_in_this_order,
-                "address_info": order.address_info
+                "address_info": order.address_info,
+                "deliver_status": order.deliver_status
             })
 
         return jsonify({
@@ -563,7 +576,8 @@ def view_all_vendor_orders():
                 "note": order.note,
                 "created_at": order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                 "items": items_in_this_order,
-                "address_info": order.address_info
+                "address_info": order.address_info,
+                "deliver_status": order.deliver_status
             })
 
         return jsonify({

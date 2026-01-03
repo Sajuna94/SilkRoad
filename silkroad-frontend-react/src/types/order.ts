@@ -42,6 +42,9 @@ export interface OrderSummary {
 
   // ★ 新增這行：後端回傳了 items 陣列
   items: OrderDetailItem[];
+
+  // ★ 配送狀態
+  deliver_status?: 'delivering' | 'delivered' | null;
 }
 
 // --- 2.5 用於 /view_vendor_orders (vendor 訂單列表) 的回傳結構 ---
@@ -59,6 +62,8 @@ export interface VendorOrderSummary {
   items: OrderDetailItem[];
   // 供 vendor 列表顯示的地址資訊（外送訂單）
   address_info?: string;
+  // ★ 配送狀態
+  deliver_status?: 'delivering' | 'delivered' | null;
 }
 
 // --- 3. 用於 /view (單筆訂單詳細) 的回傳結構 ---
@@ -72,6 +77,7 @@ export interface OrderDetailInfo {
   is_delivered: boolean;
   total_price: number;
   address_info?: string;
+  deliver_status?: 'delivering' | 'delivered' | null;
 }
 
 export interface OrderDetailItem {
@@ -101,6 +107,7 @@ export interface UpdateOrderInput {
   refund_at?: string;
   is_completed?: boolean;
   is_delivered?: boolean;
+  deliver_status?: 'delivering' | 'delivered' | null;
 }
 
 // --- 5. 折價券相關類型 ---
