@@ -77,7 +77,7 @@ $dark-text: #111827;
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: lighten($dark-text, 10%);
+    background: color.adjust($dark-text, $lightness: 10%);
   }
 }
 
@@ -369,9 +369,16 @@ $dark-text: #111827;
     text-align: right;
 
     .qty {
-      display: block;
+      display: inline-block;
       font-size: 0.85rem;
       color: $gray-text;
+      margin-right: 8px;
+    }
+    .itemCheckLabel {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
     }
     .subtotal {
       display: block;

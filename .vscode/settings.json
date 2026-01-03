@@ -1,11 +1,11 @@
 {
     "[typescriptreact][typescript]": {
-        "editor.tabSize": 4,
+        "editor.tabSize": 2,
         "editor.detectIndentation": false,
         "editor.insertSpaces": false
     },
     "[javascript]": {
-        "editor.tabSize": 4,
+        "editor.tabSize": 2,
         "editor.detectIndentation": false,
         "editor.insertSpaces": false
     },

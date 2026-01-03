@@ -1,51 +1,34 @@
 # Backend
 
-## istall Dependencies
-### with uv
+## **Introduction**
+This is a backend application for SilkRoad.  
+Porvide API for the front-end.
+
+## **install Dependencies**
+
+### windows
 ```bash
-uv sync
-```
-
-### with pip
-```bash
-#for unix-like
-cd silkroad-backend
-chmod +x sync.sh
-./sync.sh
-
-#for windows NOTE: only for powershell not cmd
-cd silkroad-backend
-.\sync.ps1
-```
-
-## if you dont want a single line xd
-```bash
-# 1. 用 py 重新建立虛擬環境 (它會使用 3.13)
-py -m venv .venv
-
-# 2. 啟動
-.\.venv\Scripts\Activate.ps1
-# or
+python -m venv .venv
 .\.venv\Scripts\activate
-
-# 3. 安裝套件
 pip install -e .
+```
 
-## Run backend server
-### uv 
+### unix like
+```bash
+python3 -m venv .venv
+source ./.venv/bin/activate
+pip install -e .
+```
+
+## **Before you run**
+> - Ensure you have the `.env` file that contains necessary environment variables set up for your application.
+
+## **run**
 ```bash
 cd silkroad-backend
-uv run src/app.py
+python src/app.py
 ```
 
-### python
-```bash 
-cd silkroad-backend
-python3 src/app.py
-```
-### You can not run with this version because I just complete modles part :-)
-
-### If you want to test api, you can use postman.
 
 ## structure
 ```bash

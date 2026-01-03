@@ -16,7 +16,7 @@ export default function ProductList() {
     useVendorProductsByVendorId(vendorIdNum);
   const { data: user } = useCurrentUser();
 
-  const { data: reviews = [], isLoading: isReviewsLoading } =
+  const { data: reviews = [] } =
     useVendorReviews(vendorIdNum);
 
   const avgRating =

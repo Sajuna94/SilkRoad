@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  Legend,
+//   Legend,
 } from "recharts";
 
 export default function SalesDashboard() {

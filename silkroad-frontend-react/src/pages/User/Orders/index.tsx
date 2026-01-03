@@ -65,7 +65,9 @@ const OrderCardDetails = ({ items }: { items: OrderDetailItem[] }) => {
 
 export default function History() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams
+    // , setSearchParams
+] = useSearchParams();
   const selectedIdParam = searchParams.get("selected");
 
   const { data: currentUser } = useCurrentUser();
@@ -73,7 +75,7 @@ export default function History() {
 
   const { data: orders, isLoading, error } = useUserOrders(customerId);
 
-  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+//   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);

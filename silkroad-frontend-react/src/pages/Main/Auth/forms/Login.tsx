@@ -22,7 +22,7 @@ export const LoginForm = () => {
         loginMutation.mutate(
             { email: form.email, password: form.password },
             {
-                onSuccess: (data) => {
+                onSuccess: () => {
                     navigate("/home");
                 },
                 onError: (error) => {

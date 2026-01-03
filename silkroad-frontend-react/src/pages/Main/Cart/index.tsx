@@ -16,9 +16,9 @@ import {
 } from "@/hooks/order/cart";
 import { useCreateOrder } from "@/hooks/order/order";
 import { useCurrentUser } from "@/hooks/auth/user";
-import { useViewDiscountPolicies } from "@/hooks/order/discount";
+import { useViewCustomerDiscountPolicies } from "@/hooks/order/discount";
 import type { Product } from "@/types/store";
-import type { DiscountPolicy } from "@/types/order";
+import type { CustomerDiscountPolicy } from "@/types/order";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -35,7 +35,7 @@ export default function Cart() {
   );
   const [address, setAddress] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "button">("cash");
-  const [selectedPolicy, setSelectedPolicy] = useState<DiscountPolicy | null>(
+  const [selectedPolicy, setSelectedPolicy] = useState<CustomerDiscountPolicy | null>(
     null
   );
   const [showPolicyModal, setShowPolicyModal] = useState(false);
@@ -49,7 +49,7 @@ export default function Cart() {
 
   // 取得折扣券列表（需要 vendor_id，僅登入用戶）
   const vendorId = items.length > 0 ? items[0].vendor_id : undefined;
-  const discountPoliciesQuery = useViewDiscountPolicies(
+  const discountPoliciesQuery = useViewCustomerDiscountPolicies(
     currentUser && vendorId ? vendorId : 0
   );
 
@@ -147,7 +147,7 @@ export default function Cart() {
   };
 
   // F. 過濾可用的折扣券
-  const getAvailablePolicies = (): DiscountPolicy[] => {
+  const getAvailablePolicies = (): CustomerDiscountPolicy[] => {
     if (!discountPoliciesQuery.data || !currentUser) return [];
 
     const today = new Date();
@@ -155,7 +155,7 @@ export default function Cart() {
 
     return discountPoliciesQuery.data.data.filter((policy) => {
       // 檢查是否可用
-      if (!policy.is_available) return false;
+    //   if (!policy.is_available) return false;
 
       // 檢查到期日
       if (policy.expiry_date) {
@@ -164,10 +164,10 @@ export default function Cart() {
       }
 
       // 檢查開始日期
-      if (policy.start_date) {
-        const startDate = new Date(policy.start_date);
-        if (startDate > today) return false;
-      }
+    //   if (policy.start_date) {
+    //     const startDate = new Date(policy.start_date);
+    //     if (startDate > today) return false;
+    //   }
 
       // 檢查會員等級
       if (
@@ -236,6 +236,7 @@ export default function Cart() {
         note: note.trim(),
         payment_methods: paymentMethod,
         is_delivered: deliveryMethod === "delivery",
+        shipping_address: address || "",
       };
 
       const result = await createOrderMutation.mutateAsync(payload);
@@ -484,9 +485,9 @@ function Sidebar({
   setAddress: (address: string) => void;
   paymentMethod: "cash" | "button";
   setPaymentMethod: (method: "cash" | "button") => void;
-  selectedPolicy: DiscountPolicy | null;
-  setSelectedPolicy: (policy: DiscountPolicy | null) => void;
-  availablePolicies: DiscountPolicy[];
+  selectedPolicy: CustomerDiscountPolicy | null;
+  setSelectedPolicy: (policy: CustomerDiscountPolicy | null) => void;
+  availablePolicies: CustomerDiscountPolicy[];
   onSelectPolicy: () => void;
   currentUser: any;
 }) {
@@ -611,12 +612,12 @@ function PolicyModal({
   onSelect,
   onClose,
 }: {
-  policies: DiscountPolicy[];
-  selectedPolicy: DiscountPolicy | null;
-  onSelect: (policy: DiscountPolicy | null) => void;
+  policies: CustomerDiscountPolicy[];
+  selectedPolicy: CustomerDiscountPolicy | null;
+  onSelect: (policy: CustomerDiscountPolicy | null) => void;
   onClose: () => void;
 }) {
-  const handleSelect = (policy: DiscountPolicy) => {
+  const handleSelect = (policy: CustomerDiscountPolicy) => {
     onSelect(policy);
     onClose();
   };

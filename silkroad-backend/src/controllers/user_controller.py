@@ -282,6 +282,65 @@ def login_user():
     session.modified = True # 確保 session 被更新
     print('session', session)
 
+    # 4.5 [購物車合併] 如果是 Customer 且有訪客購物車，合併到資料庫
+    if user.role == 'customer':
+        guest_cart = session.get('cart')
+        if guest_cart and guest_cart.get("items"):
+            try:
+                # A. 查詢或建立該 Customer 的 Cart
+                existing_cart = Cart.query.filter_by(customer_id=user.id).first()
+
+                if not existing_cart:
+                    # 如果沒有購物車，建立新的
+                    existing_cart = Cart(
+                        customer_id=user.id,
+                        vendor_id=guest_cart["vendor_id"]
+                    )
+                    db.session.add(existing_cart)
+                else:
+                    # 如果已有購物車但 vendor 不同，清空舊購物車
+                    if existing_cart.vendor_id != guest_cart["vendor_id"]:
+                        Cart_Item.query.filter_by(cart_id=user.id).delete()
+                        existing_cart.vendor_id = guest_cart["vendor_id"]
+
+                # B. 將訪客購物車的商品加入資料庫
+                for item in guest_cart["items"]:
+                    # 檢查是否已有相同商品和選項
+                    existing_item = Cart_Item.query.filter_by(
+                        cart_id=user.id,
+                        product_id=item["product_id"],
+                        selected_sugar=item["selected_sugar"],
+                        selected_ice=item["selected_ice"],
+                        selected_size=item["selected_size"]
+                    ).first()
+
+                    if existing_item:
+                        # 如果已存在相同商品，增加數量
+                        existing_item.quantity += item["quantity"]
+                    else:
+                        # 否則新增商品
+                        new_item = Cart_Item(
+                            cart_id=user.id,
+                            product_id=item["product_id"],
+                            quantity=item["quantity"],
+                            selected_sugar=item["selected_sugar"],
+                            selected_ice=item["selected_ice"],
+                            selected_size=item["selected_size"]
+                        )
+                        db.session.add(new_item)
+
+                # C. 提交資料庫變更
+                db.session.commit()
+
+                # D. 清除 Session 購物車
+                session.pop('cart', None)
+                session.modified = True
+
+            except Exception as e:
+                # 如果合併失敗，記錄錯誤但不影響登入流程
+                db.session.rollback()
+                print(f"購物車合併失敗: {str(e)}")
+
     # 5. [關鍵修改] 根據角色組裝回傳資料
     response_data = {}
 

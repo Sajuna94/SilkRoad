@@ -48,7 +48,7 @@ export const CustomerForm = () => {
         }, {
             onSuccess: (user) => {
                 console.log("註冊成功:", user);
-                navigate("/SilkRoad/home");
+                navigate("/home");
             },
         });
     }

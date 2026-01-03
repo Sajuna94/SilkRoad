@@ -3,7 +3,7 @@ import VendorList, {
 } from "@/components/molecules/VendorList";
 import SystemBulletin from "@/components/molecules/SystemBulletin/SystemBulletin";
 import {
-    useAllVendors,
+    // useAllVendors,
     useAllAnnouncements,
     type Announcement as ApiAnnouncement,
 } from "@/hooks/auth/admin";
@@ -21,8 +21,8 @@ export default function Home() {
     // Vendor mapping
     const vendors: VendorCard[] =
         vendorData
-            ?.filter((v) => true)
-            .map((v) => ({
+            // ?.filter((v) => true)
+            ?.map((v) => ({
                 id: String(v.id),
                 name: v.name,
                 description: v.description,

@@ -1,5 +1,7 @@
 from config.database import db
 from sqlalchemy import Enum
+from sqlalchemy.orm import synonym
+from datetime import timezone, timedelta
 
 class Discount_Policy(db.Model):
     __tablename__ = "discount_policies"
@@ -17,12 +19,30 @@ class Discount_Policy(db.Model):
     membership_limit = db.Column(db.Integer, nullable=False, server_default=db.text("0"))
     start_date       = db.Column(db.Date, nullable=False, server_default=db.func.current_date())
     expiry_date      = db.Column(db.Date)
-    created_at       = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+    _created_at = db.Column("created_at", db.DateTime, nullable=False, server_default=db.func.now())
     updated_at       = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
     'TODO: Add ON UPDATE ON UPDATE CURRENT_TIMESTAMP (follow database aka main.sql)'
 
     #python
     # vendor = db.relationship("Vendor", back_populates="discount_policies")
+
+    @property
+    def created_at(self):
+        if self._created_at is None:
+            return None
+        time_tw = (
+            self._created_at.replace(tzinfo=timezone.utc)
+            .astimezone(timezone(timedelta(hours=8)))
+            .replace(tzinfo=None)   # 移除 +08:00
+        )
+        return time_tw
+
+
+    @created_at.setter
+    def created_at(self, value):
+        self._created_at = value
+
+    created_at = synonym("_created_at", descriptor=created_at)
 
     def __repr__(self):
         return f"<DiscountPolicy id={self.id} code={self.code} type={self.type} value={self.value}>"

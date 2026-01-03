@@ -8,6 +8,7 @@ export interface CreateOrderInput {
   note: string;
   payment_methods: string; // 'cash' 或 'button'
   is_delivered: boolean; // true=外送, false=自取
+	shipping_address?: string;
 }
 
 // 建立訂單的回傳
@@ -153,4 +154,26 @@ export interface CheckReviewStatusResponse {
   message: string;
   has_reviewed: boolean;
   data: ReviewData | null;
+}
+
+// --- 客戶折扣券查詢成功回傳 ---
+export interface CustomerDiscountPolicy {
+  policy_id: number;
+  vendor_id: number;
+  vendor_name: string;
+  status: "used" | "available";
+  code: string;
+  type: string;
+  value: number;
+  min_purchase: number;
+	max_discount: number | null;
+  membership_limit: number;
+  expiry_date: string;
+}
+
+export interface ViewCustomerDiscountPoliciesResponse {
+  success: true;
+  user_current_level: number;
+  count: number;
+  data: CustomerDiscountPolicy[];
 }
