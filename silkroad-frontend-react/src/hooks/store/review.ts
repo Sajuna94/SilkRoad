@@ -44,14 +44,22 @@ export const usePostReview = () => {
     },
     onSuccess: (newReview) => {
       console.log("Review posted successfully:", newReview);
-    
+
+      // 刷新該店家的評論列表
       if (newReview.vendor_id) {
+        // 確保 vendor_id 是數字類型
+        const vendorId = Number(newReview.vendor_id);
         qc.invalidateQueries({
-          queryKey: ["vendor-reviews", newReview.vendor_id],
+          queryKey: ["vendor-reviews", vendorId],
         });
+        console.log(`Invalidating vendor-reviews for vendor ${vendorId}`);
       }
-      
-      qc.invalidateQueries({ queryKey: ["orders"] }); 
+
+      // 刷新訂單列表（因為訂單中會顯示是否已評論）
+      qc.invalidateQueries({ queryKey: ["orders"] });
+
+      // 也刷新所有評論相關的快取（確保萬無一失）
+      qc.invalidateQueries({ queryKey: ["vendor-reviews"] });
     },
     onError: (error) => {
       console.error("評論提交失敗:", error.response?.data);
