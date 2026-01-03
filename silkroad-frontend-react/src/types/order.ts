@@ -33,6 +33,9 @@ export interface OrderSummary {
   created_at: string;
   note?: string;
 
+  // 後端可能回傳的地址資訊
+  address_info?: string;
+
   // ★ 評論狀態
   has_reviewed: boolean;
   review_id: number | null;
@@ -54,6 +57,8 @@ export interface VendorOrderSummary {
   note: string;
   created_at: string;
   items: OrderDetailItem[];
+  // 供 vendor 列表顯示的地址資訊（外送訂單）
+  address_info?: string;
 }
 
 // --- 3. 用於 /view (單筆訂單詳細) 的回傳結構 ---
@@ -66,6 +71,7 @@ export interface OrderDetailInfo {
   is_completed: boolean;
   is_delivered: boolean;
   total_price: number;
+  address_info?: string;
 }
 
 export interface OrderDetailItem {
