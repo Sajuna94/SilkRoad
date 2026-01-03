@@ -800,11 +800,12 @@ def view_customer_discounts():
     1. 該用戶符合等級且目前有效的券 (全平台)
     2. 該用戶曾經使用過的歷史券 (全平台)
     """
-    data = request.get_json() or {}
+    # data = request.get_json() or {}
     
     # 根據您的需求，從前端傳入的資料獲取 customer_id
     # 建議：實務上仍建議優先用 session.get("user_id") 以防 A 用戶看 B 用戶的券
-    customer_id = data.get("customer_id")
+    # customer_id = data.get("customer_id")
+    customer_id = session.get("user_id")
     
     if not customer_id:
         return jsonify({"message": "缺少 customer_id", "success": False}), 400

@@ -236,7 +236,7 @@ data包含
 
 '''
 
-vendor_routes.route("/view_customer_discounts", methods=["POST"])(view_customer_discounts)
+vendor_routes.route("/view_customer_discounts", methods=["GET"])(view_customer_discounts)
 '''
 需要{
     "customer_id": int
