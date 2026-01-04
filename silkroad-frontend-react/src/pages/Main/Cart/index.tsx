@@ -85,7 +85,8 @@ export default function Cart() {
 
     if (selectedPolicy.type === "percent") {
       // 百分比折扣：value 是折扣百分比（例如 20 代表 20% off）
-      discountAmount = totalAmount * (selectedPolicy.value / 100);
+      // 使用 Math.floor 以符合後端 python int() 的無條件捨去邏輯
+      discountAmount = Math.floor(totalAmount * (selectedPolicy.value / 100));
     } else if (selectedPolicy.type === "fixed") {
       // 固定金額折扣
       discountAmount = selectedPolicy.value;
