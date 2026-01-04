@@ -11,10 +11,15 @@ from controllers.user_controller import (
     get_all_announcements,
     get_vendor_ids,
     topup_balance,
-    get_vendor_reviews
+    get_vendor_reviews,
+    verify_email,
+    resend_verification_code
 )
 
 user_routes = Blueprint('user', __name__)
+
+user_routes.route('/verify-email', methods=['POST'])(verify_email)
+user_routes.route('/resend-code', methods=['POST'])(resend_verification_code)
 
 user_routes.route('/register/guest', methods=['POST'])(register_step1)
 """

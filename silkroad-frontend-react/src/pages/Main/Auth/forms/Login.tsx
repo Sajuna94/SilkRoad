@@ -26,7 +26,15 @@ export const LoginForm = () => {
                     navigate("/home");
                 },
                 onError: (error) => {
-                    setError(error.response?.data.message);
+                    const data = error.response?.data;
+                    if (data?.requires_verification) {
+                        const email = data.email || "";
+                        navigate(`/verify-email?email=${encodeURIComponent(email)}`, { 
+                            state: { email } 
+                        });
+                    } else {
+                        setError(data?.message || "登入失敗");
+                    }
                 }
             }
         );

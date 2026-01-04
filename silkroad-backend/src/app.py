@@ -1,9 +1,12 @@
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
+from flask_apscheduler import APScheduler
 from config import init_db
+from config.mail import init_mail
 from routes import user_routes, cart_routes, order_routes
 from routes import admin_routes, vendor_routes,customer_routes
 from utils import test_routes
+from utils.tasks import cleanup_unverified_users
 from datetime import timedelta
 from dotenv import load_dotenv
 import os
@@ -13,6 +16,17 @@ def create_app():
     app = Flask(__name__)
     load_dotenv()
     app.secret_key = os.getenv("SESSION_KEY")
+
+    # Mail configurations
+    app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
+    app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', os.getenv('MAIL_USERNAME'))
+
+    # Scheduler config
+    app.config['SCHEDULER_API_ENABLED'] = True
 
     app.config["SESSION_COOKIE_NAME"] = "flask_session"
     app.config['SESSION_COOKIE_HTTPONLY'] = True  # 防止 JavaScript 存取 cookie
@@ -31,6 +45,30 @@ def create_app():
     # 初始化資料庫（只會在實際運行的進程中執行一次）
     print("[app] 初始化資料庫...")
     init_db(app)
+
+    # 初始化郵件服務
+    print("[app] 初始化郵件服務...")
+    init_mail(app)
+
+    # 初始化排程器
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        print("[app] 初始化排程器...")
+        scheduler = APScheduler()
+        scheduler.init_app(app)
+        
+        # 註冊定期任務 (每小時執行一次)
+        scheduler.add_job(
+            id='cleanup_users',
+            func=cleanup_unverified_users,
+            args=[app],
+            trigger='interval',
+            minutes=30
+        )
+        scheduler.start()
+        
+        # 啟動時立即執行一次清理
+        print("[app] 執行啟動清理...")
+        cleanup_unverified_users(app)
 
     # 註冊路由
     print("[app] 註冊路由...")

@@ -35,7 +35,10 @@ CREATE TABLE `auth`.`users` (
     `password` varchar(255) NOT NULL,
     `phone_number` varchar(25) UNIQUE NOT NULL,
     `role` varchar(20) NOT NULL,
-    `created_at` timestamp NOT NULL DEFAULT(now())
+    `created_at` timestamp NOT NULL DEFAULT(now()),
+    `is_verified` boolean NOT NULL DEFAULT false COMMENT 'Email驗證狀態',
+    `verification_code` varchar(10) DEFAULT NULL COMMENT '驗證碼',
+    `verification_code_expires_at` datetime DEFAULT NULL COMMENT '驗證碼過期時間'
 );
 
 CREATE TABLE `auth`.`admins` (

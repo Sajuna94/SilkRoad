@@ -78,9 +78,11 @@ export const VendorForm = () => {
                 address: vendorForm.address,
             },
         }, {
-            onSuccess: (user) => {
-                console.log("註冊成功:", user);
-                navigate("/home");
+            onSuccess: (data) => {
+                console.log("註冊成功，等待驗證:", data);
+                navigate(`/verify-email?email=${encodeURIComponent(data.email)}`, { 
+                    state: { email: data.email } 
+                });
             },
         });
     }

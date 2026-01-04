@@ -1,30 +1,10 @@
-import React, { useMemo } from "react";
+import React from "react";
 import styles from "./Form.module.scss";
 import { Link } from "react-router-dom";
 import { useRegister } from "@/hooks/auth/user";
 import LabeledInput from "@/components/molecules/LabeledInput";
 import { VendorForm } from "./Vendor";
 import { CustomerForm } from "./Customer";
-
-const checkPasswordRequirements = (password: string) => {
-  return {
-    length: password.length >= 6,
-    uppercase: /[A-Z]/.test(password),
-    number: /[0-9]/.test(password),
-    special: /[^A-Za-z0-9]/.test(password),
-  };
-};
-
-const calculatePasswordStrength = (
-  reqs: ReturnType<typeof checkPasswordRequirements>
-) => {
-  let score = 0;
-  if (reqs.length) score += 1;
-  if (reqs.length && reqs.uppercase) score += 1;
-  if (reqs.number) score += 1;
-  if (reqs.special) score += 1;
-  return Object.values(reqs).filter(Boolean).length;
-};
 
 export const RegisterForm = () => {
   const [currentStep, setCurrentStep] = React.useState<
@@ -40,35 +20,6 @@ export const RegisterForm = () => {
 
   const registerMutation = useRegister();
 
-  const passwordReqs = useMemo(
-    () => checkPasswordRequirements(form.password),
-    [form.password]
-  );
-
-  const strengthScore = useMemo(
-    () => calculatePasswordStrength(passwordReqs),
-    [passwordReqs]
-  );
-
-  const getStrengthStyles = () => {
-    switch (strengthScore) {
-      case 0:
-        return { width: "0%", color: "#e0e0e0", label: "" };
-      case 1:
-        return { width: "25%", color: "#ff4d4f", label: "弱" };
-      case 2:
-        return { width: "50%", color: "#faad14", label: "中" };
-      case 3:
-        return { width: "75%", color: "#faad14", label: "中强" };
-      case 4:
-        return { width: "100%", color: "#52c41a", label: "強" };
-      default:
-        return { width: "0%", color: "#e0e0e0", label: "" };
-    }
-  };
-
-  const strengthStyle = getStrengthStyles();
-
   const validateForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(form.email)) {
@@ -76,8 +27,8 @@ export const RegisterForm = () => {
       return false;
     }
 
-    if (!passwordReqs.length) {
-      setValidationError("密碼至少需要 6 個字符");
+    if (form.password.length === 0) {
+      setValidationError("請輸入密碼");
       return false;
     }
 
@@ -117,15 +68,6 @@ export const RegisterForm = () => {
     );
   };
 
-  const renderRequirement = (isValid: boolean, text: string) => (
-    <div
-      className={`${styles.reqItem} ${isValid ? styles.valid : styles.invalid}`}
-    >
-      <span className={styles.icon}>{isValid ? "✓" : "✗"}</span>
-      <span>{text}</span>
-    </div>
-  );
-
   if (currentStep === "vendor") return <VendorForm />;
   if (currentStep === "customer") return <CustomerForm />;
 
@@ -157,34 +99,6 @@ export const RegisterForm = () => {
         value={form.password}
         onChange={(value) => setForm({ ...form, password: value })}
       />
-
-      {form.password && (
-        <div className={styles.passwordStrength}>
-          <div className={styles.strengthBarBg}>
-            <div
-              className={styles.strengthBarFill}
-              style={{
-                width: strengthStyle.width,
-                backgroundColor: strengthStyle.color,
-              }}
-            />
-          </div>
-
-          <div
-            className={styles.strengthLabel}
-            style={{ color: strengthStyle.color }}
-          >
-            <span>密碼強度: {strengthStyle.label}</span>
-          </div>
-
-          <div className={styles.requirements}>
-            {renderRequirement(passwordReqs.length, "至少 6 個字符")}
-            {renderRequirement(passwordReqs.uppercase, "包含大寫字母 (A-Z)")}
-            {renderRequirement(passwordReqs.number, "包含數字 (0-9)")}
-            {renderRequirement(passwordReqs.special, "包含特殊符號 (!@#$...)")}
-          </div>
-        </div>
-      )}
 
       <div>
         <LabeledInput
@@ -222,47 +136,3 @@ export const RegisterForm = () => {
     </form>
   );
 };
-
-interface LabeledSelectProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: { value: string; label: string }[];
-  required?: boolean;
-  error?: string;
-}
-
-export default function LabeledSelect({
-  label,
-  value,
-  onChange,
-  options,
-  required = true,
-  error,
-}: LabeledSelectProps) {
-  return (
-    <div
-      className={`${styles.field} ${value ? styles.filled : ""} ${
-        error ? styles.error : ""
-      }`}
-    >
-      <div className={styles["select-wrapper"]}>
-        <select
-          className={styles.select}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          required={required}
-        >
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <label className={styles.label}>{label}</label>
-      </div>
-
-      {error && <div className={styles.message}>{error}</div>}
-    </div>
-  );
-}

@@ -1,9 +1,33 @@
-from flask import request, jsonify, session
+from flask import request, jsonify, session, current_app
 from models import User
 from models import Admin,Vendor,Customer,Vendor_Manager,Cart,Cart_Item,System_Announcement,Review
 from config import db
+from config.mail import mail
+from flask_mail import Message
 from utils import require_login
 from sqlalchemy import or_
+import random
+import string
+from datetime import datetime, timedelta, timezone
+
+def send_verification_email(user_email, code):
+    """發送驗證碼郵件"""
+    try:
+        msg = Message(
+            "SilkRoad Email Verification",
+            recipients=[user_email]
+        )
+        msg.body = f"Your verification code is: {code}\nThis code will expire in 10 minutes."
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"[Mail Error] {str(e)}")
+        return False
+
+def generate_verification_code(length=6):
+    """生成 6 位數隨機驗證碼"""
+    return ''.join(random.choices(string.digits, k=length))
+
 def register_step1():
     """
     第一步：驗證共同欄位 (Role, Name, Email, Password, Phone)
@@ -157,7 +181,8 @@ def register_step2(role):
             db.session.add(new_user)
             db.session.flush() 
 
-            # 3. 檢查並轉移訪客購物車
+            # 3. 檢查並轉移訪客購物車 (這部分可以在驗證後再做，或者現在做但不讓用戶操作)
+            # 這裡選擇維持現狀，但在驗證通過前不設定登入 Session
             guest_cart = session.get('cart')
             if guest_cart and guest_cart.get("items"):
                 
@@ -183,57 +208,34 @@ def register_step2(role):
                 # C. 清除 Session 購物車
                 session.pop('cart', None)
 
-        # 4. 最終提交
+        # 4. 生成驗證碼
+        verification_code = generate_verification_code()
+        new_user.verification_code = verification_code
+        new_user.verification_code_expires_at = datetime.now() + timedelta(minutes=10)
+        new_user.is_verified = False
+
+        # 5. 最終提交
         if target_role != 'customer':
             db.session.add(new_user)
             
         db.session.commit()
 
-        # 5. 註冊成功後的 Session 處理
-        session.pop('reg_temp', None)
-        session['user_id'] = new_user.id
-        session['role'] = target_role
-        
-        # 回傳資料 (Response Data Construction)
-        response_data = {}
+        # 6. 發送驗證信 (非同步發送更好，但目前先同步處理)
+        mail_sent = send_verification_email(new_user.email, verification_code)
 
-        if target_role == 'customer':
-            response_data = {
-                "id": new_user.id,
-                "role": "customer",
-                "name": new_user.name,
-                "email": new_user.email,
-                "phone_number": new_user.phone_number,
-                "address": new_user.address,
-                "membership_level": new_user.membership_level,
-                "is_active": new_user.is_active,
-                "stored_balance": new_user.stored_balance,
-                "created_at": new_user.created_at,
-            }
+        # 7. 註冊成功後的處理 (不設定登入 Session，要求跳轉驗證頁)
+        session.pop('reg_temp', None)
+        # 不要在這裡設定 user_id 和 role，因為還沒驗證
+        # session['user_id'] = new_user.id
+        # session['role'] = target_role
         
-        elif target_role == 'vendor':
-            final_manager = Vendor_Manager.query.get(target_manager_id)
-            
-            response_data = {
-                "id": new_user.id,
-                "role": "vendor",
-                "name": new_user.name,
-                "email": new_user.email,
-                "phone_number": new_user.phone_number,
-                "address": new_user.address,
-                "is_active": new_user.is_active,
-                "description": new_user.description,
-                "created_at": new_user.created_at,
-                "manager": {
-                    "id": final_manager.id,
-                    "name": final_manager.name,
-                    "email": final_manager.email,
-                    "phone_number": final_manager.phone_number
-                }
-            }
-            
-        session['user'] = response_data
-        session.modified = True 
+        # 回傳資料 (不包含敏感資訊，僅告知成功)
+        response_data = {
+            "email": new_user.email,
+            "role": target_role,
+            "requires_verification": True,
+            "mail_sent": mail_sent
+        }
 
     except ValueError as e:
         return jsonify({
@@ -248,10 +250,10 @@ def register_step2(role):
             "success": False
         }), 500
 
-    # 6. 回傳最終結果
+    # 8. 回傳最終結果
     return jsonify({
         "success": True,
-        "message": "Registration successful",
+        "message": "Registration successful. Please verify your email.",
         "data": [response_data]
     }), 201
 
@@ -277,6 +279,15 @@ def login_user():
             "message": "Email or password is incorrect",            
             "success": False
         }), 401
+
+    # 3.5 檢查是否已驗證 Email
+    if not user.is_verified:
+        return jsonify({
+            "message": "Email not verified. Please verify your email first.",
+            "success": False,
+            "requires_verification": True,
+            "email": user.email
+        }), 403
 
     # 4. 登入成功：設定 Session
     session["user_id"] = user.id
@@ -833,3 +844,117 @@ def get_vendor_reviews(vendor_id):
             "message": f"Database error: {str(e)}",
             "success": False
         }), 500
+
+def verify_email():
+    """驗證 Email 驗證碼"""
+    data = request.get_json()
+    email = data.get('email')
+    code = data.get('code')
+
+    if not email or not code:
+        return jsonify({"message": "Email and code are required", "success": False}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"message": "User not found", "success": False}), 404
+
+    if user.is_verified:
+        return jsonify({"message": "Email already verified", "success": True}), 200
+
+    # 檢查驗證碼
+    if user.verification_code != code:
+        return jsonify({"message": "Invalid verification code", "success": False}), 400
+
+    # 檢查是否過期
+    if user.verification_code_expires_at and user.verification_code_expires_at.replace(tzinfo=None) < datetime.now():
+        return jsonify({"message": "Verification code expired", "success": False}), 400
+
+    try:
+        user.is_verified = True
+        user.verification_code = None
+        user.verification_code_expires_at = None
+        db.session.commit()
+
+        # 自動登入：設定 Session
+        session["user_id"] = user.id
+        session["role"] = user.role
+        session.modified = True 
+
+        # 處理購物車合併邏輯 (與 login_user 相同)
+        if user.role == 'customer':
+            guest_cart = session.get('cart')
+            if guest_cart and guest_cart.get("items"):
+                try:
+                    existing_cart = Cart.query.filter_by(customer_id=user.id).first()
+                    if not existing_cart:
+                        existing_cart = Cart(customer_id=user.id, vendor_id=guest_cart["vendor_id"])
+                        db.session.add(existing_cart)
+                    else:
+                        if existing_cart.vendor_id != guest_cart["vendor_id"]:
+                            Cart_Item.query.filter_by(cart_id=user.id).delete()
+                            existing_cart.vendor_id = guest_cart["vendor_id"]
+
+                    for item in guest_cart["items"]:
+                        existing_item = Cart_Item.query.filter_by(
+                            cart_id=user.id,
+                            product_id=item["product_id"],
+                            selected_sugar=item["selected_sugar"],
+                            selected_ice=item["selected_ice"],
+                            selected_size=item["selected_size"]
+                        ).first()
+                        if existing_item:
+                            existing_item.quantity += item["quantity"]
+                        else:
+                            new_item = Cart_Item(
+                                cart_id=user.id,
+                                product_id=item["product_id"],
+                                quantity=item["quantity"],
+                                selected_sugar=item["selected_sugar"],
+                                selected_ice=item["selected_ice"],
+                                selected_size=item["selected_size"]
+                            )
+                            db.session.add(new_item)
+                    db.session.commit()
+                    session.pop('cart', None)
+                    session.modified = True
+                except Exception:
+                    db.session.rollback()
+
+        return jsonify({
+            "message": "Email verified successfully. You are now logged in.",
+            "success": True
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
+
+def resend_verification_code():
+    """重新發送驗證碼"""
+    data = request.get_json()
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"message": "Email is required", "success": False}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"message": "User not found", "success": False}), 404
+
+    if user.is_verified:
+        return jsonify({"message": "Email already verified", "success": True}), 200
+
+    try:
+        code = generate_verification_code()
+        user.verification_code = code
+        user.verification_code_expires_at = datetime.now() + timedelta(minutes=10)
+        db.session.commit()
+
+        mail_sent = send_verification_email(user.email, code)
+        return jsonify({
+            "message": "Verification code resent",
+            "success": True,
+            "mail_sent": mail_sent
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500

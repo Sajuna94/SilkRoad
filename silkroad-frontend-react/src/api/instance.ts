@@ -15,6 +15,8 @@ export const api = axios.create({
 export type ApiErrorBody = AxiosError<{
 	success: false;
 	message: string;
+	requires_verification?: boolean;
+	email?: string;
 }>;
 
 api.interceptors.response.use(

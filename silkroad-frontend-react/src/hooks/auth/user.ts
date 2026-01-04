@@ -47,19 +47,21 @@ export const useRegister = () => {
   });
 };
 
-export const useRegisterRole = (role: UserRole) => {
-  const qc = useQueryClient();
+type RegisterRoleRes = {
+  email: string;
+  role: string;
+  requires_verification: boolean;
+  mail_sent: boolean;
+};
 
-  return useMutation<User, ApiErrorBody, RegisterRoleReq>({
+export const useRegisterRole = (role: UserRole) => {
+  return useMutation<RegisterRoleRes, ApiErrorBody, RegisterRoleReq>({
     mutationFn: async (payload) => {
       const res = await api.post(`/user/register/${role}`, payload);
       return res.data.data[0];
     },
     onSuccess: (res) => {
-      // 重置查詢標記，允許重新查詢
-      resetQueryFlag();
-      // 直接設置用戶數據
-      qc.setQueryData(["user"], res);
+      console.log("Registration step 2 successful, verification required:", res);
     },
     onError: (error) => {
       console.error("註冊失敗:", error.response?.data);
@@ -171,5 +173,26 @@ export const useVendorIds = () => {
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 1,
+  });
+};
+
+type VerifyEmailReq = { email: string; code: string };
+type ResendCodeReq = { email: string };
+
+export const useVerifyEmail = () => {
+  return useMutation<any, ApiErrorBody, VerifyEmailReq>({
+    mutationFn: async (payload) => {
+      const res = await api.post("/user/verify-email", payload);
+      return res.data;
+    },
+  });
+};
+
+export const useResendCode = () => {
+  return useMutation<any, ApiErrorBody, ResendCodeReq>({
+    mutationFn: async (payload) => {
+      const res = await api.post("/user/resend-code", payload);
+      return res.data;
+    },
   });
 };

@@ -22,6 +22,11 @@ class User(db.Model):
     role            = db.Column(db.String(20), nullable=False)
     _created_at = db.Column("created_at", db.DateTime, nullable=False, server_default=db.func.now())
 
+    # Email Verification Fields
+    is_verified = db.Column(db.Boolean, default=False, nullable=False)
+    verification_code = db.Column(db.String(10), nullable=True)
+    verification_code_expires_at = db.Column(db.DateTime, nullable=True)
+
     @property
     def created_at(self):
         if self._created_at is None:
