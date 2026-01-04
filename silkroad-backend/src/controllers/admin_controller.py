@@ -2,6 +2,7 @@
 from flask import request, jsonify
 from models import Admin,Vendor,Customer
 from models import Block_Record,System_Announcement
+from models import Product, Cart_Item
 from config import db
 from utils import require_login
 
@@ -38,7 +39,25 @@ def _toggle_user_status(target_active_status):
         vendor.is_active = target_active_status # 設定狀態
         target_found = True
         target_type = "Vendor"
-    
+
+        # [方案 4 - 主動清理] 當 ban vendor 時，自動清理所有購物車中該 vendor 的商品
+        if target_active_status is False:
+            # 查詢該 vendor 的所有商品 ID
+            vendor_product_ids = db.session.query(Product.id).filter(
+                Product.vendor_id == target_user_id
+            ).all()
+            vendor_product_ids = [pid[0] for pid in vendor_product_ids]
+
+            if vendor_product_ids:
+                # 刪除所有購物車中包含這些商品的項目
+                deleted_count = Cart_Item.query.filter(
+                    Cart_Item.product_id.in_(vendor_product_ids)
+                ).delete(synchronize_session=False)
+
+                # 記錄清理數量（可選）
+                if deleted_count > 0:
+                    db.session.flush()  # 確保刪除操作執行
+
     if not target_found:
         customer = Customer.query.get(target_user_id)
         if customer:
