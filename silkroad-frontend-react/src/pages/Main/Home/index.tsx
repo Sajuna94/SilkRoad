@@ -8,8 +8,11 @@ import {
   type Announcement as ApiAnnouncement,
 } from "@/hooks/auth/admin";
 import { useVendors } from "@/hooks/auth/vendor";
+import { useCurrentUser, useLogout } from "@/hooks/auth/user";
 import type { Announcement as BulletinAnnouncement } from "@/components/molecules/SystemBulletin/AnnouncementModal";
 import styles from "./Home.module.scss";
+import { useNavigate } from "react-router-dom";
+import { UserRole } from "@/types/user";
 
 type VendorCard = BaseVendor & {
   rating: number;
@@ -18,6 +21,8 @@ type VendorCard = BaseVendor & {
 export default function Home() {
   const { data: vendorData, isLoading } = useVendors();
   const { data: apiAnnouncements } = useAllAnnouncements();
+  const logout = useLogout();
+  const user = useCurrentUser().data;
 
   const vendors: VendorCard[] = useMemo(() => {
     return (
@@ -69,8 +74,29 @@ export default function Home() {
     { label: "3.5 ★ 以上", value: 3.5 },
   ];
 
+  const handleBlockedLogout = () => {
+    logout.mutate(undefined, {
+      onSuccess: () => useNavigate()("/home"),
+    });
+  };
+
+  const isBlocked =
+    user &&
+    (user.role === UserRole.VENDOR || user.role === UserRole.CUSTOMER) &&
+    user.is_active === false;
+
   return (
     <div className={styles.container}>
+      {isBlocked && (
+        <div className={styles.blockedOverlay}>
+          <div className={styles.blockedMessage}>
+            <h1>帳號已被封鎖</h1>
+            <p>您的帳號目前處於停用狀態。如有疑問請聯繫客服。</p>
+            <button onClick={handleBlockedLogout}>確認並返回首頁</button>
+          </div>
+        </div>
+      )}
+
       <SystemBulletin announcements={announcements} />
 
       <div className={styles.controlsSection}>
