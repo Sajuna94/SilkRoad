@@ -57,12 +57,14 @@ def do_discount(total_price_accumulated, policy_id, user_id):
     elif str(discount_type) == 'fixed':
         discount_amount = discount.value
     
+    discount_amount = int(discount_amount)
+
     if discount.max_discount is not None:
         if discount_amount > discount.max_discount:
             discount_amount = discount.max_discount
 
     final_price = total_price_accumulated - discount_amount
-    return max(final_price, 0)
+    return int(max(final_price, 0))
 
 
 def generate_new_order(cart, policy_id, note, payment_methods, is_delivered, address_info):

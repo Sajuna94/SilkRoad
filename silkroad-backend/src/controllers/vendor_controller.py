@@ -788,25 +788,11 @@ def view_discount_policy():
 
 @require_login(role=["customer"])
 def view_customer_discounts():
-    """
-    [用戶端] 查詢全平台折價券列表
-    根據前端傳入的 customer_id 回傳：
-    1. 該用戶符合等級且目前有效的券 (全平台)
-    2. 該用戶曾經使用過的歷史券 (全平台)
-    """
-    # data = request.get_json() or {}
-    
-    # 根據您的需求，從前端傳入的資料獲取 customer_id
-    # 建議：實務上仍建議優先用 session.get("user_id") 以防 A 用戶看 B 用戶的券
-    # customer_id = data.get("customer_id")
     customer_id = session.get("user_id")
-    
     if not customer_id:
         return jsonify({"message": "缺少 customer_id", "success": False}), 400
 
-    # --- 設定台灣時區 ---
     tw_tz = pytz.timezone('Asia/Taipei')
-    # 取得台灣當下的日期 (忽略時分秒，只取日期部分進行比對)
     today = datetime.now(tw_tz).date()
 
     try:
@@ -816,55 +802,56 @@ def view_customer_discounts():
             return jsonify({"message": "找不到該客戶的會員資料", "success": False}), 404
         user_level = customer_info.membership_level
 
-        # 2. 獲取該用戶全平台的使用紀錄（排除已退款的訂單）
+        # 2. 獲取該用戶的使用紀錄
         used_policies_query = db.session.query(Order.policy_id).filter(
             Order.user_id == customer_id,
             Order.policy_id.isnot(None),
-            # 修正：正確處理 NULL 值，只排除明確標記為 'refunded' 的訂單
             or_(Order.refund_status.is_(None), Order.refund_status != 'refunded')
         ).distinct().all()
         used_ids = [row[0] for row in used_policies_query]
 
-        # 3. 準備篩選條件 (有效且符合等級)
-        is_active_and_eligible = and_(
-            Discount_Policy.is_available == True,
-            Discount_Policy.start_date <= today,
-            Discount_Policy.membership_limit <= user_level,
-            or_(
-                Discount_Policy.expiry_date.is_(None),
-                Discount_Policy.expiry_date >= today
-            )
-        )
-        was_used_by_me = Discount_Policy.id.in_(used_ids)
-
-        # 4. 執行 JOIN 查詢，抓取 Discount_Policy 詳情與商家(User)名稱
+        # 3. 查詢所有優惠券 (不再於資料庫階段過濾等級與日期)
+        # 只過濾掉被管理員完全關閉 (is_available=False) 的券
         query = db.session.query(Discount_Policy, User.name).join(
             User, Discount_Policy.vendor_id == User.id
-        ).filter(or_(is_active_and_eligible, was_used_by_me))
+        ).filter(Discount_Policy.is_available == True)
 
         policies_with_names = query.all()
 
-        # 5. 格式化回傳內容
+        # 4. 格式化並判斷狀態
         result = []
         for policy, vendor_name in policies_with_names:
-            status = "used" if policy.id in used_ids else "available"
+            # 判斷是否符合條件 (等級與日期)
+            is_expired = policy.expiry_date and policy.expiry_date < today
+            is_not_started = policy.start_date > today
+            level_not_met = policy.membership_limit > user_level
+            
+            # 核心狀態判斷邏輯
+            if policy.id in used_ids:
+                status = "used"
+            elif is_expired or is_not_started or level_not_met:
+                status = "disabled"
+            else:
+                status = "available"
 
             result.append({
                 "policy_id": policy.id,
-                "vendor_id": policy.vendor_id,     # 商家 ID
-                "vendor_name": vendor_name,        # 商家名稱
+                "vendor_name": vendor_name,
                 "code": policy.code,
                 "type": policy.type,
                 "value": policy.value,
                 "min_purchase": policy.min_purchase,
-                "max_discount": policy.max_discount,
                 "membership_limit": policy.membership_limit,
                 "expiry_date": str(policy.expiry_date) if policy.expiry_date else "永久有效",
-                "status": status
+                "status": status,
+                # 額外回傳不符合的原因，方便前端顯示（可選）
+                "disable_reason": "等級不足" if level_not_met else "已過期/尚未開始" if (is_expired or is_not_started) else None
             })
 
-        # 排序：可用排前面，用過的排後面
-        result.sort(key=lambda x: x['status'] == 'used')
+        # 5. 自定義排序邏輯
+        # 權重分配：available=0, used=1, disabled=2
+        status_weight = {"available": 0, "used": 1, "disabled": 2}
+        result.sort(key=lambda x: status_weight[x['status']])
 
         return jsonify({
             "success": True,
