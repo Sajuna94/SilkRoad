@@ -3,7 +3,7 @@ import { AdminDashboard } from "@/pages/Admin";
 import { About, Auth, Cart, Home } from "@/pages/Main";
 import { UserOrders, UserProfile, ReviewPage } from "@/pages/User";
 import OrderDetail from "@/pages/User/Orders/OrderDetail";
-import { VendorDashboard, VendorProductList } from "@/pages/Vendor";
+import { VendorDashboard, VendorPage } from "@/pages/Vendor";
 import { TopUpPage, UserDiscountPage } from "@/pages/Customer";
 
 export const routes = [
@@ -31,7 +31,7 @@ export const routes = [
       {
         path: "vendor",
         children: [
-          { path: ":vendorId", element: <VendorProductList /> },
+          { path: ":vendorId", element: <VendorPage /> },
           { path: "dashboard", element: <VendorDashboard /> },
           { path: ":vendorId/reviews", element: <ReviewPage /> },
         ],

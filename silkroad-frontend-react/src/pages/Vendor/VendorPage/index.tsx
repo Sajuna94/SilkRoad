@@ -6,9 +6,9 @@ import StarRating from "@/components/atoms/StarRating";
 import { useVendor, useVendorProductsByVendorId } from "@/hooks/auth/vendor";
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useVendorReviews } from "@/hooks/store/review";
-import styles from "./ProductList.module.scss";
+import styles from "./VendorPage.module.scss";
 
-export default function ProductList() {
+export default function VendorPage() {
   const navigate = useNavigate();
   const { vendorId } = useParams<{ vendorId: string }>();
   const vendorIdNum = vendorId ? parseInt(vendorId, 10) : 0;
