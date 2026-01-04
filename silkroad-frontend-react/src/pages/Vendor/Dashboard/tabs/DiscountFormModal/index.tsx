@@ -289,7 +289,8 @@ export default function PostDiscount({
               <option value="ALL">所有會員</option>
               <option value="BRONZE">銅牌以上</option>
               <option value="SILVER">銀牌以上</option>
-              <option value="GOLD">金牌以上(cliu限定)</option>
+              <option value="GOLD">金牌以上</option>
+              <option value="DIAMOND">鑽石專屬</option>
             </select>
           </div>
 

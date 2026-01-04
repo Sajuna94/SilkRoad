@@ -23,7 +23,6 @@ const extractErrorMessage = (error: any): string => {
     return "請求超時，請稍後再試";
   }
 
-  // 根據狀態碼提供默認信息
   const status = error.response?.status;
   switch (status) {
     case 400:
@@ -47,6 +46,7 @@ const backendToFrontend = (policy: DiscountPolicy): DiscountForm => {
     1: "BRONZE",
     2: "SILVER",
     3: "GOLD",
+    4: "DIAMOND",
   };
 
   return {
@@ -347,6 +347,7 @@ export default function DiscountManagement() {
             <option value="BRONZE">銅牌以上</option>
             <option value="SILVER">銀牌以上</option>
             <option value="GOLD">金牌以上</option>
+            <option value="DIAMOND">鑽石專屬</option>
           </select>
         </div>
       </section>
