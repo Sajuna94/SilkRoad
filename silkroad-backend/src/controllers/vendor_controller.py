@@ -812,12 +812,13 @@ def view_customer_discounts():
 
         # 3. 查詢所有優惠券 (不再於資料庫階段過濾等級與日期)
         # 只過濾掉被管理員完全關閉 (is_available=False) 的券
-        # 同時過濾掉被 ban 的 vendor 的券
+        # 同時過濾掉被 ban 或未驗證的 vendor 的券
         query = db.session.query(Discount_Policy, Vendor.name).join(
             Vendor, Discount_Policy.vendor_id == Vendor.id
         ).filter(
             Discount_Policy.is_available == True,
-            Vendor.is_active == True  # 只顯示活躍 vendor 的券
+            Vendor.is_active == True,  # 只顯示活躍 vendor 的券
+            Vendor.is_verified == True  # 只顯示已驗證 vendor 的券
         )
 
         policies_with_names = query.all()
@@ -1175,13 +1176,12 @@ def update_discount_policy():
 
 def get_public_vendors():
     """
-    公開取得所有營業中的店家列表
+    公開取得所有營業中且已驗證的店家列表
     權限：公開 (Public) - 訪客、顧客、店家、管理員皆可存取
     """
     try:
-        # 這裡我們通常只撈取 is_active=True 的店家
-        # 如果你想連停權的都顯示，就把 filter_by 去掉，改用 Vendor.query.all()
-        vendors = Vendor.query.filter_by(is_active=True).all()
+        # 只顯示已驗證且營業中的店家
+        vendors = Vendor.query.filter_by(is_active=True, is_verified=True).all()
 
         result = []
         for v in vendors:

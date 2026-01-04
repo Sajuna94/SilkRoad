@@ -228,11 +228,17 @@ def trans_to_order():
         return jsonify({"message": "vendor_id 不符合",
                         "success": False}), 400
 
-    # [方案 4 - 被動驗證] 在結帳時驗證 vendor 是否被 ban
+    # [方案 4 - 被動驗證] 在結帳時驗證 vendor 是否被 ban 或未驗證
     vendor = Vendor.query.get(vendor_id)
     if not vendor:
         return jsonify({"message": "找不到該店家",
                         "success": False}), 404
+
+    if not vendor.is_verified:
+        return jsonify({
+            "message": "該店家尚未完成驗證，無法結帳。",
+            "success": False
+        }), 403
 
     if not vendor.is_active:
         return jsonify({

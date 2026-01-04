@@ -68,14 +68,12 @@ export const VendorForm = () => {
         console.log("Manager Info:", managerForm);
 
         registerMutation.mutate({
+            name: vendorForm.name,
+            address: vendorForm.address,
             manager: {
                 name: managerForm.name,
                 email: managerForm.email,
                 phone_number: managerForm.phone,
-            },
-            vendor: {
-                name: vendorForm.name,
-                address: vendorForm.address,
             },
         }, {
             onSuccess: (data) => {

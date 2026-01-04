@@ -43,7 +43,7 @@ CREATE TABLE `auth`.`users` (
 
 CREATE TABLE `auth`.`admins` (
     `user_id` int PRIMARY KEY,
-    FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`)
+    FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `auth`.`vendor_managers` (
@@ -62,7 +62,7 @@ CREATE TABLE `auth`.`vendors` (
     `address` varchar(255) UNIQUE NOT NULL,
     `description` text DEFAULT NULL,
     `logo_url` varchar(255) DEFAULT NULL,
-    FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`vendor_manager_id`) REFERENCES `auth`.`vendor_managers` (`id`)
 );
 
@@ -72,7 +72,7 @@ CREATE TABLE `auth`.`customers` (
     `is_active` boolean NOT NULL DEFAULT true,
     `stored_balance` int NOT NULL DEFAULT 0,
     `address` varchar(255) NOT NULL,
-    FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`)
+    FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `auth`.`block_records` (
@@ -81,8 +81,8 @@ CREATE TABLE `auth`.`block_records` (
     `user_id` int NOT NULL,
     `reason` text NOT NULL,
     `created_at` timestamp NOT NULL DEFAULT(now()),
-    FOREIGN KEY (`admin_id`) REFERENCES `auth`.`admins` (`user_id`),
-    FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`)
+    FOREIGN KEY (`admin_id`) REFERENCES `auth`.`admins` (`user_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `auth`.`system_announcements` (
@@ -90,7 +90,7 @@ CREATE TABLE `auth`.`system_announcements` (
     `admin_id` int NOT NULL,
     `message` text NOT NULL,
     `created_at` timestamp NOT NULL DEFAULT(now()),
-    FOREIGN KEY (`admin_id`) REFERENCES `auth`.`admins` (`user_id`)
+    FOREIGN KEY (`admin_id`) REFERENCES `auth`.`admins` (`user_id`) ON DELETE CASCADE
 );
 
 -- store tables
@@ -104,7 +104,7 @@ CREATE TABLE `store`.`products` (
     `image_url` varchar(255),
     `is_listed` boolean NOT NULL DEFAULT true COMMENT '上架狀態',
     `created_at` timestamp NOT NULL DEFAULT(now()),
-    FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`)
+    FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS `store`.`sugar_options`;
@@ -135,8 +135,8 @@ CREATE TABLE `store`.`reviews` (
     `rating` int NOT NULL,
     `review_content` text,
     `created_at` timestamp NOT NULL DEFAULT(now()),
-    FOREIGN KEY (`customer_id`) REFERENCES `auth`.`customers` (`user_id`),
-    FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`),
+    FOREIGN KEY (`customer_id`) REFERENCES `auth`.`customers` (`user_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`) ON DELETE CASCADE,
     UNIQUE KEY `customer_vendor_unique_idx` (`customer_id`, `vendor_id`)
 );
 
@@ -165,7 +165,7 @@ CREATE TABLE `order`.`discount_policies` (
     `expiry_date` date COMMENT '折價結束時間',
     `created_at` timestamp NOT NULL DEFAULT(now()),
     `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '資料最後更新時間',
-    FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`)
+    FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `order`.`orders` (
@@ -184,8 +184,8 @@ CREATE TABLE `order`.`orders` (
     `created_at` timestamp NOT NULL DEFAULT(now()),
     `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '資料最後更新時間',
     `address_info` varchar(255) COMMENT '地址資訊',
-    FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`),
-    FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`),
+    FOREIGN KEY (`user_id`) REFERENCES `auth`.`users` (`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`) ON DELETE CASCADE,
     FOREIGN KEY (`policy_id`) REFERENCES `order`.`discount_policies` (`id`)
 );
 
@@ -199,7 +199,7 @@ CREATE TABLE `order`.`order_items` (
     `selected_ice` varchar(50) NOT NULL COMMENT '使用者選的冰塊, e.g., 0%',
     `selected_size` varchar(20) NOT NULL COMMENT '使用者選的大小, e.g., L',
     KEY `idx_order` (`order_id`),
-    FOREIGN KEY (`order_id`) REFERENCES `order`.`orders` (`id`),
+    FOREIGN KEY (`order_id`) REFERENCES `order`.`orders` (`id`) ON DELETE CASCADE,
     FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`)
 );
 
@@ -207,8 +207,8 @@ CREATE TABLE `order`.`carts` (
     `customer_id` int PRIMARY KEY,
     `vendor_id` int NOT NULL,
     `created_at` timestamp NOT NULL DEFAULT(now()),
-    FOREIGN KEY (`customer_id`) REFERENCES `auth`.`customers` (`user_id`),
-    FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`)
+    FOREIGN KEY (`customer_id`) REFERENCES `auth`.`customers` (`user_id`) ON DELETE CASCADE,
+    FOREIGN KEY (`vendor_id`) REFERENCES `auth`.`vendors` (`user_id`) ON DELETE CASCADE
 );
 
 CREATE TABLE `order`.`cart_items` (
@@ -220,6 +220,6 @@ CREATE TABLE `order`.`cart_items` (
     `selected_ice` varchar(50) NOT NULL COMMENT '使用者選的冰塊, e.g., 0%',
     `selected_size` varchar(20) NOT NULL COMMENT '使用者選的大小, e.g., L',
     KEY `idx_cart` (`cart_id`),
-    FOREIGN KEY (`cart_id`) REFERENCES `order`.`carts` (`customer_id`),
+    FOREIGN KEY (`cart_id`) REFERENCES `order`.`carts` (`customer_id`) ON DELETE CASCADE,
     FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`)
 );

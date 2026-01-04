@@ -262,10 +262,10 @@ def delete_announcement(announcement_id):
 @require_login(role=["admin"])
 def get_all_customers():
     """
-    列出所有顧客資料
+    列出所有已驗證的顧客資料
     """
     try:
-        customers = Customer.query.all()
+        customers = Customer.query.filter_by(is_verified=True).all()
         
         # 將物件列表轉換為字典列表
         result = [{
@@ -295,10 +295,10 @@ def get_all_customers():
 @require_login(role=["admin"])
 def get_all_vendors():
     """
-    列出所有店家資料
+    列出所有已驗證的店家資料
     """
     try:
-        vendors = Vendor.query.all()
+        vendors = Vendor.query.filter_by(is_verified=True).all()
         
         result = [{
             "id": v.id,

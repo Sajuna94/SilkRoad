@@ -52,12 +52,34 @@ def register_step1():
     if target_role not in ['vendor', 'customer']:
         return jsonify({"message": "Invalid role", "success": False}), 400
 
-    # 3. 預先檢查 Email 與 Phone 是否重複 (Fail Fast)
-    # 雖然 User.register 也會檢查，但在第一步就擋下來可以提升 UX
-    if User.query.filter_by(email=email).first():
-        return jsonify({"message": "Email has been registered", "success": False}), 409
-    if User.query.filter_by(phone_number=phone_number).first():
-        return jsonify({"message": "Phone number has been registered", "success": False}), 409
+    # 3. 預先檢查 Email 與 Phone 是否重複
+    # 如果是未驗證帳號，允許刪除重新註冊
+    existing_user_by_email = User.query.filter_by(email=email).first()
+    existing_user_by_phone = User.query.filter_by(phone_number=phone_number).first()
+
+    # 檢查 Email
+    if existing_user_by_email:
+        if not existing_user_by_email.is_verified:
+            # 刪除未驗證的舊帳號，允許重新註冊
+            db.session.delete(existing_user_by_email)
+        else:
+            return jsonify({"message": "Email has been registered", "success": False}), 409
+
+    # 檢查 Phone（注意：可能是同一個用戶）
+    if existing_user_by_phone and existing_user_by_phone != existing_user_by_email:
+        if not existing_user_by_phone.is_verified:
+            # 刪除未驗證的舊帳號
+            db.session.delete(existing_user_by_phone)
+        else:
+            return jsonify({"message": "Phone number has been registered", "success": False}), 409
+
+    # 提交刪除操作
+    if existing_user_by_email or existing_user_by_phone:
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
 
     # 4. 將資料暫存入 Session
     # 注意：密碼在這裡是明文存 Session，建議 production 環境要確保是 HTTPS，
@@ -698,8 +720,8 @@ def get_vendor_ids():
     取得所有可用店家的ID列表 (一般用戶可用)
     """
     try:
-        # 只查詢啟用的店家，只返回 ID
-        vendors = Vendor.query.filter_by(is_active=True).all()
+        # 只查詢啟用且已驗證的店家，只返回 ID
+        vendors = Vendor.query.filter_by(is_active=True, is_verified=True).all()
         
         vendor_ids = [v.id for v in vendors]
 
@@ -807,13 +829,19 @@ def get_vendor_reviews(vendor_id):
     權限: Public (公開)
     """
     try:
-        # 1. 確認店家是否存在
+        # 1. 確認店家是否存在且已驗證
         vendor = Vendor.query.get(vendor_id)
         if not vendor:
             return jsonify({
                 "message": "Vendor not found",
                 "success": False
             }), 404
+
+        if not vendor.is_verified:
+            return jsonify({
+                "message": "Vendor not verified",
+                "success": False
+            }), 403
 
         # 2. 查詢該店家的所有評論，依時間倒序排列
         reviews = Review.query.filter_by(vendor_id=vendor_id)\
