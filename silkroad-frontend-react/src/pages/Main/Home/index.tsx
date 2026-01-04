@@ -13,6 +13,7 @@ import {
 import type {
     Announcement as BulletinAnnouncement,
 } from "@/components/molecules/SystemBulletin/AnnouncementModal";
+import { useMemo, useState } from "react";
 
 export default function Home() {
     const { data: vendorData } = useVendors();
@@ -30,6 +31,15 @@ export default function Home() {
                 logoUrl: v.logo_url || `https://api.dicebear.com/7.x/identicon/svg?seed=${v.id}`, // Fallback to a default if logo_url is not available
             })) ?? [];
 
+    // Searching
+    const [searchText, setSearchText] = useState("");
+    const filteredVendors = useMemo(() =>
+        vendors.filter(v =>
+            searchText === "" || v.name.toLowerCase().includes(searchText.toLowerCase())
+        ),
+        [vendors, searchText]
+    );
+
     // Announcement mapping
     const announcements: BulletinAnnouncement[] =
         apiAnnouncements?.map((a: ApiAnnouncement) => ({
@@ -43,7 +53,13 @@ export default function Home() {
         <div style={{ padding: "2rem", height: "100%", overflowY: "auto" }}>
             <SystemBulletin announcements={announcements} />
             <hr />
-            <VendorList vendors={vendors} />
+            <input
+                type="text"
+                placeholder="搜尋店家"
+                value={searchText}
+                onChange={(e) => { setSearchText(e.target.value); }}
+            />
+            <VendorList vendors={filteredVendors} />
         </div>
     );
 }
