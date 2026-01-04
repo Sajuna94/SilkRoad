@@ -1,60 +1,143 @@
 .form {
-	display: flex;
-	flex-direction: column;
-	gap: 1.5rem;
-	padding: 2rem 3rem;
-	border-radius: 8px;
-	background-color: var(--color-surface-lighter);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-	// width: 350px;
-	color: #333;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem 3rem;
+  border-radius: 8px;
+  background-color: var(--color-surface-lighter);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  // width: 350px;
+  color: #333;
 
-	.title {
-		font-size: 1.5rem;
-		font-weight: bold;
-		text-align: center;
-		color: #333;
-	}
+  .title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    color: #333;
+  }
 
-	.button {
-		padding: 0.75rem;
-		font-size: 1rem;
-		cursor: pointer;
-		transition: background-color 0.2s ease;
+  .button {
+    padding: 0.75rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 
-		:hover {
-			background-color: var(--color-accent-hover);
-		}
-	}
+    :hover {
+      background-color: var(--color-accent-hover);
+    }
+  }
 
-	.label {
-		position: absolute;
-		top: 0.5rem;
-		left: 0.75rem;
-		font-size: 1rem;
-		color: #777;
-		pointer-events: none;
-		transition: all 0.2s ease;
-		user-select: none;
-	}
+  .label {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.75rem;
+    font-size: 1rem;
+    color: #777;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
 
-	select {
-		padding: 0.5rem;
-		font-size: 1rem;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-		background-color: #fff;
-		color: #333;
-	}
+  select {
+    padding: 0.5rem;
+    font-size: 1rem;
+    margin-left: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+  }
 
-	.error {
-		padding: 0.75rem;
-		margin-bottom: 1rem;
-		background-color: #fee;
-		border: 1px solid #fcc;
-		border-radius: 4px;
-		color: #c33;
-		font-size: 0.9rem;
-		text-align: center;
-	}
+  .error {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background-color: #fee;
+    border: 1px solid #fcc;
+    border-radius: 4px;
+    color: #c33;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+}
+
+.passwordStrength {
+  margin-top: 8px;
+  margin-bottom: 20px;
+
+  .strengthBarBg {
+    height: 4px;
+    width: 100%;
+    background-color: #f0f0f0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .strengthBarFill {
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+
+  .strengthLabel {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .requirements {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: #666;
+
+    .reqItem {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      .icon {
+        font-weight: bold;
+        font-family: monospace;
+      }
+
+      &.valid {
+        color: #52c41a;
+      }
+
+      &.invalid {
+        color: #ff4d4f;
+      }
+    }
+  }
+}
+
+.roleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+
+  label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  select {
+    flex: 1;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: #666;
+    }
+  }
 }
