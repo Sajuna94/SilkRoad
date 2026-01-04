@@ -1,6 +1,10 @@
 import { useState, useMemo } from "react";
 import styles from "./UserDiscountPage.module.scss";
 
+import { useCurrentUser } from "@/hooks/auth/user";
+import { useViewCustomerDiscountPolicies } from "@/hooks/order/discount";
+import type { CustomerDiscountPolicy } from "@/types/order";
+
 export type DiscountType = "PERCENTAGE" | "FIXED";
 export type MembershipLevel = "ALL" | "BRONZE" | "SILVER" | "GOLD" | "DIAMOND";
 
@@ -14,18 +18,55 @@ export interface DiscountData {
   min_purchase: string;
   max_discount: string;
   membership_limit: MembershipLevel;
+  status?: string;
 }
 
-export interface UserDiscountPageProps {
-  discounts: DiscountData[];
-}
+const mapMembershipLevel = (levelId: number): MembershipLevel => {
+  const map: Record<number, MembershipLevel> = {
+    0: "ALL",
+    1: "BRONZE",
+    2: "SILVER",
+    3: "GOLD",
+    4: "DIAMOND",
+  };
+  return map[levelId] || "ALL";
+};
+
+const transformPolicy = (policy: CustomerDiscountPolicy): DiscountData => {
+  return {
+    id: policy.policy_id.toString(),
+    code: policy.code || "No Code",
+    vendor_name: policy.vendor_name || `商家 #${policy.vendor_id}`,
+    expiry_date: policy.expiry_date || "",
+    type: policy.type === "percent" ? "PERCENTAGE" : "FIXED",
+    value: policy.value,
+    min_purchase: policy.min_purchase?.toString() || "0",
+    max_discount: policy.max_discount?.toString() || "",
+    membership_limit: mapMembershipLevel(policy.membership_limit),
+    status: policy.status, // 如果有的話
+  };
+};
 
 // 定義篩選狀態的型別
 type StatusFilter = "ALL" | "ACTIVE" | "EXPIRED";
 type TypeFilter = "ALL" | DiscountType;
 type SortOption = "DEFAULT" | "EXPIRY_SOON" | "EXPIRY_FAR";
 
-export default function UserDiscountPage({ discounts }: UserDiscountPageProps) {
+export default function UserDiscountPage() {
+  const { data: currentUser, isLoading: isUserLoading } = useCurrentUser();
+  const customerId = currentUser?.id || 0;
+
+  const {
+    data: apiData,
+    isLoading: isDiscountsLoading,
+    isError,
+  } = useViewCustomerDiscountPolicies(customerId);
+
+  const discounts: DiscountData[] = useMemo(() => {
+    if (!apiData?.data || !Array.isArray(apiData.data)) return [];
+    return apiData.data.map(transformPolicy);
+  }, [apiData]);
+
   // 篩選器狀態
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ACTIVE");
@@ -86,6 +127,7 @@ export default function UserDiscountPage({ discounts }: UserDiscountPageProps) {
 
       return true;
     });
+
     if (sortOption !== "DEFAULT") {
       result.sort((a, b) => {
         // 如果沒有期限，視為無限遠，排在最後面 (或最前面，看需求)
@@ -114,6 +156,26 @@ export default function UserDiscountPage({ discounts }: UserDiscountPageProps) {
     typeFilter,
     sortOption,
   ]);
+
+  if (isUserLoading || isDiscountsLoading) {
+    return <div className={styles.container}>載入優惠券中...</div>;
+  }
+
+  if (isError) {
+    return (
+      <div className={styles.container}>無法載入優惠券資料，請稍後再試。</div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className={styles.container}>
+        <p style={{ textAlign: "center", padding: "40px" }}>
+          請先登入以查看您的優惠券
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
