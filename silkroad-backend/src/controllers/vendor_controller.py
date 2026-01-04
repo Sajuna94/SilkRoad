@@ -812,9 +812,13 @@ def view_customer_discounts():
 
         # 3. 查詢所有優惠券 (不再於資料庫階段過濾等級與日期)
         # 只過濾掉被管理員完全關閉 (is_available=False) 的券
-        query = db.session.query(Discount_Policy, User.name).join(
-            User, Discount_Policy.vendor_id == User.id
-        ).filter(Discount_Policy.is_available == True)
+        # 同時過濾掉被 ban 的 vendor 的券
+        query = db.session.query(Discount_Policy, Vendor.name).join(
+            Vendor, Discount_Policy.vendor_id == Vendor.id
+        ).filter(
+            Discount_Policy.is_available == True,
+            Vendor.is_active == True  # 只顯示活躍 vendor 的券
+        )
 
         policies_with_names = query.all()
 
@@ -823,7 +827,7 @@ def view_customer_discounts():
         for policy, vendor_name in policies_with_names:
             # 判斷是否符合條件 (等級與日期)
             is_expired = policy.expiry_date and policy.expiry_date < today
-            is_not_started = policy.start_date > today
+            is_not_started = policy.start_date and policy.start_date > today
             level_not_met = policy.membership_limit > user_level
             
             # 核心狀態判斷邏輯
@@ -836,6 +840,7 @@ def view_customer_discounts():
 
             result.append({
                 "policy_id": policy.id,
+                "vendor_id": policy.vendor_id,  # 添加 vendor_id
                 "vendor_name": vendor_name,
                 "code": policy.code,
                 "type": policy.type,
