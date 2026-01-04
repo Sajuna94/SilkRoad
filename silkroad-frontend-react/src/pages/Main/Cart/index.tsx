@@ -5,7 +5,7 @@ import {
   ProductModal,
   type ProductModalRef,
 } from "@/components/molecules/ProductModal";
-import { PolicyModal } from "@/components/molecules/PolicyModal/PolicyModal";
+import { PolicyModal, type DisplayPolicy } from "@/components/molecules/PolicyModal/PolicyModal";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import { Link } from "react-router-dom";
 
@@ -146,44 +146,65 @@ export default function Cart() {
     }
   };
 
-  // F. 過濾可用的折扣券
-  const getAvailablePolicies = (): CustomerDiscountPolicy[] => {
+  // F. 取得並處理折扣券列表 (排序、標記可用性)
+  const getDisplayPolicies = (): DisplayPolicy[] => {
     if (!discountPoliciesQuery.data || !currentUser) return [];
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const policies = discountPoliciesQuery.data.data;
+    const result: DisplayPolicy[] = [];
 
-    return discountPoliciesQuery.data.data.filter((policy) => {
-      // 檢查是否已使用過（最優先檢查）
-      if (policy.status === "used") return false;
+    policies.forEach((policy) => {
+      // 1. 檢查折扣券是否屬於當前購物車的商家
+      if (vendorId && policy.vendor_id !== vendorId) return;
 
-      // 檢查折扣券是否屬於當前購物車的商家
-      if (vendorId && policy.vendor_id !== vendorId) return false;
+      let isUsable = true;
+      let reason = "";
 
-      // 檢查到期日
-      if (policy.expiry_date) {
-        const expiryDate = new Date(policy.expiry_date);
-        if (expiryDate < today) return false;
-      }
-
-      // 檢查會員等級
-      if (
-        currentUser.role === "customer" &&
-        "membership_level" in currentUser
-      ) {
-        if (currentUser.membership_level < policy.membership_limit)
-          return false;
+      // 檢查狀態 (backend sets status)
+      if (policy.status === "used") {
+        isUsable = false;
+        reason = "已使用";
+      } else if (policy.status === "disabled") {
+        isUsable = false;
+        reason = policy.disable_reason || "未滿足條件";
       }
 
       // 檢查最低消費
-      if (policy.min_purchase && totalAmount < policy.min_purchase)
-        return false;
+      if (policy.min_purchase && totalAmount < policy.min_purchase) {
+        isUsable = false;
+        reason = `未達最低消費 $${policy.min_purchase}`;
+      }
+      
+      // 雖然 backend 已處理 status='disabled' 若等級不足，但前端再次確認保持一致性
+      if (
+        currentUser.role === "customer" &&
+        "membership_level" in currentUser &&
+        currentUser.membership_level < policy.membership_limit
+      ) {
+         isUsable = false;
+         reason = "會員等級不足";
+      }
 
-      return true;
+      result.push({
+        ...policy,
+        isUsable,
+        localReason: reason,
+      });
     });
+
+    // 排序：可用的排前面，不可用的排後面
+    result.sort((a, b) => {
+      if (a.isUsable === b.isUsable) {
+        // 同樣可用或同樣不可用，依 ID 排序
+        return a.policy_id - b.policy_id;
+      }
+      return a.isUsable ? -1 : 1;
+    });
+
+    return result;
   };
 
-  const availablePolicies = getAvailablePolicies();
+  const displayPolicies = getDisplayPolicies();
 
   // G. 結帳驗證（僅對登入用戶）
   const validateCheckout = (): string | null => {
@@ -277,7 +298,7 @@ export default function Cart() {
           setPaymentMethod={setPaymentMethod}
           selectedPolicy={selectedPolicy}
           setSelectedPolicy={setSelectedPolicy}
-          availablePolicies={availablePolicies}
+          policies={displayPolicies}
           onSelectPolicy={() => setShowPolicyModal(true)}
           currentUser={currentUser}
         />
@@ -286,7 +307,7 @@ export default function Cart() {
       {/* 折扣券選擇彈窗 */}
       {showPolicyModal && (
         <PolicyModal
-          policies={availablePolicies}
+          policies={displayPolicies}
           selectedPolicy={selectedPolicy}
           onSelect={setSelectedPolicy}
           onClose={() => setShowPolicyModal(false)}
@@ -369,14 +390,14 @@ function CartList({
     };
 
     modalRef.current?.open(product, item.quantity, {
-      size: item.selected_size,
+      size: { name: item.selected_size, price: 0 },
       ice: item.selected_ice,
       sugar: item.selected_sugar,
     });
   };
 
   const handleUpdateSubmit = async () =>
-    // form: { size: string; ice: string; sugar: string; quantity: number }
+    // form: { size: SizeOptionItem; ice: string; sugar: string; quantity: number }
     {
       if (!editingCartItemId) return;
 
@@ -387,7 +408,7 @@ function CartList({
         await updateMutation.mutateAsync({
           cart_item_id: editingCartItemId,
           quantity: form.quantity,
-          selected_size: form.size,
+          selected_size: form.size.name,
           selected_ice: form.ice,
           selected_sugar: form.sugar,
         });
@@ -470,7 +491,7 @@ function Sidebar({
   setPaymentMethod,
   selectedPolicy,
   setSelectedPolicy,
-  availablePolicies,
+  policies,
   onSelectPolicy,
   currentUser,
 }: {
@@ -484,7 +505,7 @@ function Sidebar({
   setPaymentMethod: (method: "cash" | "button") => void;
   selectedPolicy: CustomerDiscountPolicy | null;
   setSelectedPolicy: (policy: CustomerDiscountPolicy | null) => void;
-  availablePolicies: CustomerDiscountPolicy[];
+  policies: DisplayPolicy[];
   onSelectPolicy: () => void;
   currentUser: any;
 }) {
@@ -492,6 +513,8 @@ function Sidebar({
     currentUser?.role === "customer" && "stored_balance" in currentUser
       ? currentUser.stored_balance
       : 0;
+
+  const usableCount = policies.filter(p => p.isUsable).length;
 
   return (
     <section className={styles["sidebar"]}>
@@ -566,14 +589,14 @@ function Sidebar({
           <button
             className={styles["policyBtn"]}
             onClick={onSelectPolicy}
-            disabled={availablePolicies.length === 0}
+            disabled={policies.length === 0}
           >
             {selectedPolicy
               ? `已選：${
                   selectedPolicy.code || `折扣券 #${selectedPolicy.policy_id}`
                 }`
-              : availablePolicies.length > 0
-              ? `選擇折扣券 (${availablePolicies.length} 張可用)`
+              : policies.length > 0
+              ? `選擇折扣券 (${usableCount} 張可用 / 共 ${policies.length} 張)`
               : "無可用折扣券"}
           </button>
           {selectedPolicy && (

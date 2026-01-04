@@ -68,6 +68,23 @@ $color-primary: #8a3e3e;
       box-shadow: 0 0 0 1px $color-primary;
     }
 
+    &.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #f9f9f9;
+      filter: grayscale(100%);
+      border-color: #e0e0e0;
+
+      &:hover {
+        background-color: #f9f9f9;
+        border-color: #e0e0e0;
+      }
+
+      .policyValue {
+        color: #999;
+      }
+    }
+
     .policyHeader {
       display: flex;
       justify-content: space-between;

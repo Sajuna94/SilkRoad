@@ -2,8 +2,13 @@ import { useState, useMemo } from "react";
 import styles from "./PolicyModal.module.scss";
 import type { CustomerDiscountPolicy } from "@/types/order";
 
+export type DisplayPolicy = CustomerDiscountPolicy & {
+  isUsable: boolean;
+  localReason?: string;
+};
+
 interface PolicyModalProps {
-  policies: CustomerDiscountPolicy[];
+  policies: DisplayPolicy[];
   selectedPolicy: CustomerDiscountPolicy | null;
   onSelect: (policy: CustomerDiscountPolicy | null) => void;
   onClose: () => void;
@@ -25,7 +30,8 @@ export function PolicyModal({
     );
   }, [policies, searchTerm]);
 
-  const handleSelect = (policy: CustomerDiscountPolicy) => {
+  const handleSelect = (policy: DisplayPolicy) => {
+    if (!policy.isUsable) return;
     onSelect(policy);
     onClose();
   };
@@ -60,7 +66,7 @@ export function PolicyModal({
                   selectedPolicy?.policy_id === policy.policy_id
                     ? styles["selected"]
                     : ""
-                }`}
+                } ${!policy.isUsable ? styles["disabled"] : ""}`}
                 onClick={() => handleSelect(policy)}
               >
                 <div className={styles["policyHeader"]}>
@@ -82,6 +88,12 @@ export function PolicyModal({
                   )}
                   {policy.expiry_date && (
                     <div>到期日：{policy.expiry_date}</div>
+                  )}
+                  {/* Show reason if disabled */}
+                  {!policy.isUsable && (
+                    <div style={{ color: "red", marginTop: "4px" }}>
+                      {policy.localReason || policy.disable_reason || "不可用"}
+                    </div>
                   )}
                 </div>
               </div>

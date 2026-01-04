@@ -178,7 +178,7 @@ export interface CustomerDiscountPolicy {
   policy_id: number;
   vendor_id: number;
   vendor_name: string;
-  status: "used" | "available";
+  status: "used" | "available" | "disabled";
   code: string;
   type: string;
   value: number;
@@ -186,6 +186,7 @@ export interface CustomerDiscountPolicy {
 	max_discount: number | null;
   membership_limit: number;
   expiry_date: string;
+  disable_reason?: string;
 }
 
 export interface ViewCustomerDiscountPoliciesResponse {
