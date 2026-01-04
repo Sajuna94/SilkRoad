@@ -163,7 +163,8 @@ export default function OrderTab() {
 
       // if all items are checked, mark order completed or ready for delivery
       const order = orders?.find((o: any) => o.order_id === orderId);
-      if (order && set.size === order.items.length && !order.is_completed) {
+      // 如果訂單正在處理退款，不自動標記完成
+      if (order && set.size === order.items.length && !order.is_completed && order.refund_status !== "pending") {
         // 外送訂單：標記為準備完成（配送中）
         if (order.is_delivered) {
           updateOrder.mutate({
@@ -381,7 +382,7 @@ export default function OrderTab() {
                                 order.is_completed ||
                                 !!(completedItems[order.order_id] && completedItems[order.order_id].has(item.order_item_id))
                               }
-                              disabled={order.is_completed}
+                              disabled={order.is_completed || order.refund_status === "pending"}
                               onChange={(e) =>
                                 toggleItemCompleted(order.order_id, item.order_item_id, e.target.checked)
                               }
@@ -454,7 +455,7 @@ export default function OrderTab() {
                                     true
                                   )
                                 }
-                                disabled={updateOrder.isPending}
+                                disabled={updateOrder.isPending || order.refund_status === "pending"}
                               >
                                 {updateOrder.isPending
                                   ? "處理中..."
@@ -481,7 +482,7 @@ export default function OrderTab() {
                                       deliver_status: 'delivering'
                                     })
                                   }
-                                  disabled={updateOrder.isPending}
+                                  disabled={updateOrder.isPending || order.refund_status === "pending"}
                                 >
                                   {updateOrder.isPending
                                     ? "處理中..."
