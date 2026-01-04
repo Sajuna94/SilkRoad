@@ -188,7 +188,7 @@ export default function OrderTab() {
     });
   };
 
-const completeOrderAndCheckAllItems = (order: any) => {
+  const completeOrderAndCheckAllItems = (order: any) => {
   setCompletedItems((prev) => ({
     ...prev,
     [order.order_id]: new Set(
@@ -202,19 +202,7 @@ const completeOrderAndCheckAllItems = (order: any) => {
   });
 };
 
-  const handleUpdateStatus = (
-    orderId: number,
-    field: "is_completed" | "is_delivered",
-    value: boolean
-  ) => {
-    updateOrder.mutate({
-      order_id: orderId,
-      [field]: value,
-    });
-  };
-
-  const renderOrderStatus = (order: VendorOrderSummary) => {
-    if (order.refund_status === "refunded") {
+  const renderOrderStatus = (order: VendorOrderSummary) => {    if (order.refund_status === "refunded") {
       return (
         <span className={`${styles.status} ${styles.refunded}`}>已退款</span>
       );

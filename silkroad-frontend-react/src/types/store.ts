@@ -1,3 +1,8 @@
+export interface SizeOptionItem {
+  name: string;
+  price: number;
+}
+
 export interface Product {
 	id: number;
 	vendor_id: number;
@@ -5,7 +10,7 @@ export interface Product {
 	price: number;
 	description: string;
 	options: {
-		size: string[];
+		size: SizeOptionItem[];
 		sugar: string[];
 		ice: string[];
 	};

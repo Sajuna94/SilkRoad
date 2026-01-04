@@ -40,7 +40,7 @@ export default function ProductGallery({
             product_id: product.id,
             quantity: form.quantity,
             selected_ice: form.ice,
-            selected_size: form.size,
+            selected_size: form.size.name,
             selected_sugar: form.sugar,
         });
 

@@ -50,7 +50,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
     const [modalOpenTrigger, setModalOpenTrigger] = useState(0);
     const [detailLoaded, setDetailLoaded] = useState(false);
 
-    const { data: productDetail, isLoading: isLoadingDetail } = useProductDetail(vendorId, productId);
+    const { data: productDetail } = useProductDetail(vendorId, productId);
 
     // [新增] 計算總價： (基本價 + 尺寸加價) * 數量
     const totalPrice = useMemo(() => {
