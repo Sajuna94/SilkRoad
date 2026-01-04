@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import styles from "./TopUpPage.module.scss";
 import { useTopUp, useCurrentUser } from "@/hooks/auth/user";
 import { FaFileInvoice } from "react-icons/fa";
+import { useUserOrders } from "@/hooks/order/order";
 
 const LEVEL_CONFIG = [
   { threshold: 10, label: "銅", color: "#cd7f32" },
@@ -12,11 +13,22 @@ const LEVEL_CONFIG = [
 
 export default function TopUpPage() {
   const topUpMutation = useTopUp();
-  const { data: currentUser, isLoading, isError } = useCurrentUser();
+  const {
+    data: currentUser,
+    isLoading: isUserLoading,
+    isError,
+  } = useCurrentUser();
   const [manualAmount, setManualAmount] = useState<string>("");
 
-  // 假資料
-  const currentOrderCount = 100;
+  const customerId = currentUser?.id || 0;
+  const { data: orders, isLoading: isOrderLoading } = useUserOrders(customerId);
+
+  const completedOrders = useMemo(() => {
+    if (!orders) return [];
+    return orders.filter((o) => o.is_completed === true);
+  }, [orders]);
+
+  const currentOrderCount = completedOrders.length;
 
   const maxThreshold = LEVEL_CONFIG[LEVEL_CONFIG.length - 1].threshold;
 
@@ -30,7 +42,7 @@ export default function TopUpPage() {
     return activeLevel ? activeLevel.color : "#888";
   };
 
-  if (isLoading) {
+  if (isUserLoading || isOrderLoading) {
     return (
       <div className={styles.container}>
         <h1 className={styles.title}>儲值中心</h1>
@@ -39,7 +51,7 @@ export default function TopUpPage() {
     );
   }
 
-  if (isError || !currentUser) {
+  if (customerId === 0 || isError || !currentUser) {
     return (
       <div className={styles.container}>
         <h1 className={styles.title}>儲值中心</h1>
