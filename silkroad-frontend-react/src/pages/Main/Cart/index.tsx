@@ -152,77 +152,73 @@ export default function Cart() {
     if (!discountPoliciesQuery.data || !currentUser) return [];
 
     const policies = discountPoliciesQuery.data.data;
-    const result: DisplayPolicy[] = [];
-
-    // 購物車為空時，所有優惠券都不可用
     const isCartEmpty = items.length === 0 || totalAmount === 0;
+    const today = new Date();
 
-    policies.forEach((policy) => {
-      // 1. 檢查折扣券是否屬於當前購物車的商家
-      if (vendorId && policy.vendor_id !== vendorId) return;
+    return policies
+      .filter((policy) => {
+        // 1. 檢查折扣券是否屬於當前購物車的商家
+        if (vendorId && policy.vendor_id !== vendorId) return false;
 
-      // 檢查是否已使用，如果已使用則直接隱藏
-      if (policy.status === "used") return;
+        // 2. 檢查是否已使用，如果已使用則直接隱藏
+        if (policy.status === "used") return false;
 
-      // 檢查是否在期限內，如果不在期限內則直接隱藏 (不顯示在列表)
-      if (policy.status === "disabled" && policy.disable_reason === "已過期/尚未開始") {
-        return;
-      }
+        // 3. 檢查是否在期限內 (後端標記)
+        if (
+          policy.status === "disabled" &&
+          policy.disable_reason === "已過期/尚未開始"
+        ) {
+          return false;
+        }
 
-      // 額外前端檢查 (防止時區或後端判斷延遲)
-      if (policy.expiry_date && policy.expiry_date !== "永久有效") {
-        const expiryDate = new Date(policy.expiry_date);
-        expiryDate.setHours(23, 59, 59, 999);
-        if (expiryDate < new Date()) return;
-      }
+        // 4. 額外前端期限檢查 (防止時區或後端判斷延遲)
+        if (policy.expiry_date && policy.expiry_date !== "永久有效") {
+          const expiryDate = new Date(policy.expiry_date);
+          expiryDate.setHours(23, 59, 59, 999);
+          if (expiryDate < today) return false;
+        }
 
-      let isUsable = true;
-      let reason = "";
+        return true;
+      })
+      .map((policy) => {
+        let isUsable = true;
+        let reason = "";
 
-      // 檢查狀態 (backend sets status)
-      // 注意：已使用和過期的狀態已在上方過濾，這裡只需處理其他 disabled 狀況 (如等級不足)
-      if (policy.status === "disabled") {
-        isUsable = false;
-        reason = policy.disable_reason || "未滿足條件";
-      }
+        // 檢查可用性條件
+        if (isCartEmpty) {
+          isUsable = false;
+          reason = "購物車為空";
+        } else if (policy.status === "disabled") {
+          isUsable = false;
+          reason = policy.disable_reason || "未滿足條件";
+        } else if (
+          currentUser.role === "customer" &&
+          "membership_level" in currentUser &&
+          currentUser.membership_level < policy.membership_limit
+        ) {
+          // 會員等級檢查
+          isUsable = false;
+          reason = "會員等級不足";
+        } else if (policy.min_purchase && totalAmount < policy.min_purchase) {
+          // 最低消費檢查
+          isUsable = false;
+          reason = `未達最低消費 $${policy.min_purchase}`;
+        }
 
-      // 購物車為空檢查 (優先於低消檢查)
-      if (isCartEmpty) {
-        isUsable = false;
-        reason = "購物車為空";
-      } else if (policy.min_purchase && totalAmount < policy.min_purchase) {
-        // 檢查最低消費
-        isUsable = false;
-        reason = `未達最低消費 $${policy.min_purchase}`;
-      }
-      
-      // 雖然 backend 已處理 status='disabled' 若等級不足，但前端再次確認保持一致性
-      if (
-        currentUser.role === "customer" &&
-        "membership_level" in currentUser &&
-        currentUser.membership_level < policy.membership_limit
-      ) {
-         isUsable = false;
-         reason = "會員等級不足";
-      }
-
-      result.push({
-        ...policy,
-        isUsable,
-        localReason: reason,
+        return {
+          ...policy,
+          isUsable,
+          localReason: reason,
+        };
+      })
+      .sort((a, b) => {
+        if (a.isUsable === b.isUsable) {
+          // 同樣可用或同樣不可用，依 ID 排序
+          return a.policy_id - b.policy_id;
+        }
+        // 可用的排前面
+        return a.isUsable ? -1 : 1;
       });
-    });
-
-    // 排序：可用的排前面，不可用的排後面
-    result.sort((a, b) => {
-      if (a.isUsable === b.isUsable) {
-        // 同樣可用或同樣不可用，依 ID 排序
-        return a.policy_id - b.policy_id;
-      }
-      return a.isUsable ? -1 : 1;
-    });
-
-    return result;
   };
 
   const displayPolicies = getDisplayPolicies();
