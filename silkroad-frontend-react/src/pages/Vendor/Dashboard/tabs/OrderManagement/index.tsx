@@ -397,7 +397,7 @@ const completeOrderAndCheckAllItems = (order: any) => {
                                 order.is_completed ||
                                 !!(completedItems[order.order_id] && completedItems[order.order_id].has(item.order_item_id))
                               }
-                              disabled={order.is_completed || order.refund_status === "pending"}
+                              disabled={order.is_completed || order.refund_status === "pending"||order.refund_status === "refunded"}
                               onChange={(e) =>
                                 toggleItemCompleted(order.order_id, item.order_item_id, e.target.checked)
                               }
