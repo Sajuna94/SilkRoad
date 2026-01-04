@@ -228,6 +228,18 @@ def trans_to_order():
         return jsonify({"message": "vendor_id 不符合",
                         "success": False}), 400
 
+    # [方案 4 - 被動驗證] 在結帳時驗證 vendor 是否被 ban
+    vendor = Vendor.query.get(vendor_id)
+    if not vendor:
+        return jsonify({"message": "找不到該店家",
+                        "success": False}), 404
+
+    if not vendor.is_active:
+        return jsonify({
+            "message": "該店家已停業，無法結帳。購物車中的商品將被清除。",
+            "success": False
+        }), 400
+
     policy_id = data.get("policy_id")
     note = data.get("note")
     payment_methods = data.get("payment_methods")
