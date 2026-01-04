@@ -155,14 +155,15 @@ export default function OrderTab() {
   };
 
   const toggleItemCompleted = (orderId: number, itemId: number, checked: boolean) => {
+		const order = orders?.find((o: any) => o.order_id === orderId);
+		if (order?.refund_status === "pending") return;
     setCompletedItems((prev) => {
       const copy: Record<number, Set<number>> = { ...prev };
       const set = new Set(copy[orderId] ? Array.from(copy[orderId]) : []);
       if (checked) set.add(itemId); else set.delete(itemId);
       copy[orderId] = set;
-
       // if all items are checked, mark order completed or ready for delivery
-      const order = orders?.find((o: any) => o.order_id === orderId);
+
       // 如果訂單正在處理退款，不自動標記完成
       if (order && set.size === order.items.length && !order.is_completed && order.refund_status !== "pending") {
         // 外送訂單：標記為準備完成（配送中）
@@ -180,6 +181,20 @@ export default function OrderTab() {
       return copy;
     });
   };
+
+const completeOrderAndCheckAllItems = (order: any) => {
+  setCompletedItems((prev) => ({
+    ...prev,
+    [order.order_id]: new Set(
+      order.items.map((item: any) => item.order_item_id)
+    ),
+  }));
+
+  updateOrder.mutate({
+    order_id: order.order_id,
+    is_completed: true,
+  });
+};
 
   const handleUpdateStatus = (
     orderId: number,
@@ -448,13 +463,7 @@ export default function OrderTab() {
                             ) : (
                               <button
                                 className={`${styles.actionBtn} ${styles.btnPrimary}`}
-                                onClick={() =>
-                                  handleUpdateStatus(
-                                    order.order_id,
-                                    "is_completed",
-                                    true
-                                  )
-                                }
+                                onClick={() => completeOrderAndCheckAllItems(order)}
                                 disabled={updateOrder.isPending || order.refund_status === "pending"}
                               >
                                 {updateOrder.isPending
