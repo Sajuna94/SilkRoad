@@ -1,4 +1,5 @@
-import { Link, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery";
 import StarRating from "@/components/atoms/StarRating";
@@ -8,6 +9,7 @@ import { useVendorReviews } from "@/hooks/store/review";
 import styles from "./ProductList.module.scss";
 
 export default function ProductList() {
+  const navigate = useNavigate();
   const { vendorId } = useParams<{ vendorId: string }>();
   const vendorIdNum = vendorId ? parseInt(vendorId, 10) : 0;
 
@@ -16,8 +18,7 @@ export default function ProductList() {
     useVendorProductsByVendorId(vendorIdNum);
   const { data: user } = useCurrentUser();
 
-  const { data: reviews = [] } =
-    useVendorReviews(vendorIdNum);
+  const { data: reviews = [] } = useVendorReviews(vendorIdNum);
 
   const avgRating =
     reviews && reviews.length > 0
@@ -25,12 +26,51 @@ export default function ProductList() {
         reviews.length
       : 0;
 
+  useEffect(() => {
+    if (vendor && !vendor.is_active) {
+      const timer = setTimeout(() => {
+        navigate("/home");
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [vendor, navigate]);
+
   if (isVendorLoading || isProductsLoading) {
-    return <div className={styles.pageContainer}>載入中...</div>;
+    return (
+      <div
+        className={styles.pageContainer}
+        style={{ textAlign: "center", marginTop: "50px" }}
+      >
+        載入中...
+      </div>
+    );
   }
 
   if (!vendor) {
-    return <div className={styles.pageContainer}>找不到店家</div>;
+    return (
+      <div
+        className={styles.pageContainer}
+        style={{ textAlign: "center", marginTop: "50px" }}
+      >
+        找不到店家
+      </div>
+    );
+  }
+
+  if (!vendor.is_active) {
+    return (
+      <div
+        className={styles.pageContainer}
+        style={{ textAlign: "center", marginTop: "50px" }}
+      >
+        <h2>此店家目前已下架</h2>
+        <p>將在 3 秒後自動返回首頁...</p>
+        <button onClick={() => navigate("/home")} style={{ padding: "10px" }}>
+          立即返回
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -45,7 +85,10 @@ export default function ProductList() {
             <h1>{vendor.name}</h1>
             <div className={styles.meta}>
               <span>{vendor?.address || "地址未提供"}</span>
-              <Link to={`/vendor/${vendorId}/reviews`} className={styles.ratingLink}>
+              <Link
+                to={`/vendor/${vendorId}/reviews`}
+                className={styles.ratingLink}
+              >
                 <div style={{ display: "inline-flex", alignItems: "center" }}>
                   <StarRating initialRating={avgRating} readonly size={16} />
                   <span style={{ marginLeft: 8 }}>
