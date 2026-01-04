@@ -65,7 +65,7 @@ export default function About() {
             <p>
               瀏覽飲品、客製化你的飲料，幾秒內即可完成結帳。
               {isLoading && " (載入店家資訊中...)"}
-              {vendorIds && ` (${vendorIds.length} 家店家可選)`}
+              {vendorIds && ` (${vendorIds.length}家店家營業中)`}
             </p>
           </div>
 
@@ -76,17 +76,17 @@ export default function About() {
             tabIndex={0}
           >
             <h3>多種品項，任君挑選</h3>
-            <p>探索熱門店家，或發掘你附近的新品牌。</p>
+            <p>探索熱門店家，或發掘新品牌。</p>
           </div>
 
           <div
             className={`${styles.featureBox} ${styles.animateSlideUp} ${styles.delay300}`}
-            onClick={() => navigate("/User/Orders")}
+            onClick={() => navigate("/orders")}
             role="button"
             tabIndex={0}
           >
             <h3>可靠的外送</h3>
-            <p>從結帳到送達家門，全程即時追蹤你的訂單。</p>
+            <p>從結帳到送達家門，全程即時追蹤訂單。</p>
           </div>
         </section>
       </div>
