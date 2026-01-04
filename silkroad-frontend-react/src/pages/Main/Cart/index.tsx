@@ -154,24 +154,44 @@ export default function Cart() {
     const policies = discountPoliciesQuery.data.data;
     const result: DisplayPolicy[] = [];
 
+    // 購物車為空時，所有優惠券都不可用
+    const isCartEmpty = items.length === 0 || totalAmount === 0;
+
     policies.forEach((policy) => {
       // 1. 檢查折扣券是否屬於當前購物車的商家
       if (vendorId && policy.vendor_id !== vendorId) return;
+
+      // 檢查是否已使用，如果已使用則直接隱藏
+      if (policy.status === "used") return;
+
+      // 檢查是否在期限內，如果不在期限內則直接隱藏 (不顯示在列表)
+      if (policy.status === "disabled" && policy.disable_reason === "已過期/尚未開始") {
+        return;
+      }
+
+      // 額外前端檢查 (防止時區或後端判斷延遲)
+      if (policy.expiry_date && policy.expiry_date !== "永久有效") {
+        const expiryDate = new Date(policy.expiry_date);
+        expiryDate.setHours(23, 59, 59, 999);
+        if (expiryDate < new Date()) return;
+      }
 
       let isUsable = true;
       let reason = "";
 
       // 檢查狀態 (backend sets status)
-      if (policy.status === "used") {
-        isUsable = false;
-        reason = "已使用";
-      } else if (policy.status === "disabled") {
+      // 注意：已使用和過期的狀態已在上方過濾，這裡只需處理其他 disabled 狀況 (如等級不足)
+      if (policy.status === "disabled") {
         isUsable = false;
         reason = policy.disable_reason || "未滿足條件";
       }
 
-      // 檢查最低消費
-      if (policy.min_purchase && totalAmount < policy.min_purchase) {
+      // 購物車為空檢查 (優先於低消檢查)
+      if (isCartEmpty) {
+        isUsable = false;
+        reason = "購物車為空";
+      } else if (policy.min_purchase && totalAmount < policy.min_purchase) {
+        // 檢查最低消費
         isUsable = false;
         reason = `未達最低消費 $${policy.min_purchase}`;
       }
