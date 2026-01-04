@@ -230,10 +230,10 @@ export default function UserDiscountPage() {
             className={styles.select}
           >
             <option value="ALL">全部等級</option>
-            <option value="BRONZE">銅牌 (Bronze)</option>
-            <option value="SILVER">銀牌 (Silver)</option>
-            <option value="GOLD">金牌 (Gold)</option>
-            <option value="DIAMOND">鑽石 (Diamond)</option>
+            <option value="BRONZE">銅牌會員以上</option>
+            <option value="SILVER">銀牌會員以上</option>
+            <option value="GOLD">金牌會員以上</option>
+            <option value="DIAMOND">鑽石會員專屬</option>
           </select>
         </div>
 

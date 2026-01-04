@@ -117,11 +117,6 @@ export default function VendorPage() {
                 products={products.filter((p) => p.is_listed)}
                 pageSize={10}
               />
-              以下為下架商品 debug
-              <ProductGallery
-                products={products.filter((p) => !p.is_listed)}
-                pageSize={10}
-              />
             </>
           ) : (
             <p>此店家暫無商品</p>

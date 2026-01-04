@@ -87,9 +87,10 @@ const frontendToBackend = (form: DiscountForm, vendorId: number) => {
 };
 
 type TabStatus = "ALL" | "ACTIVE" | "SCHEDULED" | "EXPIRED";
+type DateRangeOption = "ALL" | "WEEK" | "MONTH" | "QUARTER" | "YEAR";
+type SortOrderOption = "ASC" | "DESC"; // ASC: 近到晚, DESC: 晚到近
 
 export default function DiscountManagement() {
-  // 獲取當前登錄用戶（vendor）
   const currentUser = useCurrentUser();
 
   const vendorId =
@@ -111,6 +112,8 @@ export default function DiscountManagement() {
     "ALL"
   );
   const [filterMembership, setFilterMembership] = useState<string>("ALL");
+  const [dateRange, setDateRange] = useState<DateRangeOption>("ALL");
+  const [sortOrder, setSortOrder] = useState<SortOrderOption>("ASC");
 
   // 將後端數據轉換為前端格式
   const discounts = useMemo(() => {
@@ -121,23 +124,38 @@ export default function DiscountManagement() {
   const today = new Date().toISOString().split("T")[0];
 
   const processedData = useMemo(() => {
-    // 1. 先進行「屬性篩選」
+    // 計算日期範圍的起始點
+    let dateLimit = "";
+    if (dateRange !== "ALL") {
+      const d = new Date();
+      if (dateRange === "WEEK") d.setDate(d.getDate() - 7);
+      if (dateRange === "MONTH") d.setMonth(d.getMonth() - 1);
+      if (dateRange === "QUARTER") d.setMonth(d.getMonth() - 3);
+      if (dateRange === "YEAR") d.setFullYear(d.getFullYear() - 1);
+      dateLimit = d.toISOString().split("T")[0];
+    }
+
+    // 屬性篩選
     let filtered = discounts.filter((item) => {
       // 搜尋字串 (比對 Code)
       const matchText = item.code
         .toLowerCase()
         .includes(searchText.toLowerCase());
-      // 類型篩選
+
       const matchType = filterType === "ALL" || item.type === filterType;
-      // 會員篩選
+
       const matchMember =
         filterMembership === "ALL" ||
         item.membership_limit === filterMembership;
 
-      return matchText && matchType && matchMember;
+      const matchDate =
+        dateRange === "ALL" ||
+        (item.start_date && item.start_date >= dateLimit);
+
+      return matchText && matchType && matchMember && matchDate;
     });
 
-    // 2. 標記狀態並進行「Tab 分類」
+    // 標記狀態並進行「Tab 分類」
     const dataWithStatus = filtered.map((d) => {
       let status: TabStatus = "ACTIVE";
       if (d.expiry_date && today > d.expiry_date) status = "EXPIRED";
@@ -145,10 +163,38 @@ export default function DiscountManagement() {
       return { ...d, status };
     });
 
-    // 3. 根據 Tab 回傳結果
-    if (currentTab === "ALL") return dataWithStatus;
-    return dataWithStatus.filter((d) => d.status === currentTab);
-  }, [discounts, searchText, filterType, filterMembership, currentTab, today]);
+    // 根據 Tab 回傳結果
+    let result = dataWithStatus;
+    if (currentTab !== "ALL") {
+      result = dataWithStatus.filter((d) => d.status === currentTab);
+    }
+
+    // 無期限的 (empty string) 通常視為最遠 (Max Date)
+    result.sort((a, b) => {
+      // 處理無期限的情況：給一個超大的日期字串或是時間戳
+      const dateA = a.expiry_date ? a.expiry_date : "9999-12-31";
+      const dateB = b.expiry_date ? b.expiry_date : "9999-12-31";
+
+      if (sortOrder === "ASC") {
+        // 近到晚 (小 -> 大)
+        return dateA.localeCompare(dateB);
+      } else {
+        // 晚到近 (大 -> 小)
+        return dateB.localeCompare(dateA);
+      }
+    });
+
+    return result;
+  }, [
+    discounts,
+    searchText,
+    filterType,
+    filterMembership,
+    currentTab,
+    today,
+    dateRange,
+    sortOrder,
+  ]);
 
   const counts = useMemo(() => {
     const all = discounts.length;
@@ -229,7 +275,6 @@ export default function DiscountManagement() {
         },
       });
     } else {
-      // 新增模式：使用 add API
       addDiscountMutation.mutate(payload, {
         onSuccess: () => {
           alert("折價券新增成功");
@@ -348,6 +393,23 @@ export default function DiscountManagement() {
             <option value="SILVER">銀牌以上</option>
             <option value="GOLD">金牌以上</option>
             <option value="DIAMOND">鑽石專屬</option>
+          </select>
+          <select
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value as DateRangeOption)}
+          >
+            <option value="ALL">所有發布時間</option>
+            <option value="WEEK">最近一週</option>
+            <option value="MONTH">最近一個月</option>
+            <option value="QUARTER">最近一季</option>
+            <option value="YEAR">最近一年</option>
+          </select>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as SortOrderOption)}
+          >
+            <option value="ASC">期限：由近到遠</option>
+            <option value="DESC">期限：由遠到近</option>
           </select>
         </div>
       </section>
