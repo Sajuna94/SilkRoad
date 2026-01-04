@@ -69,6 +69,7 @@ export default function UserDiscountPage() {
 
   // 篩選器狀態
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchVendor, setSearchVendor] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("ACTIVE");
   const [membershipFilter, setMembershipFilter] =
     useState<MembershipLevel>("ALL");
@@ -121,6 +122,13 @@ export default function UserDiscountPage() {
         return false;
       }
 
+      if (
+        searchVendor &&
+        !item.vendor_name.toLowerCase().includes(searchVendor.toLowerCase())
+      ) {
+        return false;
+      }
+
       if (typeFilter !== "ALL" && item.type !== typeFilter) {
         return false;
       }
@@ -153,6 +161,7 @@ export default function UserDiscountPage() {
     statusFilter,
     membershipFilter,
     searchTerm,
+    searchVendor,
     typeFilter,
     sortOption,
   ]);
@@ -185,6 +194,16 @@ export default function UserDiscountPage() {
       </header>
 
       <div className={styles.filterSection}>
+        <div className={styles.filterGroup}>
+          <label>搜尋商家</label>
+          <input
+            type="text"
+            placeholder="輸入商家名稱..."
+            value={searchVendor}
+            onChange={(e) => setSearchVendor(e.target.value)}
+            className={styles.input}
+          />
+        </div>
         <div className={styles.filterGroup}>
           <label>狀態</label>
           <select
