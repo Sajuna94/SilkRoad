@@ -23,7 +23,7 @@ export default function OrderDetail() {
     updateOrder.mutate({
       order_id: orderIdNum,
       is_completed: true,
-      deliver_status: 'delivered',
+      deliver_status: "delivered",
     });
   };
 
@@ -129,7 +129,15 @@ export default function OrderDetail() {
           {order_info.refund_status && (
             <div className={styles.infoItem}>
               <span className={styles.label}>退款詳情：</span>
-              <span className={styles.refund}>
+              <span
+                className={
+                  order_info.refund_status === "refunded"
+                    ? styles.completed
+                    : order_info.refund_status === "pending"
+                    ? styles.pending
+                    : styles.refund
+                }
+              >
                 {order_info.refund_status === "pending"
                   ? "商家審核中"
                   : order_info.refund_status === "refunded"
@@ -198,7 +206,7 @@ export default function OrderDetail() {
 
       {/* 只有在「配送中」且「未完成」且「無退款狀態」時才顯示確認按鈕 */}
       {order_info.is_delivered &&
-        order_info.deliver_status === 'delivering' &&
+        order_info.deliver_status === "delivering" &&
         !order_info.is_completed &&
         !order_info.refund_status && (
           <div className={styles.section}>
@@ -212,42 +220,45 @@ export default function OrderDetail() {
           </div>
         )}
 
-      <div className={styles.section}>
-        {order_info.refund_status === null ? (
-          <button
-            className={styles.refundButton}
-            onClick={handleRequestRefund}
-            disabled={updateOrder.isPending}
-          >
-            {updateOrder.isPending ? "處理中..." : "申請退款"}
-          </button>
-        ) : (
-          // 如果已經有狀態，顯示提示訊息
-          <div className={styles.refundStatus}>
-            <span className={styles.label}>目前退款進度：</span>
-            <span
-              className={`${styles.statusBadge} ${
-                order_info.refund_status === "pending"
-                  ? styles.pending
-                  : order_info.refund_status === "refunded"
-                  ? styles.approved
-                  : styles.rejected
-              }`}
+      {(!order_info.is_completed || order_info.refund_status) && (
+        <div className={styles.section}>
+          {!order_info.refund_status && !order_info.is_completed && (
+            <button
+              className={styles.refundButton}
+              onClick={handleRequestRefund}
+              disabled={updateOrder.isPending}
             >
-              {order_info.refund_status === "pending"
-                ? "審核中"
-                : order_info.refund_status === "refunded"
-                ? "已退款"
-                : "退款被拒"}
-            </span>
-            {order_info.refund_at && (
-              <span className={styles.refundDate}>
-                處理時間：{order_info.refund_at}
+              {updateOrder.isPending ? "處理中..." : "申請退款"}
+            </button>
+          )}
+
+          {order_info.refund_status && (
+            <div className={styles.refundStatus}>
+              <span className={styles.label}>目前退款進度：</span>
+              <span
+                className={`${styles.statusBadge} ${
+                  order_info.refund_status === "pending"
+                    ? styles.pending
+                    : order_info.refund_status === "refunded"
+                    ? styles.approved
+                    : styles.rejected
+                }`}
+              >
+                {order_info.refund_status === "pending"
+                  ? "審核中"
+                  : order_info.refund_status === "refunded"
+                  ? "已退款"
+                  : "退款被拒"}
               </span>
-            )}
-          </div>
-        )}
-      </div>
+              {order_info.refund_at && (
+                <span className={styles.refundDate}>
+                  處理時間：{order_info.refund_at}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
