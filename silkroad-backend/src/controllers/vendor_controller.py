@@ -846,6 +846,7 @@ def view_customer_discounts():
                 "type": policy.type,
                 "value": policy.value,
                 "min_purchase": policy.min_purchase,
+                "max_discount": policy.max_discount,  # 添加 max_discount
                 "membership_limit": policy.membership_limit,
                 "expiry_date": str(policy.expiry_date) if policy.expiry_date else "永久有效",
                 "status": status,
