@@ -162,10 +162,16 @@ export default function OrderTab() {
       const set = new Set(copy[orderId] ? Array.from(copy[orderId]) : []);
       if (checked) set.add(itemId); else set.delete(itemId);
       copy[orderId] = set;
-      // if all items are checked, mark order completed or ready for delivery
 
-      // 如果訂單正在處理退款，不自動標記完成
-      if (order && set.size === order.items.length && !order.is_completed && order.refund_status !== "pending") {
+      // if all items are checked, mark order completed or ready for delivery
+      // 如果訂單正在處理退款或已退款，不自動標記完成
+      if (
+        order &&
+        set.size === order.items.length &&
+        !order.is_completed &&
+        order.refund_status !== "pending" &&
+        order.refund_status !== "refunded"
+      ) {
         // 外送訂單：標記為準備完成（配送中）
         if (order.is_delivered) {
           updateOrder.mutate({
@@ -394,10 +400,16 @@ const completeOrderAndCheckAllItems = (order: any) => {
                               type="checkbox"
                               className={styles.thumbCheckbox}
                               checked={
-                                order.is_completed ||
-                                !!(completedItems[order.order_id] && completedItems[order.order_id].has(item.order_item_id))
+                                order.refund_status !== "refunded" && (
+                                  order.is_completed ||
+                                  !!(completedItems[order.order_id] && completedItems[order.order_id].has(item.order_item_id))
+                                )
                               }
-                              disabled={order.is_completed || order.refund_status === "pending"}
+                              disabled={
+                                order.is_completed ||
+                                order.refund_status === "pending" ||
+                                order.refund_status === "refunded"
+                              }
                               onChange={(e) =>
                                 toggleItemCompleted(order.order_id, item.order_item_id, e.target.checked)
                               }
