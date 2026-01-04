@@ -182,6 +182,18 @@
   margin-bottom: 0.5rem;
 }
 
+.vendorNameLink {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #333;
+  text-decoration: none;
+  transition: color 0.5s;
+
+  &:hover {
+    color: #666;
+  }
+}
+
 .conditions {
   p {
     margin: 2px 0;

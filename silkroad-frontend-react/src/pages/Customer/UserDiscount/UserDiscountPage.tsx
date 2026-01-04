@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import styles from "./UserDiscountPage.module.scss";
+import { Link } from "react-router-dom";
 
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useViewCustomerDiscountPolicies } from "@/hooks/order/discount";
@@ -12,6 +13,7 @@ export interface DiscountData {
   id: string;
   code: string;
   vendor_name: string;
+  vendor_id: number;
   expiry_date: string;
   type: DiscountType;
   value: number;
@@ -37,6 +39,7 @@ const transformPolicy = (policy: CustomerDiscountPolicy): DiscountData => {
     id: policy.policy_id.toString(),
     code: policy.code || "No Code",
     vendor_name: policy.vendor_name || `商家 #${policy.vendor_id}`,
+    vendor_id: policy.vendor_id,
     expiry_date: policy.expiry_date || "",
     type: policy.type === "percent" ? "PERCENTAGE" : "FIXED",
     value: policy.value,
@@ -304,7 +307,13 @@ export default function UserDiscountPage() {
               </div>
 
               <div className={styles.middleSide}>
-                <div className={styles.vendorName}>{item.vendor_name}</div>
+                <Link
+                  to={`/vendor/${item.vendor_id}`}
+                  className={styles.vendorNameLink}
+                  title={`前往 ${item.vendor_name} 頁面`}
+                >
+                  {item.vendor_name}
+                </Link>
                 <div className={styles.conditions}>
                   {Number(item.min_purchase) > 0 ? (
                     <p>• 低消 ${item.min_purchase}</p>
