@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import ReviewItem from "@/components/molecules/ReviewItem";
 import styles from "./ReviewPage.module.scss";
 import { useVendorReviews } from "@/hooks/store/review";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 type SortOption = "newest" | "oldest" | "highest" | "lowest";
 type DateRangeOption = "custom" | "week" | "month" | "quarter" | "year";
@@ -138,6 +139,7 @@ export default function ReviewPage() {
 
   return (
     <div className={styles.pageContainer}>
+      <BlockModal />
       <h1 className={styles.title}>顧客評論專區</h1>
 
       <div className={styles.controls}>

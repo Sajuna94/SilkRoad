@@ -6,6 +6,7 @@ import { useVendorOrders, useUpdateOrder } from "@/hooks/order/order";
 import styles from "./OrderManagement.module.scss";
 import type { VendorOrderSummary } from "@/types/order";
 import RefundModal from "../RefundModal/RefundModal";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 type StatusFilter = "ALL" | "COMPLETED" | "PENDING" | "REFUND" | "DELIVERING";
 type DeliveryFilter = "ALL" | "DELIVERY" | "PICKUP";
@@ -30,7 +31,9 @@ export default function OrderTab() {
 
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   // track completed items per order locally
-  const [completedItems, setCompletedItems] = useState<Record<number, Set<number>>>({});
+  const [completedItems, setCompletedItems] = useState<
+    Record<number, Set<number>>
+  >({});
 
   const location = useLocation();
 
@@ -121,12 +124,14 @@ export default function OrderTab() {
 
         if (statusFilter === "DELIVERING") {
           // 派送中：外送訂單且處理已完成（vendor 已標記完成），且非退款
-          if (isRefund || !order.is_delivered || !order.is_completed) return false;
+          if (isRefund || !order.is_delivered || !order.is_completed)
+            return false;
         }
 
         if (statusFilter === "COMPLETED") {
           // 已完成（針對自取）：非外送且處理已完成，且非退款
-          if (isRefund || order.is_delivered || !order.is_completed) return false;
+          if (isRefund || order.is_delivered || !order.is_completed)
+            return false;
         }
       }
 
@@ -154,13 +159,18 @@ export default function OrderTab() {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
   };
 
-  const toggleItemCompleted = (orderId: number, itemId: number, checked: boolean) => {
-		const order = orders?.find((o: any) => o.order_id === orderId);
-		if (order?.refund_status === "pending") return;
+  const toggleItemCompleted = (
+    orderId: number,
+    itemId: number,
+    checked: boolean
+  ) => {
+    const order = orders?.find((o: any) => o.order_id === orderId);
+    if (order?.refund_status === "pending") return;
     setCompletedItems((prev) => {
       const copy: Record<number, Set<number>> = { ...prev };
       const set = new Set(copy[orderId] ? Array.from(copy[orderId]) : []);
-      if (checked) set.add(itemId); else set.delete(itemId);
+      if (checked) set.add(itemId);
+      else set.delete(itemId);
       copy[orderId] = set;
 
       // if all items are checked, mark order completed or ready for delivery
@@ -176,7 +186,7 @@ export default function OrderTab() {
         if (order.is_delivered) {
           updateOrder.mutate({
             order_id: orderId,
-            deliver_status: 'delivering'
+            deliver_status: "delivering",
           });
         } else {
           // 自取訂單：直接標記完成
@@ -189,20 +199,21 @@ export default function OrderTab() {
   };
 
   const completeOrderAndCheckAllItems = (order: any) => {
-  setCompletedItems((prev) => ({
-    ...prev,
-    [order.order_id]: new Set(
-      order.items.map((item: any) => item.order_item_id)
-    ),
-  }));
+    setCompletedItems((prev) => ({
+      ...prev,
+      [order.order_id]: new Set(
+        order.items.map((item: any) => item.order_item_id)
+      ),
+    }));
 
-  updateOrder.mutate({
-    order_id: order.order_id,
-    is_completed: true,
-  });
-};
+    updateOrder.mutate({
+      order_id: order.order_id,
+      is_completed: true,
+    });
+  };
 
-  const renderOrderStatus = (order: VendorOrderSummary) => {    if (order.refund_status === "refunded") {
+  const renderOrderStatus = (order: VendorOrderSummary) => {
+    if (order.refund_status === "refunded") {
       return (
         <span className={`${styles.status} ${styles.refunded}`}>已退款</span>
       );
@@ -220,11 +231,17 @@ export default function OrderTab() {
     // 外送訂單的配送狀態
     if (order.is_delivered && !order.is_completed && !order.refund_status) {
       const deliverStatus = (order as any).deliver_status;
-      if (deliverStatus === 'delivering') {
-        return <span className={`${styles.status} ${styles.delivering}`}>配送中</span>;
+      if (deliverStatus === "delivering") {
+        return (
+          <span className={`${styles.status} ${styles.delivering}`}>
+            配送中
+          </span>
+        );
       }
       // deliver_status 是 null，表示還在準備
-      return <span className={`${styles.status} ${styles.pending}`}>準備中</span>;
+      return (
+        <span className={`${styles.status} ${styles.pending}`}>準備中</span>
+      );
     }
     return <span className={`${styles.status} ${styles.pending}`}>處理中</span>;
   };
@@ -254,48 +271,50 @@ export default function OrderTab() {
 
   return (
     <div className={styles.container}>
+      <BlockModal />
       <h1>訂單管理</h1>
 
       <div className={styles.filters}>
-			<div className={styles.filterLeft}>
-				<select
-					value={statusFilter}
-					onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-					className={styles.filterSelect}
-				>
-					<option value="ALL">全部狀態</option>
-					<option value="PENDING">處理中</option>
-					<option value="DELIVERING">派送中</option>
-					<option value="COMPLETED">已完成</option>
-					<option value="REFUND">退款相關</option>
-				</select>
+        <div className={styles.filterLeft}>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+            className={styles.filterSelect}
+          >
+            <option value="ALL">全部狀態</option>
+            <option value="PENDING">處理中</option>
+            <option value="DELIVERING">派送中</option>
+            <option value="COMPLETED">已完成</option>
+            <option value="REFUND">退款相關</option>
+          </select>
 
-				<select
-					value={deliveryFilter}
-					onChange={(e) => setDeliveryFilter(e.target.value as DeliveryFilter)}
-					className={styles.filterSelect}
-				>
-					<option value="ALL">全部配送方式</option>
-					<option value="DELIVERY">外送</option>
-					<option value="PICKUP">自取</option>
-				</select>
-			</div>
+          <select
+            value={deliveryFilter}
+            onChange={(e) =>
+              setDeliveryFilter(e.target.value as DeliveryFilter)
+            }
+            className={styles.filterSelect}
+          >
+            <option value="ALL">全部配送方式</option>
+            <option value="DELIVERY">外送</option>
+            <option value="PICKUP">自取</option>
+          </select>
+        </div>
 
-			<div className={styles.searchGroup}>
-				<input
-					type="text"
-					placeholder="輸入訂單編號..."
-					value={inputSearchId}
-					onChange={(e) => setInputSearchId(e.target.value)}
-					onKeyDown={handleKeyDown}
-					className={styles.searchInput}
-				/>
-				<button className={styles.searchBtn} onClick={handleSearch}>
-					搜尋
-				</button>
-			</div>
-		</div>
-
+        <div className={styles.searchGroup}>
+          <input
+            type="text"
+            placeholder="輸入訂單編號..."
+            value={inputSearchId}
+            onChange={(e) => setInputSearchId(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className={styles.searchInput}
+          />
+          <button className={styles.searchBtn} onClick={handleSearch}>
+            搜尋
+          </button>
+        </div>
+      </div>
 
       {filteredOrders.length === 0 ? (
         <div className={styles.empty}>
@@ -327,7 +346,9 @@ export default function OrderTab() {
                     {order.is_delivered ? "外送" : "自取"}
                   </span>
 
-                  <span className={styles.headerTotalPrice}>{'$' + order.total_price}</span>
+                  <span className={styles.headerTotalPrice}>
+                    {"$" + order.total_price}
+                  </span>
                   {/* 狀態顯示 (包含已退款邏輯) */}
                   {renderOrderStatus(order)}
                   <span
@@ -352,14 +373,14 @@ export default function OrderTab() {
                       <div className={styles.infoItem}>
                         <span className={styles.label}>地址</span>
                         <span className={styles.value}>
-                          {((order as any).address_info && (order as any).address_info !== null && (order as any).address_info !== "")
+                          {(order as any).address_info &&
+                          (order as any).address_info !== null &&
+                          (order as any).address_info !== ""
                             ? (order as any).address_info
-                            : (
-                                (order as any).address ||
-                                (order as any).delivery_address ||
-                                (order as any).user_address ||
-                                "未提供地址"
-                              )}
+                            : (order as any).address ||
+                              (order as any).delivery_address ||
+                              (order as any).user_address ||
+                              "未提供地址"}
                         </span>
                       </div>
                     )}
@@ -376,22 +397,29 @@ export default function OrderTab() {
 
                   <hr className={styles.divider} />
 
-                    <div className={styles.itemSection}>
+                  <div className={styles.itemSection}>
                     <h4 className={styles.sectionTitle}>
                       商品明細 ({order.items.length})
                     </h4>
                     <div className={styles.scrollableList}>
                       {order.items.map((item: any) => (
-                        <div key={item.order_item_id} className={styles.itemRow}>
+                        <div
+                          key={item.order_item_id}
+                          className={styles.itemRow}
+                        >
                           <div className={styles.checkContainer}>
                             <input
                               type="checkbox"
                               className={styles.thumbCheckbox}
                               checked={
-                                order.refund_status !== "refunded" && (
-                                  order.is_completed ||
-                                  !!(completedItems[order.order_id] && completedItems[order.order_id].has(item.order_item_id))
-                                )
+                                order.refund_status !== "refunded" &&
+                                (order.is_completed ||
+                                  !!(
+                                    completedItems[order.order_id] &&
+                                    completedItems[order.order_id].has(
+                                      item.order_item_id
+                                    )
+                                  ))
                               }
                               disabled={
                                 order.is_completed ||
@@ -399,7 +427,11 @@ export default function OrderTab() {
                                 order.refund_status === "refunded"
                               }
                               onChange={(e) =>
-                                toggleItemCompleted(order.order_id, item.order_item_id, e.target.checked)
+                                toggleItemCompleted(
+                                  order.order_id,
+                                  item.order_item_id,
+                                  e.target.checked
+                                )
                               }
                             />
                           </div>
@@ -411,13 +443,18 @@ export default function OrderTab() {
                             />
                           </div>
                           <div className={styles.itemContent}>
-                            <div className={styles.itemName}>{item.product_name}</div>
+                            <div className={styles.itemName}>
+                              {item.product_name}
+                            </div>
                             <div className={styles.itemSpecs}>
-                              {item.selected_size} / {item.selected_ice} / {item.selected_sugar}
+                              {item.selected_size} / {item.selected_ice} /{" "}
+                              {item.selected_sugar}
                             </div>
                           </div>
                           <div className={styles.itemMeta}>
-														<span className={styles.subtotal}>{'$' + item.subtotal}</span>
+                            <span className={styles.subtotal}>
+                              {"$" + item.subtotal}
+                            </span>
                             <span className={styles.qty}>x{item.quantity}</span>
                           </div>
                         </div>
@@ -449,8 +486,12 @@ export default function OrderTab() {
                         // 正常流程 (無退款 or 退款被拒絕後恢復正常流程)
                         <>
                           <div className={styles.totalPriceAboveActions}>
-                            <span className={styles.totalPriceLabel}>總價：</span>
-                            <span className={styles.totalPriceValue}>{'$$' + order.total_price}</span>
+                            <span className={styles.totalPriceLabel}>
+                              總價：
+                            </span>
+                            <span className={styles.totalPriceValue}>
+                              {"$$" + order.total_price}
+                            </span>
                           </div>
                           {!order.is_delivered ? (
                             order.is_completed ? (
@@ -463,8 +504,13 @@ export default function OrderTab() {
                             ) : (
                               <button
                                 className={`${styles.actionBtn} ${styles.btnPrimary}`}
-                                onClick={() => completeOrderAndCheckAllItems(order)}
-                                disabled={updateOrder.isPending || order.refund_status === "pending"}
+                                onClick={() =>
+                                  completeOrderAndCheckAllItems(order)
+                                }
+                                disabled={
+                                  updateOrder.isPending ||
+                                  order.refund_status === "pending"
+                                }
                               >
                                 {updateOrder.isPending
                                   ? "處理中..."
@@ -478,7 +524,8 @@ export default function OrderTab() {
                                 <span className={styles.textSuccess}>
                                   顧客已確認送達
                                 </span>
-                              ) : (order as any).deliver_status === 'delivering' ? (
+                              ) : (order as any).deliver_status ===
+                                "delivering" ? (
                                 <span className={styles.textWarning}>
                                   配送中 - 等待顧客確認送達
                                 </span>
@@ -488,10 +535,13 @@ export default function OrderTab() {
                                   onClick={() =>
                                     updateOrder.mutate({
                                       order_id: order.order_id,
-                                      deliver_status: 'delivering'
+                                      deliver_status: "delivering",
                                     })
                                   }
-                                  disabled={updateOrder.isPending || order.refund_status === "pending"}
+                                  disabled={
+                                    updateOrder.isPending ||
+                                    order.refund_status === "pending"
+                                  }
                                 >
                                   {updateOrder.isPending
                                     ? "處理中..."
@@ -513,7 +563,9 @@ export default function OrderTab() {
       {typeof document !== "undefined" &&
         createPortal(
           <button
-            className={`${styles.scrollTopBtn} ${showScrollBtn ? styles.show : ""}`}
+            className={`${styles.scrollTopBtn} ${
+              showScrollBtn ? styles.show : ""
+            }`}
             onClick={scrollToTop}
             title="回到頂部"
           >

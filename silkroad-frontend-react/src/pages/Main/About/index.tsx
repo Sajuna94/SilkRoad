@@ -1,6 +1,7 @@
 import styles from "./About.module.scss";
 import { useNavigate } from "react-router-dom";
 import { useVendorIds } from "@/hooks/auth/user";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 export default function About() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function About() {
 
   return (
     <div className={styles.page}>
+      <BlockModal />
       <section className={styles.banner}>
         <img src="/SilkRoad/images/banner.jpg" alt="SilkRoad Banner" />
         <div className={styles.title}>

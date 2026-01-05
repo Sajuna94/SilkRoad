@@ -11,8 +11,9 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-//   Legend,
+  //   Legend,
 } from "recharts";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 export default function SalesDashboard() {
   const { data: currentUser } = useCurrentUser();
@@ -25,7 +26,9 @@ export default function SalesDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [topDrinks, setTopDrinks] = useState<any[]>([]);
-  const [granularity, setGranularity] = useState<'daily'|'weekly'|'monthly'|'yearly'>('weekly');
+  const [granularity, setGranularity] = useState<
+    "daily" | "weekly" | "monthly" | "yearly"
+  >("weekly");
   const [seriesMap, setSeriesMap] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
@@ -36,7 +39,7 @@ export default function SalesDashboard() {
       return;
     }
 
-    const granularities = ['daily','weekly','monthly','yearly'] as const;
+    const granularities = ["daily", "weekly", "monthly", "yearly"] as const;
     setLoading(true);
     setError(null);
 
@@ -46,28 +49,37 @@ export default function SalesDashboard() {
         let anyTop: any[] = [];
         let hadSuccess = false;
 
-        await Promise.all(granularities.map(async (g) => {
-          try {
-            const res = await fetch(`/api/vendor/${vendorId}/sales_summary?granularity=${g}`, { credentials: 'include' });
-            if (!res.ok) return;
-            const json = await res.json();
-            if (!json || !json.success) return;
-            hadSuccess = true;
-            const series = json.series || [];
-            results[g] = series.map((s: any) => ({ label: s.label, revenue: s.net_revenue ?? s.gross_revenue ?? s.revenue ?? 0 }));
-            if (!anyTop.length && Array.isArray(json.top_drinks)) anyTop = json.top_drinks;
-          } catch (e) {
-            console.error('fetch for granularity failed', g, e);
-          }
-        }));
+        await Promise.all(
+          granularities.map(async (g) => {
+            try {
+              const res = await fetch(
+                `/api/vendor/${vendorId}/sales_summary?granularity=${g}`,
+                { credentials: "include" }
+              );
+              if (!res.ok) return;
+              const json = await res.json();
+              if (!json || !json.success) return;
+              hadSuccess = true;
+              const series = json.series || [];
+              results[g] = series.map((s: any) => ({
+                label: s.label,
+                revenue: s.net_revenue ?? s.gross_revenue ?? s.revenue ?? 0,
+              }));
+              if (!anyTop.length && Array.isArray(json.top_drinks))
+                anyTop = json.top_drinks;
+            } catch (e) {
+              console.error("fetch for granularity failed", g, e);
+            }
+          })
+        );
 
         setSeriesMap(results);
         setTopDrinks(anyTop);
         setData(results[granularity] ?? []);
-        if (!hadSuccess) setError('No data available');
+        if (!hadSuccess) setError("No data available");
         setLoading(false);
       } catch (err) {
-        console.error('fetchAll error', err);
+        console.error("fetchAll error", err);
         setError(String(err));
         setLoading(false);
       }
@@ -84,39 +96,49 @@ export default function SalesDashboard() {
   }, [granularity, seriesMap]);
 
   const granLabelMap: Record<string, string> = {
-    daily: '每日',
-    weekly: '每週',
-    monthly: '月度',
-    yearly: '年度',
+    daily: "每日",
+    weekly: "每週",
+    monthly: "月度",
+    yearly: "年度",
   };
 
   const chartTitle = `${granLabelMap[granularity] ?? granularity}利潤趨勢`;
 
   return (
     <div className={styles.container}>
+      <BlockModal />
       <h1 className={styles.title}>利潤報表</h1>
 
       {loading ? (
-        <div className={styles.loading} style={{ color: "black" }}>載入中...</div>
+        <div className={styles.loading} style={{ color: "black" }}>
+          載入中...
+        </div>
       ) : error ? (
-        <div className={styles.error} style={{ color: "black" }}>錯誤: {error}</div>
+        <div className={styles.error} style={{ color: "black" }}>
+          錯誤: {error}
+        </div>
       ) : data.length === 0 ? (
-        <div className={styles.noData} style={{ color: "black" }}>目前尚無銷售資料</div>
+        <div className={styles.noData} style={{ color: "black" }}>
+          目前尚無銷售資料
+        </div>
       ) : (
         <>
           <div className={styles.controls}>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-              {(['daily','weekly','monthly','yearly'] as const).map(g => (
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              {(["daily", "weekly", "monthly", "yearly"] as const).map((g) => (
                 <button
                   key={g}
                   onClick={() => setGranularity(g)}
                   style={{
-                    padding: '6px 10px',
+                    padding: "6px 10px",
                     borderRadius: 6,
-                    border: g === granularity ? '2px solid #4caf50' : '1px solid #ccc',
-                    background: g === granularity ? '#e8f5e9' : '#fff',
-                    cursor: 'pointer',
-                    color: 'black',
+                    border:
+                      g === granularity
+                        ? "2px solid #4caf50"
+                        : "1px solid #ccc",
+                    background: g === granularity ? "#e8f5e9" : "#fff",
+                    cursor: "pointer",
+                    color: "black",
                   }}
                 >
                   {g.charAt(0).toUpperCase() + g.slice(1)}

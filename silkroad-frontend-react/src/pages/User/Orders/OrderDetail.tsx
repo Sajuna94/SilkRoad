@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useOrderDetails, useUpdateOrder } from "@/hooks/order/order";
 import { useCurrentUser } from "@/hooks/auth/user";
 import styles from "./OrderDetail.module.scss";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 export default function OrderDetail() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -77,6 +78,7 @@ export default function OrderDetail() {
 
   return (
     <div className={styles.container}>
+      <BlockModal />
       <div className={styles.header}>
         <h1>訂單詳情</h1>
         <button

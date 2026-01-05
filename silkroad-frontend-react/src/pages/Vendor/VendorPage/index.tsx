@@ -7,6 +7,7 @@ import { useVendor, useVendorProductsByVendorId } from "@/hooks/auth/vendor";
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useVendorReviews } from "@/hooks/store/review";
 import styles from "./VendorPage.module.scss";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 export default function VendorPage() {
   const navigate = useNavigate();
@@ -76,6 +77,7 @@ export default function VendorPage() {
   return (
     <>
       <main className={styles.pageContainer}>
+        <BlockModal />
         <section className={styles.bannerWrapper}>
           <VendorHeaderBarImage />
         </section>

@@ -9,6 +9,7 @@ import {
 } from "@/hooks/order/discount";
 import { useCurrentUser } from "@/hooks/auth/user";
 import type { DiscountPolicy } from "@/types/order";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 const extractErrorMessage = (error: any): string => {
   if (error.response?.data?.message) {
@@ -324,6 +325,7 @@ export default function DiscountManagement() {
 
   return (
     <div className={styles.container}>
+      <BlockModal />
       <header className={styles.pageHeader}>
         <div>
           <h1>折扣管理中心</h1>

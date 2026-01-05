@@ -3,6 +3,7 @@ import styles from "./TopUpPage.module.scss";
 import { useTopUp, useCurrentUser } from "@/hooks/auth/user";
 import { FaFileInvoice } from "react-icons/fa";
 import { useUserOrders } from "@/hooks/order/order";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 const LEVEL_CONFIG = [
   { threshold: 10, label: "銅", color: "#cd7f32" },
@@ -98,6 +99,7 @@ export default function TopUpPage() {
 
   return (
     <div className={styles.container}>
+      <BlockModal />
       <h1 className={styles.title}>儲值中心</h1>
 
       <div className={styles.balanceCard}>
