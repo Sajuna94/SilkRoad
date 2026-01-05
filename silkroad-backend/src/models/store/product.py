@@ -17,9 +17,13 @@ class Product(db.Model):
 
     vendor = db.relationship("Vendor", back_populates="products")
     
-    sugar_option = db.relationship("Sugar_Option", uselist=False, cascade="all, delete-orphan")
-    ice_option = db.relationship("Ice_Option", uselist=False, cascade="all, delete-orphan")
-    sizes_option = db.relationship("Sizes_Option", uselist=False, cascade="all, delete-orphan")
+    # sugar_option = db.relationship("Sugar_Option", uselist=False, cascade="all, delete-orphan")
+    # ice_option = db.relationship("Ice_Option", uselist=False, cascade="all, delete-orphan")
+    # sizes_option = db.relationship("Sizes_Option", uselist=False, cascade="all, delete-orphan")
+
+    sugar_options = db.relationship("Sugar_Option", cascade="all, delete-orphan", lazy=True)
+    ice_options   = db.relationship("Ice_Option", cascade="all, delete-orphan", lazy=True)
+    sizes_options = db.relationship("Sizes_Option", cascade="all, delete-orphan", lazy=True)
 
     @property
     def created_at(self):
