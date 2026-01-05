@@ -105,7 +105,8 @@ def update_products_listed():
             "message": f"Failed to update products: {str(e)}",
             "success": False,
         }), 500
-
+    
+'''
 @require_login(role=["vendor"])
 def get_products():
     vendor_id = session.get("user_id")
@@ -156,6 +157,66 @@ def get_products():
 
     return jsonify({"message": "", "success": True, "products": data})
 
+'''
+
+@require_login(role=["vendor"])# c
+def get_products():
+    vendor_id = session.get("user_id")
+    products = (
+        Product.query
+        .options(
+            joinedload(Product.sizes_options), # 注意：這裏建議用複數，對應 relationship 名稱
+            joinedload(Product.sugar_options),
+            joinedload(Product.ice_options),
+        )
+        .filter_by(vendor_id=vendor_id)
+        .all()
+    )
+    data = []
+
+    for p in products:
+        # --- 1. 取得排序後的選項列表 (由舊到新) ---
+        # 使用 sorted 並根據 created_at 排序
+        sorted_sizes = sorted(p.sizes_options, key=lambda x: x.created_at)
+        sorted_sugars = sorted(p.sugar_options, key=lambda x: x.created_at)
+        sorted_ices = sorted(p.ice_options, key=lambda x: x.created_at)
+
+        # --- 2. 提取屬性 ---
+        # 取得第一個尺寸的 price_step 作為代表 (若無則 0)
+        step = sorted_sizes[0].price_step if sorted_sizes else 0 
+
+        # 收集選項名稱字串
+        sugars = [s.options for s in sorted_sugars]
+        ices = [i.options for i in sorted_ices]
+
+        # --- 3. 計算顯示用的價格 (保留原本 index * step 的邏輯) ---
+        sizes_data = []
+        for index, s_obj in enumerate(sorted_sizes):
+            sizes_data.append({
+                "name": s_obj.options,
+                "price": p.price + s_obj.price_step
+            })
+
+        data.append({
+            "id": p.id,
+            "vendor_id": p.vendor_id,
+            "name": p.name,
+            "price": p.price,
+            "description": p.description,
+            "options": {
+                "size": sizes_data,
+                "sugar": sugars,
+                "ice": ices,
+            },
+            "price_step": step, 
+            "image_url": p.image_url,
+            "is_listed": p.is_listed,
+        })
+
+    return jsonify({"message": "", "success": True, "products": data})
+
+
+'''
 @require_login(role=["vendor"])
 def add_product():
     data: dict = request.get_json() or {}
@@ -263,6 +324,114 @@ def add_product():
             "message": f"Failed to add product: {str(e)}", 
             "success": False
         }), 500
+
+'''
+@require_login(role=["vendor"]) #c
+def add_product():
+    data: dict = request.get_json() or {}
+
+    # 1. 定義產品基本屬性與類型檢查
+    required_fields = {
+        "name": str,
+        "price": int,
+        "description": str,
+        "image_url": str,
+    }
+
+    # 2. 驗證必要欄位
+    for field, field_type in required_fields.items():
+        if field not in data:
+            return jsonify({"message": f"Missing field: {field}", "success": False}), 400
+        if not isinstance(data[field], field_type):
+            return jsonify({"message": f"Invalid type for {field}", "success": False}), 400
+
+    vendor_id = session.get("user_id")
+
+    # 3. 創建並保存產品主體
+    try:
+        new_product = Product(
+            vendor_id=vendor_id,
+            name=data.get("name"),
+            price=data.get("price"),
+            description=data.get("description"),
+            image_url=data.get("image_url"),
+            is_listed=False  # 預設為下架狀態
+        )
+
+        db.session.add(new_product)
+        db.session.commit()
+
+        return jsonify({
+            "message": "Product created successfully (without options)",
+            "success": True,
+            "data": {
+                "id": new_product.id,
+                "name": new_product.name
+            }
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "message": f"Failed to save product: {str(e)}", 
+            "success": False
+        }), 500
+    
+@require_login(role=["vendor"])#c
+def add_single_option(): # 路由函式通常不帶參數
+    data: dict = request.get_json() or {}
+    
+    product_id = data.get("product_id")
+    category = data.get("name")      # "糖度", "冰量", "大小"
+    option_val = data.get("options")
+    price_step = data.get("price_step", 0)
+
+    # --- 1. 基本欄位檢查 ---
+    if not all([product_id, category, option_val]):
+        return jsonify({"message": "缺少必要欄位", "success": False}), 400
+
+    # --- 2. 安全性檢查：確保該產品屬於當前登入的商家 ---
+    vendor_id = session.get("user_id")
+    product = Product.query.filter_by(id=product_id, vendor_id=vendor_id).first()
+    if not product:
+        return jsonify({"message": "查無此產品或權限不足", "success": False}), 404
+
+    try:
+        # --- 3. 根據類別新增選項 ---
+        if category == "糖度":
+            new_opt = Sugar_Option(product_id=product_id, options=option_val)
+            db.session.add(new_opt)
+            
+        elif category == "冰量":
+            new_opt = Ice_Option(product_id=product_id, options=option_val)
+            db.session.add(new_opt)
+            
+        elif category == "大小":
+            new_opt = Sizes_Option(
+                product_id=product_id, 
+                options=option_val, 
+                price_step=int(price_step) # 確保轉為整數
+            )
+            db.session.add(new_opt)
+        
+        else:
+            return jsonify({"message": f"不支援的類別: {category}", "success": False}), 400
+
+        db.session.commit()
+        return jsonify({
+            "message": f"成功新增{category}選項: {option_val}",
+            "success": True,
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        # 若發生 Duplicate Entry (重複新增同一選項)，會跳到這裡
+        return jsonify({
+            "message": f"儲存失敗 (可能是重複的選項): {str(e)}", 
+            "success": False
+        }), 500
+
+'''
 @require_login(role=["vendor"])
 def update_products():
     data = request.get_json()
@@ -377,8 +546,148 @@ def update_products():
             "message": f"Database error: {str(e)}",
             "success": False
         }), 500
+'''
 
+@require_login(role=["vendor"]) #c
+def update_products():
+    data = request.get_json()
 
+    if not data or not isinstance(data, list):
+        return jsonify({
+            "message": "Expected a non-empty list",
+            "success": False
+        }), 400
+
+    # 移除所有選項相關欄位，僅保留產品主表屬性
+    MUTABLE_FIELDS = {
+        "name", "price", "description", "is_listed", "image_url"
+    }
+
+    updated_products = []
+
+    for item in data:
+        product_id = item.get("product_id")
+        behavior = item.get("behavior", {})
+        col_name = behavior.get("col_name")
+        value = behavior.get("value")
+
+        if not product_id or not col_name or value is None:
+            return jsonify({
+                "message": "Missing required fields",
+                "success": False
+            }), 400
+
+        if col_name not in MUTABLE_FIELDS:
+            return jsonify({
+                "message": f"Column '{col_name}' is immutable or handled by other API",
+                "success": False
+            }), 400
+
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify({
+                "message": f"Product with id {product_id} not found",
+                "success": False
+            }), 404
+
+        try:
+            if col_name == "price":
+                setattr(product, col_name, int(value))
+            elif col_name == "is_listed":
+                # 確保布林值正確轉換
+                setattr(product, col_name, str(value).lower() == "true")
+            else:
+                setattr(product, col_name, value)
+        except ValueError:
+            db.session.rollback()
+            return jsonify({
+                "message": f"Invalid value for {col_name}",
+                "success": False
+            }), 400
+
+        updated_products.append(product)
+
+    try:
+        db.session.commit()
+        # 回傳資料也精簡為基本屬性
+        products_data = [
+            {
+                "id": p.id,
+                "vendor_id": p.vendor_id,
+                "name": p.name,
+                "price": p.price,
+                "description": p.description,
+                "image_url": p.image_url,
+                "is_listed": p.is_listed,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+            }
+            for p in updated_products
+        ]
+        return jsonify({
+            "message": "Product basic info updated successfully",
+            "success": True,
+            "products": products_data
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
+
+@require_login(role=["vendor"]) #c
+def delete_single_option():
+    """
+    刪除單一選項
+    前端傳入格式: {"product_id": 1, "name": "糖度", "options": "70%"}
+    """
+    data: dict = request.get_json() or {}
+    
+    product_id = data.get("product_id")
+    category = data.get("name")      # "糖度", "冰量", "大小"
+    option_val = data.get("options") # 具體的選項名稱，例如 "70%" 或 "L"
+
+    # 1. 基本檢查
+    if not all([product_id, category, option_val]):
+        return jsonify({"message": "缺少必要欄位", "success": False}), 400
+
+    # 2. 安全檢查：確保該產品屬於當前登入的商家
+    vendor_id = session.get("user_id")
+    product = Product.query.filter_by(id=product_id, vendor_id=vendor_id).first()
+    if not product:
+        return jsonify({"message": "查無此產品或權限不足", "success": False}), 404
+
+    try:
+        # 3. 根據類別執行刪除
+        if category == "糖度":
+            target = Sugar_Option.query.filter_by(product_id=product_id, options=option_val).first()
+        elif category == "冰量":
+            target = Ice_Option.query.filter_by(product_id=product_id, options=option_val).first()
+        elif category == "大小":
+            target = Sizes_Option.query.filter_by(product_id=product_id, options=option_val).first()
+        else:
+            return jsonify({"message": f"不支援的類別: {category}", "success": False}), 400
+
+        # 4. 判斷是否存在並執行
+        if not target:
+            return jsonify({"message": "找不到該選項，可能已被刪除", "success": False}), 404
+
+        db.session.delete(target)
+        db.session.commit()
+
+        return jsonify({
+            "message": f"已成功刪除{category}選項: {option_val}",
+            "success": True,
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "message": f"刪除失敗: {str(e)}", 
+            "success": False
+        }), 500
+
+'''
 def view_vendor_products(vendor_id):
     # ... (前面的查詢邏輯保持不變) ...
     products = (
@@ -471,8 +780,75 @@ def view_vendor_products(vendor_id):
     #         ),
     #         500,
     #     )
+'''
 
+def view_vendor_products(vendor_id): #c
+    try:
+        # 1. 執行資料庫查詢
+        products = (
+            Product.query
+            .options(
+                joinedload(Product.sizes_options),
+                joinedload(Product.sugar_options),
+                joinedload(Product.ice_options),
+            )
+            .filter_by(vendor_id=vendor_id)
+            .all()
+        )
+        
+        data = []
 
+        # 2. 解析資料
+        for p in products:
+            # 取得排序後的選項清單 (由舊到新)
+            sorted_sizes = sorted(p.sizes_options, key=lambda x: x.created_at)
+            sorted_sugars = sorted(p.sugar_options, key=lambda x: x.created_at)
+            sorted_ices = sorted(p.ice_options, key=lambda x: x.created_at)
+
+            # --- 修改部分：處理尺寸與「原價 + 加價」的邏輯 ---
+            sizes_data = []
+            for s_obj in sorted_sizes:
+                sizes_data.append({
+                    "name": s_obj.options,
+                    # 計算方式：產品基本價 (p.price) + 該尺寸的加價 (s_obj.price_step)
+                    "price": p.price + s_obj.price_step 
+                })
+            # ------------------------------------------
+
+            # 處理糖度與冰量字串清單
+            sugars = [s.options for s in sorted_sugars]
+            ices = [i.options for i in sorted_ices]
+
+            # 組合產品資料
+            data.append({
+                "id": p.id,
+                "vendor_id": p.vendor_id,
+                "name": p.name,
+                "base_price": p.price, # 建議回傳一個原價欄位，方便前端比對
+                "description": p.description,
+                "options": {
+                    "size": sizes_data,
+                    "sugar": sugars,
+                    "ice": ices,
+                },
+                "image_url": p.image_url,
+                "is_listed": p.is_listed,
+            })
+
+        return jsonify({
+            "message": "查詢成功",
+            "success": True,
+            "products": data
+        }), 200
+
+    except Exception as e:
+        print(f"Error in view_vendor_products: {str(e)}")
+        return jsonify({
+            "message": f"伺服器錯誤: {str(e)}",
+            "success": False
+        }), 500
+
+'''
 def view_vendor_product_detail(vendor_id, product_id):
     try:
         # ... (前面的查詢與檢查邏輯保持不變) ...
@@ -517,7 +893,47 @@ def view_vendor_product_detail(vendor_id, product_id):
 
     except Exception as e:
         return jsonify({"message": f"Fail with {str(e)}", "success": False}), 500
+'''
 
+def view_vendor_product_detail(vendor_id, product_id): #c
+    try:
+        # ... (前面檢查邏輯保持不變) ...
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify({"message": "Product not found", "success": False, "products": []}), 404
+        
+        # --- 修改開始：處理單一商品的尺寸加價與選項收集 ---
+        # 1. 取得排序後的選項清單 (由舊到新)
+        sorted_sizes = sorted(product.sizes_options, key=lambda x: x.created_at)
+        sorted_sugars = sorted(product.sugar_options, key=lambda x: x.created_at)
+        sorted_ices = sorted(product.ice_options, key=lambda x: x.created_at)
+
+        # 2. 計算每個尺寸的最終價格 (原價 + 各別加價)
+        sizes_data = []
+        for s in sorted_sizes:
+            sizes_data.append({
+                "name": s.options,
+                "price": product.price + s.price_step  # 修改這裡：原價 + 該尺寸加價
+            })
+        # --- 修改結束 ---
+
+        return jsonify({
+            "message": "find product success",
+            "success": True,
+            "product": {
+                "name": product.name,
+                "price": product.price,
+                "image_url": product.image_url,
+                "description": product.description,
+                # 直接從排序後的物件提取名稱
+                "sugar_option": [s.options for s in sorted_sugars],
+                "ice_option": [i.options for i in sorted_ices],
+                "size_option": sizes_data
+            },
+        }), 200
+
+    except Exception as e:
+        return jsonify({"message": f"Fail with {str(e)}", "success": False}), 500
 
 @require_login(role=["vendor"])
 def add_discount_policy():

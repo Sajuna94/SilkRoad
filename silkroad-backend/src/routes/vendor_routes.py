@@ -17,14 +17,99 @@ from controllers import (
     view_customer_discounts,
     update_vendor_logo,
     get_vendor_sales,
+    add_single_option,
+    delete_single_option
 )
 vendor_routes = Blueprint('vendor', __name__)
 
 vendor_routes.route("/products/listed", methods=["PATCH"])(update_products_listed) #WIP same vendor check
 vendor_routes.route("/products", methods=["PATCH"])(update_products) #WIP same vendor check
-vendor_routes.route("/products", methods=["GET"])(get_products)
-vendor_routes.route("/product/add", methods=["POST"])(add_product)
+'''
+前端給:
+[
+  {
+    "product_id": 5, int
+    "behavior": {
+      "col_name": "price", str 標名
+      "value": 65 型態依標名放
+    }
+  },
+  {
+    "product_id": 5,
+    "behavior": {
+      "col_name": "is_listed",
+      "value": "true"
+    }
+  },
+  {
+    "product_id": 8,
+    "behavior": {
+      "col_name": "name",
+      "value": "極致大杯珍珠奶茶"
+    }
+  }
+]
 
+回傳:
+{
+  "success": true,
+  "message": "Product basic info updated successfully",
+  "products": [
+    {
+      "id": 5, int
+      "vendor_id": 1, int
+      "name": "原本的名字", str
+      "price": 65, int
+      "description": "原本的描述", str
+      "image_url": "http://...", url
+      "is_listed": true, bool
+      "created_at": "2026-01-05T22:00:00" str
+    },
+    {
+      "id": 8,
+      "vendor_id": 1,
+      "name": "極致大杯珍珠奶茶",
+      "price": 50,
+      "description": "這杯很好喝",
+      "image_url": "http://...",
+      "is_listed": true,
+      "created_at": "2026-01-05T22:05:00"
+    }
+  ]
+}
+
+'''
+
+
+vendor_routes.route("/products", methods=["GET"])(get_products)
+'''
+回傳:
+data.append({
+            "id": p.id, int 
+            "vendor_id": p.vendor_id, int
+            "name": p.name, str
+            "price": p.price, int
+            "description": p.description, str
+            "options": {
+                "size": sizes_data,  sizes_data.append({"name": s_obj.options str, "price": int })
+                "sugar": sugars, str
+                "ice": ices, str
+            },
+            "price_step": step, int
+            "image_url": p.image_url,
+            "is_listed": p.is_listed, bool
+        })
+'''
+vendor_routes.route("/product/add", methods=["POST"])(add_product)
+'''
+前端給:
+required_fields = {
+        "name": str,
+        "price": int,
+        "description": str,
+        "image_url": str,
+    }
+'''
 # """
 # function:
 #     增加product
@@ -109,8 +194,74 @@ vendor_routes.route("/product/add", methods=["POST"])(add_product)
 #     sugar_options, ice_options, size_options
 # 這個function會根據指定的col做調整，因此value 應該為string
 # """
+vendor_routes.route("/product/add_single_option", methods=["POST"])(add_single_option)
+'''
+前端給
+{
+    "product_id": int,
+    "name": "大小", str
+    "options": "L", str
+    "price_step": 15 int(name 為 大小)才要
+}
+'''
+
+vendor_routes.route("/product/delete_option", methods=["POST"])(delete_single_option)
+'''
+前端給:
+{
+    "product_id": 15, int
+    "name": "糖度", str(記得給對)糖度, 冰量, 大小
+    "options": "無糖" str
+}
+'''
+
+
 
 vendor_routes.route("/<int:vendor_id>/view_products", methods=["GET"])(view_vendor_products)
+'''
+回傳範例:
+{
+  "message": "查詢成功",
+  "success": true,
+  "products": [
+    {
+      "id": 1, int
+      "vendor_id": 101, int
+      "name": "珍珠奶茶", str
+      "base_price": 50, int
+      "description": "經典濃郁奶茶搭配 Q 彈珍珠", str
+      "image_url": "https://example.com/milktea.jpg", url
+      "is_listed": true, bool 
+      "options": {
+        "size": [
+          { "name": "中杯", "price": 50 },
+          { "name": "大杯", "price": 65 }
+        ],
+        "sugar": ["全糖", "七分糖", "半糖", "微糖", "無糖"],
+        "ice": ["正常冰", "少冰", "微冰", "去冰"]
+      }
+    },
+    {
+      "id": 2,
+      "vendor_id": 101,
+      "name": "茉莉綠茶",
+      "base_price": 30,
+      "description": "清新芳香的綠茶",
+      "image_url": "https://example.com/greentea.jpg",
+      "is_listed": true,
+      "options": {
+        "size": [
+          { "name": "L", "price": 35 }
+        ],
+        "sugar": ["半糖", "無糖"],
+        "ice": ["正常冰", "去冰"]
+      }
+    }
+  ]
+}
+
+'''
+
 vendor_routes.route("/<int:vendor_id>/sales_summary", methods=["GET"])(get_vendor_sales)
 """
 function:
@@ -140,6 +291,43 @@ return:
 """
 
 vendor_routes.route("/<int:vendor_id>/view_product_detail/<int:product_id>", methods=["GET"])(view_vendor_product_detail)
+''' 更新後
+後端給:
+{
+  "message": "find product success", 
+  "success": true,
+  "product": {
+    "name": "波霸鮮奶茶", str
+    "price": 60, int
+    "image_url": "https://example.com/boba.jpg", url
+    "description": "選用優質鮮奶與慢火熬煮波霸", str
+    "sugar_option": [ 
+      "全糖",
+      "半糖",
+      "微糖",
+      "無糖"
+    ],
+    "ice_option": [
+      "正常冰",
+      "少冰",
+      "去冰"
+    ],
+    "size_option": [
+      {
+        "name": "M",
+        "price": 60
+      },
+      {
+        "name": "L",
+        "price": 75
+      }
+    ]
+  }
+}
+'''
+
+
+
 """
 function:
     獲得vendor中特定product的詳細資訊狀態

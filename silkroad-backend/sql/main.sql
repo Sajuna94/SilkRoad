@@ -109,22 +109,29 @@ CREATE TABLE `store`.`products` (
 
 DROP TABLE IF EXISTS `store`.`sugar_options`;
 CREATE TABLE `store`.`sugar_options` (
-    `product_id` int PRIMARY KEY,
-    `options` text NOT NULL COMMENT '糖度選項，使用逗號分隔 eg. 70%, 50%, sgrfree',
+    `product_id` int NOT NULL,
+    `options` varchar(50) NOT NULL COMMENT '糖度選項， eg. 70%, 50%, sgrfree',
+    `created_at` timestamp NOT NULL DEFAULT(now()),
+    PRIMARY KEY (`product_id`, `options`),
     FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS `store`.`ice_options`;
 CREATE TABLE `store`.`ice_options` (
-    `product_id` int PRIMARY KEY,
-    `options` text NOT NULL COMMENT '冰量選項，使用逗號分隔 eg. 70%, 50%, 0%',
+    `product_id` int NOT NULL,
+    `options` varchar(50) NOT NULL COMMENT '冰量選項，eg. 70%, 50%, 0%',
+    `created_at` timestamp NOT NULL DEFAULT(now()),
+    PRIMARY KEY (`product_id`, `options`),
     FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`) ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS `store`.`sizes_options`;
 CREATE TABLE `store`.`sizes_options` (
-    `product_id` int PRIMARY KEY,
-    `options` text NOT NULL COMMENT '大小選項，使用逗號分隔 eg. L, M, S',
+    `product_id` int NOT NULL,
+    `options` varchar(50) NOT NULL COMMENT '大小選項， eg. L, M, S',
+    `price_step` int NOT NULL DEFAULT 0,
+    `created_at` timestamp NOT NULL DEFAULT(now()),
+    PRIMARY KEY (`product_id`, `options`),
     FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`) ON DELETE CASCADE
 );
 
