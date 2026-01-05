@@ -13,7 +13,7 @@ type CloudinarySign = {
 export const useCloudinaryUpload = () => {
 	return useMutation({
 		mutationFn: async (file: File): Promise<{ secure_url: string }> => {
-			const res = await api.get('/test/cloudinary-signature');
+			const res = await api.get('/cloudinary/cloudinary-signature');
 			const sign = res.data as CloudinarySign;
 
 			const formData = new FormData();

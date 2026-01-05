@@ -1,11 +1,11 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_apscheduler import APScheduler
 from config import init_db
 from config.mail import init_mail
 from routes import user_routes, cart_routes, order_routes
 from routes import admin_routes, vendor_routes,customer_routes
-from utils import test_routes
+from utils import test_routes, cloudinary_routes
 from utils.tasks import cleanup_unverified_users
 from datetime import timedelta
 from dotenv import load_dotenv
@@ -73,6 +73,7 @@ def create_app():
     # 註冊路由
     print("[app] 註冊路由...")
     app.register_blueprint(test_routes, url_prefix="/api/test")
+    app.register_blueprint(cloudinary_routes, url_prefix="/api/cloudinary")
     app.register_blueprint(user_routes, url_prefix="/api/user")
     app.register_blueprint(cart_routes, url_prefix="/api/cart")
     app.register_blueprint(admin_routes, url_prefix="/api/admin")
