@@ -73,7 +73,6 @@ export const useCreateOrder = () => {
   >({
     mutationFn: async (newOrderData) => {
       // 後端要求 POST /trans
-			console.log(newOrderData);
       const res = await api.post("/order/trans", newOrderData);
       return res.data;
     },
