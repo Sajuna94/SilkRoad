@@ -1,6 +1,6 @@
 from flask import jsonify, request, session
 from config import db
-from models import Cart_Item, Cart, Customer, Product
+from models import Cart_Item, Cart, Customer, Product, Sugar_Option, Ice_Option, Sizes_Option
 from utils import require_login
 
 import uuid
@@ -81,7 +81,7 @@ def add_to_cart():
         db.session.commit()
         return jsonify({"message": "商品數量已更新", "success": True}), 200
     
-    
+
     new_cart_item = Cart_Item(
         cart_id = cart_id,
         product_id = product_id,
@@ -101,7 +101,7 @@ def add_to_cart():
         return jsonify({"message": f"資料庫錯誤: {str(e)}", "success": False}), 500
     
     return jsonify({"message": "新增商品成功", "success": True}), 200
-    
+
 @require_login(["customer"])
 def remove_from_cart():
     data = request.get_json()
@@ -177,25 +177,20 @@ def view_cart(cart_id : int):
             product = item.product
 
             if product:
-                # --- 修改開始：計算尺寸加價 ---
-                size_delta = 0
+                # --- 修改開始：根據新 SQL 結構查詢加價 ---
+                # 直接從資料庫找出該產品對應的尺寸選項
+                size_opt = Sizes_Option.query.filter_by(
+                    product_id=item.product_id, 
+                    options=item.selected_size
+                ).first()
+
+                # 取得該尺寸專屬的 price_step，若找不到則為 0
+                size_delta = size_opt.price_step if size_opt else 0
                 
-                # 1. 確保該產品有設定尺寸選項
-                if product.sizes_option and product.sizes_option.options:
-                    # 2. 解析尺寸字串為列表 ["S", "M", "L"]
-                    size_list = [s.strip() for s in product.sizes_option.options.split(',') if s.strip()]
-                    
-                    # 3. 找出 user 選的尺寸在列表中的位置 (Index)
-                    # item.selected_size 應該存的是字串 "M"
-                    if item.selected_size in size_list:
-                        index = size_list.index(item.selected_size)
-                        # 4. 計算加價：第 0 個 +0，第 1 個 +10，第 2 個 +20...
-                        size_delta = index * item.product.sizes_option.price_step
-                
-                # 5. 計算正確的單價 (基本價 + 尺寸加價)
+                # 計算正確單價 (產品基本價 + 尺寸加價)
                 final_unit_price = product.price + size_delta
                 
-                # 6. 計算小計
+                # 計算小計
                 item_sub_price = final_unit_price * item.quantity
                 # --- 修改結束 ---
 
@@ -204,18 +199,17 @@ def view_cart(cart_id : int):
                 result_list.append({
                     "cart_item_id": item.id,
                     "product_id": item.product_id,
-                    "vendor_id": product.vendor_id,
+                    #"vendor_id": product.vendor_id,
 
                     "product_name": product.name,
                     "product_image": product.image_url,
 
-                    "price": final_unit_price, # 這裡回傳加價後的單價給前端顯示比較清楚
-                    "base_price": product.price, # (選填) 如果前端想顯示原價可回傳這個
-                    "size_delta": size_delta,    # (選填) 顯示加了多少錢
-                    
+                    "price": final_unit_price, 
+                    #"base_price": product.price, 
+                    #"size_delta": size_delta,  
+
                     "quantity": item.quantity,
                     "subtotal": item_sub_price,
-
                     "selected_sugar": item.selected_sugar,
                     "selected_ice": item.selected_ice,
                     "selected_size": item.selected_size
@@ -509,24 +503,18 @@ def view_cart_guest(*args, **kwargs):
         if not product:
             continue
 
-        # --- [修改 2] 計算尺寸加價 (Index * 10) ---
-        size_delta = 0
-        current_size_name = item["selected_size"] # 這裡是字串 "M"
+        size_opt = Sizes_Option.query.filter_by(
+            product_id=item["product_id"], 
+            options=item["selected_size"]
+        ).first()
 
-        if product.sizes_option and product.sizes_option.options:
-            # 1. 解析 DB 中的選項列表
-            size_list = [s.strip() for s in product.sizes_option.options.split(',') if s.strip()]
-            
-            # 2. 找出目前尺寸的 Index
-            if current_size_name in size_list:
-                index = size_list.index(current_size_name)
-                # 3. 計算加價
-                size_delta = index * product.sizes_option.price_step
+        # 2. 取得該尺寸對應的加價，找不到則為 0
+        size_delta = size_opt.price_step if size_opt else 0
         
-        # 4. 算出最終單價
+        # 3. 算出最終單價 (原價 + 尺寸加價)
         final_unit_price = product.price + size_delta
         
-        # 5. 算出該項目的小計
+        # 4. 算出該項目的小計
         item_sub_price = final_unit_price * item["quantity"]
         # ----------------------------------------
 
@@ -535,19 +523,14 @@ def view_cart_guest(*args, **kwargs):
         result.append({
             "cart_item_id": item["tmp_cart_item_id"],
             "product_id": item["product_id"],
-            "vendor_id": product.vendor_id,
-
+            #"vendor_id": product.vendor_id,
             "product_name": product.name,
             "product_image": product.image_url,
-
-            # 回傳加價後的單價
             "price": final_unit_price,
-            "base_price": product.price, # (可選) 讓前端知道原價
-            "size_delta": size_delta,    # (可選) 讓前端知道加了多少
-            
+            #"base_price": product.price, 
+            #"size_delta": size_delta,    
             "quantity": item["quantity"],
             "subtotal": item_sub_price,
-
             "selected_sugar": item["selected_sugar"],
             "selected_ice": item["selected_ice"],
             "selected_size": item["selected_size"]
@@ -556,7 +539,7 @@ def view_cart_guest(*args, **kwargs):
     return jsonify({
         "message": "success",
         "success": True,
-        "total_amount": total_price, # 注意：我把這裡的 key 統一改成 total_amount 跟會員版一樣，若前端用 total_price 請自行改回
+        "total_amount": total_price,
         "data": result
     }), 200
 
