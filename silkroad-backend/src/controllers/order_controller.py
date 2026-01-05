@@ -1,6 +1,6 @@
 from flask import jsonify, request,session
 from config import db
-from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy, Customer, Vendor,Review
+from models import Cart_Item, Cart, Order, Order_Item, Discount_Policy, Customer, Vendor,Review, Sizes_Option
 from datetime import date, datetime
 from sqlalchemy import or_
 
@@ -74,23 +74,33 @@ def generate_new_order(cart, policy_id, note, payment_methods, is_delivered, add
 
     try:
         # --- 步驟 1: 先計算購物車總價（不創建訂單） ---
+        item_details = []
+
         for item in cart.items:
             product = item.product
             if not product:
                 raise ValueError(f"商品 ID {item.product_id} 不存在")
 
-            # 計算單價 (含尺寸加價)
-            size_delta = 0
-            selected_size_str = item.selected_size
+            # --- 修改開始：根據新 SQL 結構查詢加價 ---
+            # 直接從 Sizes_Option 表中查找該產品對應的尺寸資料
+            size_opt = Sizes_Option.query.filter_by(
+                product_id=item.product_id, 
+                options=item.selected_size
+            ).first()
 
-            if product.sizes_option and product.sizes_option.options:
-                size_list = [s.strip() for s in product.sizes_option.options.split(',') if s.strip()]
-                if selected_size_str in size_list:
-                    index = size_list.index(selected_size_str)
-                    size_delta = index * product.sizes_option.price_step
+            # 取得該尺寸專屬的 price_step，若找不到則預設加價為 0
+            size_delta = size_opt.price_step if size_opt else 0
+            # --- 修改結束 ---
 
+            # 計算單價與累加總價
             unit_price = product.price + size_delta
             total_price_accumulated += unit_price * item.quantity
+
+            # 暫存計算好的結果，確保後續寫入 Order_Item 時價格一致
+            item_details.append({
+                "item_obj": item,
+                "calculated_unit_price": unit_price
+            })
 
         # --- 步驟 2: 驗證並計算折扣（在創建訂單之前） ---
         final_price = do_discount(total_price_accumulated, policy_id, user_id)
@@ -116,8 +126,8 @@ def generate_new_order(cart, policy_id, note, payment_methods, is_delivered, add
         db.session.flush()
 
         # --- 步驟 4: 創建訂單項目 ---
-        for item in cart.items:
-            store_and_calculate_item(new_order, item)
+        for detail in item_details:
+            store_and_calculate_item(new_order, detail["item_obj"], detail["calculated_unit_price"])
 
         # --- 步驟 5: 如果使用儲值餘額支付，扣除餘額 ---
         if payment_methods == 'button':
@@ -150,7 +160,8 @@ def generate_new_order(cart, policy_id, note, payment_methods, is_delivered, add
         return jsonify({"message": f"系統錯誤，訂單建立失敗: {str(e)}", 
                         "success": False
                        }), 500
-    
+
+'''    
 def store_and_calculate_item(new_order, item):
     product = item.product
     if not product:
@@ -192,6 +203,33 @@ def store_and_calculate_item(new_order, item):
     db.session.add(new_order_item)
     
     return items_price
+'''
+def store_and_calculate_item(new_order, item, unit_price):
+    """
+    將購物車品項存入訂單明細
+    new_order: 剛建立的訂單物件
+    item: 購物車內的品項 (Cart_Item)
+    unit_price: 已經由 generate_new_order 算好的「最終單價」
+    """
+    
+    # 直接建立訂單明細項目
+    new_order_item = Order_Item(
+        order_id = new_order.id,
+        product_id = item.product_id,
+        quantity = item.quantity,
+        
+        # 關鍵：直接存入傳進來的 unit_price (這是一個快照，以後產品漲價也不影響此訂單)
+        price = unit_price, 
+        
+        selected_sugar = item.selected_sugar,
+        selected_ice = item.selected_ice,
+        selected_size = item.selected_size,
+    )
+    
+    db.session.add(new_order_item)
+    
+    # 回傳該項目的總價 (小計)，供外部核對（選用）
+    return unit_price * item.quantity
 
 def trans_to_order():
     data = request.get_json()
