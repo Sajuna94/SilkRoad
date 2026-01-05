@@ -199,7 +199,9 @@ def view_cart(cart_id : int):
                 result_list.append({
                     "cart_item_id": item.id,
                     "product_id": item.product_id,
-                    #"vendor_id": product.vendor_id,
+                    
+                    # NOTE:
+                    "vendor_id": product.vendor_id,
 
                     "product_name": product.name,
                     "product_image": product.image_url,

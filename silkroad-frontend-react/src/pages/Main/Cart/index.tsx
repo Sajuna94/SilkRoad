@@ -5,7 +5,10 @@ import {
   ProductModal,
   type ProductModalRef,
 } from "@/components/molecules/ProductModal";
-import { PolicyModal, type DisplayPolicy } from "@/components/molecules/PolicyModal/PolicyModal";
+import {
+  PolicyModal,
+  type DisplayPolicy,
+} from "@/components/molecules/PolicyModal/PolicyModal";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import { Link } from "react-router-dom";
 
@@ -20,6 +23,7 @@ import { useCurrentUser } from "@/hooks/auth/user";
 import { useViewCustomerDiscountPolicies } from "@/hooks/order/discount";
 import type { Product } from "@/types/store";
 import type { CustomerDiscountPolicy } from "@/types/order";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -293,6 +297,7 @@ export default function Cart() {
 
   return (
     <section className={styles["container"]}>
+      <BlockModal />
       <header>購物車</header>
 
       <main>
@@ -531,7 +536,7 @@ function Sidebar({
       ? currentUser.stored_balance
       : 0;
 
-  const usableCount = policies.filter(p => p.isUsable).length;
+  const usableCount = policies.filter((p) => p.isUsable).length;
 
   return (
     <section className={styles["sidebar"]}>

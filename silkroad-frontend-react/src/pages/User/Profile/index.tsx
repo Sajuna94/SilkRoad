@@ -1,25 +1,22 @@
 import { useState, useEffect } from "react";
-import { useCurrentUser, useLogout, useUpdateUser } from "@/hooks/auth/user";
+import { useCurrentUser, useUpdateUser } from "@/hooks/auth/user";
 import {
   useUpdateVendorDescription,
   useUpdateVendorManagerInfo,
   useUpdateVendorLogo,
 } from "@/hooks/auth/vendor";
 import { useCloudinaryUpload } from "@/hooks/utils/cloudinary";
-import { useNavigate } from "react-router-dom";
 import styles from "./Profile.module.scss";
 import { UserRole } from "@/types/user";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 dayjs.extend(utc);
 
 const DEFAULT_AVATAR =
   "https://ui-avatars.com/api/?background=random&color=fff&name=";
 
 export default function Profile() {
-  const navigate = useNavigate();
-  const logout = useLogout();
-
   const userQuery = useCurrentUser();
   const updateUserMutation = useUpdateUser();
   const updateVendorDescMutation = useUpdateVendorDescription();
@@ -165,12 +162,6 @@ export default function Profile() {
     }
   };
 
-  const handleBlockedLogout = () => {
-    logout.mutate(undefined, {
-      onSuccess: () => navigate("/home"),
-    });
-  };
-
   const handleRemoveLogo = () => {
     setLogoFile(null);
     setLogoPreview(
@@ -180,10 +171,6 @@ export default function Profile() {
 
   if (userQuery.isLoading) return <p>Loading...</p>;
   if (!user) return <p>請先登入</p>;
-
-  const isBlocked =
-    (user.role === UserRole.VENDOR || user.role === UserRole.CUSTOMER) &&
-    user.is_active === false;
 
   const getAvatarSrc = () => {
     // 如果有預覽圖片（新上傳的），優先使用預覽
@@ -196,16 +183,7 @@ export default function Profile() {
 
   return (
     <>
-      {isBlocked && (
-        <div className={styles.blockedOverlay}>
-          <div className={styles.blockedMessage}>
-            <h1>帳號已被封鎖</h1>
-            <p>您的帳號目前處於停用狀態。如有疑問請聯繫客服。</p>
-            <button onClick={handleBlockedLogout}>確認並返回首頁</button>
-          </div>
-        </div>
-      )}
-
+      <BlockModal />
       <section className={styles.profileContainer}>
         <div className={styles.leftPanel}>
           {/* 錯誤提示 */}

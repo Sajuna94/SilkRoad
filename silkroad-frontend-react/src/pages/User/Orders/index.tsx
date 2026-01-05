@@ -7,6 +7,7 @@ import styles from "./Orders.module.scss";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import ReviewInput from "@/components/molecules/ReviewInput/ReviewInput";
 import type { OrderDetailItem, OrderSummary } from "@/types/order";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 const X_OFFSET = 240;
 const VISIBLE_COUNT = 4; // 左右各顯示幾張
@@ -168,6 +169,7 @@ export default function History() {
 
   return (
     <section className={styles.historySection} style={{ paddingTop: "60px" }}>
+      <BlockModal />
       <h1 className={styles.title}>訂單紀錄</h1>
 
       <div className={styles.carouselContainer}>

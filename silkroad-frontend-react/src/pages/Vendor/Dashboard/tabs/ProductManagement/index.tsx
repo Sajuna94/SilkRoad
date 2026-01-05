@@ -18,6 +18,7 @@ import {
   type ProductEditModalRef,
   type ProductEditFormData,
 } from "@/components/molecules/ProductEditModal";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 export default function ProductTab() {
   const cloudinaryUploadMutation = useCloudinaryUpload();
@@ -88,7 +89,7 @@ export default function ProductTab() {
     );
   };
 
-const handleEditProduct = async (
+  const handleEditProduct = async (
     productId: number,
     formData: ProductEditFormData
   ) => {
@@ -101,7 +102,7 @@ const handleEditProduct = async (
       size: formData.size,
       sugar: formData.sugar,
       ice: formData.ice,
-      price_step: formData.price_step, 
+      price_step: formData.price_step,
     });
   };
   const handleEditUpload = async (file: File): Promise<string> => {
@@ -119,6 +120,7 @@ const handleEditProduct = async (
 
   return (
     <section className={styles["container"]}>
+      <BlockModal />
       <ProductModal
         ref={modalRef}
         submitText="關閉預覽"

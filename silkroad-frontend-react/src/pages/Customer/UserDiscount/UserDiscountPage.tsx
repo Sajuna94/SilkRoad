@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useViewCustomerDiscountPolicies } from "@/hooks/order/discount";
 import type { CustomerDiscountPolicy } from "@/types/order";
+import BlockModal from "@/components/atoms/BlockModal/BlockModal";
 
 export type DiscountType = "PERCENTAGE" | "FIXED";
 export type MembershipLevel = "ALL" | "BRONZE" | "SILVER" | "GOLD" | "DIAMOND";
@@ -191,6 +192,7 @@ export default function UserDiscountPage() {
 
   return (
     <div className={styles.container}>
+      <BlockModal />
       <header className={styles.pageHeader}>
         <h1>專屬優惠券</h1>
         <p>查看您的專屬折扣，享受購物樂趣</p>
