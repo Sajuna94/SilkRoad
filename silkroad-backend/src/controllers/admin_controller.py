@@ -358,4 +358,74 @@ def get_all_announcements():
             "success": False
         }), 500
 
-    
+
+@require_login(role=["admin"])
+def get_all_users():
+    """
+    查詢所有使用者（包含 Admin, Vendor, Customer）
+    並顯示 is_active 狀態
+    """
+    try:
+        users = User.query.all()
+
+        result = []
+        for user in users:
+            # 安全獲取 is_active (Admin 沒有此欄位會是 None)
+            is_active_status = getattr(user, 'is_active', None)
+
+            user_data = {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "phone_number": user.phone_number,
+                "role": user.role,
+                "created_at": user.created_at.isoformat() if user.created_at else None,
+                "is_active": is_active_status
+            }
+            result.append(user_data)
+
+        return jsonify({
+            "success": True,
+            "message": "Retrieved all users successfully",
+            "count": len(result),
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
+
+
+@require_login(role=["admin"])
+def get_block_records():
+    """
+    查詢所有封鎖紀錄
+    """
+    try:
+        records = Block_Record.query.order_by(Block_Record.created_at.desc()).all()
+
+        result = []
+        for r in records:
+            result.append({
+                "id": r.id,
+                "admin_id": r.admin_id,
+                "target_user_id": r.user_id,
+                "reason": r.reason,
+                "created_at": r.created_at.isoformat() if r.created_at else None
+            })
+
+        return jsonify({
+            "success": True,
+            "message": "Retrieved all block records successfully",
+            "count": len(result),
+            "data": result
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "message": f"Database error: {str(e)}",
+            "success": False
+        }), 500
+

@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers import block_user, post_announcement, update_announcement, delete_announcement, unblock_user, get_all_customers, get_all_vendors, get_all_announcements
+from controllers import block_user, post_announcement, update_announcement, delete_announcement, unblock_user, get_all_customers, get_all_vendors, get_all_announcements, get_all_users, get_block_records
 
 admin_routes = Blueprint('admin', __name__)
 
@@ -214,5 +214,57 @@ else:
 {
     "message": "...",
     "success": False
+}
+"""
+
+admin_routes.route('/users', methods=['GET'])(get_all_users)
+"""
+Get All Users (Admin, Vendor, Customer)
+URL: /api/admin/users
+Method: GET
+Auth: Admin only
+
+Return:
+{
+    "success": true,
+    "message": "Retrieved all users successfully",
+    "count": int,
+    "data": [
+        {
+            "id": int,
+            "name": string,
+            "email": string,
+            "phone_number": string,
+            "role": string,  // "admin", "vendor", "customer"
+            "created_at": string,
+            "is_active": boolean or null  // null for Admin
+        },
+        ...
+    ]
+}
+"""
+
+admin_routes.route('/block-records', methods=['GET'])(get_block_records)
+"""
+Get All Block Records
+URL: /api/admin/block-records
+Method: GET
+Auth: Admin only
+
+Return:
+{
+    "success": true,
+    "message": "Retrieved all block records successfully",
+    "count": int,
+    "data": [
+        {
+            "id": int,
+            "admin_id": int,
+            "target_user_id": int,
+            "reason": string,
+            "created_at": string
+        },
+        ...
+    ]
 }
 """

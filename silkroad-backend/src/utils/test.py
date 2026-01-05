@@ -259,114 +259,11 @@ def generate_signature():
         }
     )
 
-# for testing database connection and ORM
-from models.auth.vendor import Vendor
-
-@test_routes.route("/users", methods=["GET"])
-def get_all_users():
-    """
-    查詢並列出所有使用者 (包含 Admin, Vendor, Customer)
-    並顯示 is_active 狀態
-    """
-    try:
-        # 1. 查詢所有使用者
-        users = User.query.all()
-        
-        result = []
-        for user in users:
-            # 2. 安全獲取 is_active
-            # 如果 user 是 Vendor 或 Customer，會拿到 True/False
-            # 如果 user 是 Admin (沒有這個欄位)，會拿到 None
-            is_active_status = getattr(user, 'is_active', None)
-
-            # 3. 組合資料
-            user_data = {
-                "id": user.id,
-                "name": user.name,
-                "email": user.email,
-                "phone_number": user.phone_number,
-                "role": user.role,
-                "created_at": user.created_at,
-                "is_active": is_active_status  # Admin 這裡會顯示 null
-            }
-            result.append(user_data)
-
-        # 4. 回傳 JSON
-        return jsonify({
-            "success": True,
-            "count": len(result),
-            "data": result
-        }), 200
-
-    except Exception as e:
-        return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
-
-@test_routes.route("/announcements", methods=["GET"])
-def test_get_announcements():
-    """
-    查詢所有系統公告
-    """
-    announcements = System_Announcement.query.all()
-    data = []
-    for a in announcements:
-        data.append({
-            "id": a.id,
-            "admin_id": a.admin_id,
-            "message": a.message,
-            "created_at": a.created_at
-        })
-    
-    return jsonify({
-        "count": len(data),
-        "data": data
-    }), 200
-
-@test_routes.route("/block_records", methods=["GET"])
-def test_get_block_records():
-    """
-    查詢所有封鎖紀錄
-    """
-    records = Block_Record.query.all()
-    data = []
-    for r in records:
-        data.append({
-            "id": r.id,
-            "admin_id": r.admin_id,
-            "target_user_id": r.user_id,
-            "reason": r.reason,
-            "created_at": r.created_at
-        })
-    return jsonify({
-        "count": len(data),
-        "data": data
-    }), 200
-
-@test_routes.route("/reviews", methods=["GET"])
-def test_get_reviews():
-    """
-    查詢所有顧客評論
-    """
-    try:
-        reviews = Review.query.all()
-        data = []
-        for r in reviews:
-            data.append({
-                "id": r.id,
-                "customer_id": r.customer_id,
-                "vendor_id": r.vendor_id,
-                "rating": r.rating,
-                "content": r.review_content,
-                "created_at": r.created_at
-            })
-        
-        return jsonify({
-            "success": True,
-            "count": len(data),
-            "data": data
-        }), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
+# Migrated endpoints:
+# - /users → /api/admin/users
+# - /block_records → /api/admin/block-records
+# - /announcements → /api/admin/announcements (already existed)
+# - /reviews → /api/user/vendor/<vendor_id>/reviews (already existed)
 
 @test_routes.route("/insert_order_to_customer", methods=["POST"])
 def insert_test_order():
