@@ -13,7 +13,7 @@ class Product(db.Model):
     description  = db.Column(db.Text)
     image_url    = db.Column(db.String(255), unique=True)
     is_listed    = db.Column(db.Boolean, nullable=False, server_default=db.text("true"))
-    _created_at = db.Column("created_at", db.DateTime, nullable=False, server_default=db.func.now())
+    created_at = db.Column("created_at", db.DateTime, nullable=False, server_default=db.func.now())
 
     vendor = db.relationship("Vendor", back_populates="products")
     
