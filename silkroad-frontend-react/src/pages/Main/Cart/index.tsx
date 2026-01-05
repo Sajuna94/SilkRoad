@@ -60,6 +60,7 @@ export default function Cart() {
   // C. 初次掛載時執行
   useEffect(() => {
     if (cartItemsQuery.isSuccess) {
+			console.log(cartItemsQuery.data);
       setItems(cartItemsQuery.data.data);
       setTotalAmount(cartItemsQuery.data.total_amount);
       setLoading(false);

@@ -94,11 +94,17 @@ export const useVendor = (vendorId: number) => {
   });
 };
 
+export interface VendorWithStatsRes extends Vendor {
+  avg_rating: number;       // 平均評分
+  review_count: number;     // 評論數量
+}
+
 export const useVendors = () => {
-  return useQuery<Vendor[], ApiErrorBody>({
+  return useQuery<VendorWithStatsRes[], ApiErrorBody>({
     queryKey: ["vendors"],
     queryFn: async () => {
       const res = await api.get("/vendor/vendors");
+			console.log(res.data);
       return res.data.data;
     },
     retry: false,
@@ -121,7 +127,7 @@ export const useVendorProductsByVendorId = (vendorId: number | undefined) => {
     queryKey: ["vendor-products", vendorId],
     queryFn: async () => {
       if (!vendorId) throw new Error("Vendor ID is required");
-      console.log("entry");
+      console.log("entry vendor product lsit");
       const res = await api.get(`/vendor/${vendorId}/view_products`);
       return res.data.products;
     },

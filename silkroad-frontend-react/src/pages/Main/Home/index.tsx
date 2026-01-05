@@ -19,15 +19,16 @@ type VendorCard = BaseVendor & {
 export default function Home() {
   const { data: vendorData, isLoading } = useVendors();
   const { data: apiAnnouncements } = useAllAnnouncements();
+
   // const logout = useLogout();
   // const user = useCurrentUser().data;
 
   const vendors: VendorCard[] = useMemo(() => {
     return (
       vendorData?.map((v) => {
-        const mockRating = parseFloat(
-          (Math.random() * (5 - 3.5) + 3.5).toFixed(1)
-        );
+        // const mockRating = parseFloat(
+        //   (Math.random() * (5 - 3.5) + 3.5).toFixed(1)
+        // );
         return {
           id: String(v.id),
           name: v.name,
@@ -35,7 +36,7 @@ export default function Home() {
           logoUrl:
             v.logo_url ||
             `https://api.dicebear.com/7.x/identicon/svg?seed=${v.id}`, // Fallback to a default if logo_url is not available
-          rating: mockRating,
+          rating: v.avg_rating,
         };
       }) ?? []
     );

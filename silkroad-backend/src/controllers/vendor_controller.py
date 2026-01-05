@@ -12,13 +12,14 @@ from models import (
     Vendor_Manager,
     Order,
     Customer,
-    User
+    User,
+    Review
 )
 from config.database import db
 from utils import require_login
 
 from datetime import datetime, date
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from sqlalchemy.orm import joinedload
 import pytz
 
@@ -824,7 +825,7 @@ def view_vendor_products(vendor_id): #c
                 "id": p.id,
                 "vendor_id": p.vendor_id,
                 "name": p.name,
-                "base_price": p.price, # 建議回傳一個原價欄位，方便前端比對
+                "price": p.price, # 建議回傳一個原價欄位，方便前端比對
                 "description": p.description,
                 "options": {
                     "size": sizes_data,
@@ -1283,6 +1284,17 @@ def view_customer_discounts():
             is_not_started = policy.start_date and policy.start_date > today
             level_not_met = policy.membership_limit > user_level
             
+            # 建議補充：如果 expiry_date 為 None，仍要檢查 start_date 是否大於今天。
+            # # 判斷是否符合條件 (等級與日期)
+            # if policy.expiry_date:
+            #     is_expired = policy.expiry_date < today
+            # else:
+            #     is_expired = False  # 永久有效不算過期
+
+            # # 即使 expiry_date 為 None，也要檢查 start_date
+            # is_not_started = policy.start_date and policy.start_date > today
+            # level_not_met = policy.membership_limit > user_level
+
             # 核心狀態判斷邏輯
             if policy.id in used_ids:
                 status = "used"
@@ -1626,46 +1638,52 @@ def update_discount_policy():
             return jsonify({"message": "更新折價券失敗，請稍後再試", "success": False}), 500
 
 
+
+from sqlalchemy import func
+
 def get_public_vendors():
-    """
-    公開取得所有營業中且已驗證的店家列表
-    權限：公開 (Public) - 訪客、顧客、店家、管理員皆可存取
-    """
     try:
-        # 只顯示已驗證且營業中的店家
-        vendors = Vendor.query.filter_by(is_active=True, is_verified=True).all()
+        vendors = (
+            db.session.query(
+                Vendor,
+                func.coalesce(func.avg(Review.rating), 0).label("avg_rating"),
+                func.count(Review.id).label("review_count")
+            )
+            .outerjoin(Review, Vendor.id == Review.vendor_id)
+            .filter(Vendor.is_active == True, Vendor.is_verified == True)
+            .group_by(Vendor.id)
+            .all()
+        )
 
         result = []
-        for v in vendors:
+        for v, avg_rating, review_count in vendors:
             result.append(
                 {
                     "id": v.id,
-                    "name": v.name,  # 店名
-                    "address": v.address,  # 地址
+                    "name": v.name,
+                    "address": v.address,
                     "phone_number": v.phone_number,
-                    "email": v.email,  # 聯絡信箱 (視需求決定是否公開)
+                    "email": v.email,
                     "description": v.description,
-                    "logo_url": v.logo_url  # 商家 logo
-                    # "created_at": v.created_at.isoformat() # 如果前端需要顯示 "新店家" 標籤可加這行
+                    "logo_url": v.logo_url,
+                    "avg_rating": round(avg_rating, 2),
+                    "review_count": review_count
                 }
             )
 
-        return (
-            jsonify(
-                {
-                    "success": True,
-                    "message": "Retrieved public vendor list successfully",
-                    "data": result,
-                }
-            ),
-            200,
-        )
+        return jsonify({
+            "success": True,
+            "message": "Retrieved public vendor list successfully",
+            "data": result,
+        }), 200
 
     except Exception as e:
         return jsonify({
             "message": f"Database error: {str(e)}",
             "success": False
         }), 500
+
+
 
 
 def get_vendor_sales(vendor_id: int):
