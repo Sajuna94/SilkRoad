@@ -255,7 +255,6 @@ export function ForgotPasswordForm() {
             value={newPassword}
             onChange={setNewPassword}
             required
-            minLength={6}
           />
           <LabeledInput
             label="確認新密碼"
@@ -263,7 +262,6 @@ export function ForgotPasswordForm() {
             value={confirmPassword}
             onChange={setConfirmPassword}
             required
-            minLength={6}
           />
           <button
             type="submit"
