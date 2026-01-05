@@ -21,6 +21,7 @@ type AddProductReq = {
     size: string;
     ice: string;
     sugar: string;
+    price_step?: number;
   };
   image_url: string;
 };
@@ -34,6 +35,7 @@ type UpdateProductFieldsPayload = {
   size?: string | SizeOptionItem[];
   sugar?: string;
   ice?: string;
+  price_step?: number;
 };
 
 type UpdateVendorDescriptionReq = {
@@ -128,6 +130,7 @@ export const useVendorProductsByVendorId = (vendorId: number | undefined) => {
   });
 };
 
+// [修正重點 1] 確保 useProductDetail 正確讀取 price_step
 export const useProductDetail = (
   vendorId: number | undefined,
   productId: number | undefined
@@ -148,6 +151,12 @@ export const useProductDetail = (
         name: productData.name,
         price: productData.price,
         description: productData.description,
+        
+        // [新增] 讀取後端回傳的 price_step
+        // 假設後端 view_vendor_product_detail 在 product 物件下回傳了 price_step
+        // 如果後端沒回傳，預設為 0
+        price_step: productData.price_step || 0, 
+
         options: {
           size: productData.size_option || [],
           sugar: productData.sugar_option || [],
@@ -201,6 +210,7 @@ export const useUpdateVendorLogo = () => {
   });
 };
 
+// [修正重點 2] useUpdateProduct 確保 price_step 被加入 payload
 export const useUpdateProduct = () => {
   const qc = useQueryClient();
 
@@ -222,6 +232,15 @@ export const useUpdateProduct = () => {
           behavior: { col_name: "price", value: String(fields.price) },
         });
       }
+      
+      // [確認] 這段邏輯是正確的，確保 fields.price_step 有值時會加入
+      if (fields.price_step !== undefined) {
+        updates.push({
+          product_id,
+          behavior: { col_name: "price_step", value: String(fields.price_step) },
+        });
+      }
+      
       if (fields.description !== undefined) {
         updates.push({
           product_id,
@@ -255,11 +274,16 @@ export const useUpdateProduct = () => {
         });
       }
 
+      // [新增] 防呆：如果沒有任何欄位要更新，則不發送請求
+      if (updates.length === 0) return { message: "No changes detected", success: true };
+
       const res = await api.patch("/vendor/products", updates);
       return res.data;
     },
     onSuccess: () => {
+      // 成功後讓 products 和 product-detail 失效，強制重抓
       qc.invalidateQueries({ queryKey: ["products"] });
+      qc.invalidateQueries({ queryKey: ["product-detail"] });
     },
   });
 };

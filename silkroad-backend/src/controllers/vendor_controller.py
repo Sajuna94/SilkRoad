@@ -122,9 +122,20 @@ def get_products():
     data = []
 
     for p in products:
+        # 1. 取得 step
+        step = p.sizes_option.price_step if p.sizes_option else 0 
+
         sizes = [s.strip() for s in (p.sizes_option.options.split(",") if p.sizes_option else []) if s.strip()]
         sugars = [s.strip() for s in (p.sugar_option.options.split(",") if p.sugar_option else []) if s.strip()]
         ices = [s.strip() for s in (p.ice_option.options.split(",") if p.ice_option else []) if s.strip()]
+
+        # 2. 計算顯示用的價格 (給前端選單顯示用)
+        sizes_data = []
+        for index, name in enumerate(sizes):
+            sizes_data.append({
+                "name": name,
+                "price": index * step 
+            })
 
         data.append({
             "id": p.id,
@@ -133,10 +144,12 @@ def get_products():
             "price": p.price,
             "description": p.description,
             "options": {
-                "size": sizes,
+                "size": sizes_data,
                 "sugar": sugars,
                 "ice": ices,
             },
+            # [重要修改] 必須把 price_step 回傳，ProductEditModal 才抓得到目前的設定值
+            "price_step": step, 
             "image_url": p.image_url,
             "is_listed": p.is_listed,
         })
@@ -166,11 +179,11 @@ def add_product():
         if not isinstance(data[field], field_type):
             return jsonify({
                 "message": f"Invalid type for {field}: expected {field_type.__name__}",
-                "success": False,
+                "success": False
             }), 400
             
 
-    # Validate 'options' subfields if 'options' exists and is a dict
+    # Validate 'options' subfields
     options: dict = data["options"]
     options_required = ["size", "ice", "sugar"]
 
@@ -181,11 +194,19 @@ def add_product():
                 "success": False
             }), 400
 
+        # 注意：size 若包含價格邏輯，這裡可能還是存逗號分隔字串
         if not isinstance(options[key], str):
             return jsonify({
                 "message": f"'{key}' must be a string of comma-separated values",
                 "success": False
             }), 400
+
+    # 讀取 price_step，若無則預設 0
+    price_step = options.get("price_step", 0)
+    try:
+        price_step = int(price_step)
+    except ValueError:
+        return jsonify({"message": "price_step must be an integer", "success": False}), 400
 
     # Convert comma-separated string to list for storage
     for key in options_required:
@@ -217,7 +238,12 @@ def add_product():
         db.session.add_all([
             Sugar_Option(product_id=new_product.id, options=",".join(options["sugar"])),
             Ice_Option(product_id=new_product.id, options=",".join(options["ice"])),
-            Sizes_Option(product_id=new_product.id, options=",".join(options["size"])),
+            # [修改] 這裡加入 price_step
+            Sizes_Option(
+                product_id=new_product.id, 
+                options=",".join(options["size"]),
+                price_step=price_step
+            ),
         ])
         db.session.commit()
 
@@ -237,8 +263,6 @@ def add_product():
             "message": f"Failed to add product: {str(e)}", 
             "success": False
         }), 500
-
-
 @require_login(role=["vendor"])
 def update_products():
     data = request.get_json()
@@ -251,7 +275,7 @@ def update_products():
 
     MUTABLE_FIELDS = {
         "name", "price", "description", "is_listed", "image_url",
-        "sugar_options", "ice_options", "size_options"
+        "sugar_options", "ice_options", "size_options", "price_step"
     }
 
     updated_products = []
@@ -289,19 +313,28 @@ def update_products():
             elif "options" in col_name:
                 value_list = [v.strip() for v in str(value).split(",") if v.strip()]
 
-                # 特別處理 size_options -> sizes_option (注意複數)
                 if col_name == "size_options":
                     option_attr_name = "sizes_option"
                 else:
                     option_attr_name = col_name.replace("_options", "_option")
 
                 option_obj = getattr(product, option_attr_name, None)
+                
+                # [修改] 如果沒有找到選項物件，則回傳錯誤 (不自動建立)
                 if not option_obj:
                     return jsonify({
                         "message": f"Product {product_id} has no {option_attr_name}",
                         "success": False
                     }), 400
+                
                 option_obj.set_options_list(value_list)
+
+            elif col_name == "price_step":
+
+                product.sizes_option.price_step = int(value)
+            
+                db.session.add(product.sizes_option)
+
             else:
                 setattr(product, col_name, value)
         except ValueError:
@@ -328,6 +361,8 @@ def update_products():
                 "sugar_options": p.sugar_option.get_options_list() if p.sugar_option else None,
                 "ice_options": p.ice_option.get_options_list() if p.ice_option else None,
                 "size_options": p.sizes_option.get_options_list() if p.sizes_option else None,
+                # 確認回傳的是更新後的值
+                "price_step": p.sizes_option.price_step if p.sizes_option else 0
             }
             for p in updated_products
         ]
@@ -365,7 +400,7 @@ def view_vendor_products(vendor_id):
         for index, name in enumerate(raw_sizes):
             sizes_data.append({
                 "name": name,
-                "price": index * 10  # 固定加價邏輯
+                "price": index * p.sizes_option.price_step  # 固定加價邏輯
             })
         # --- 修改結束 ---
 
@@ -456,7 +491,7 @@ def view_vendor_product_detail(vendor_id, product_id):
         for index, name in enumerate(raw_sizes):
             sizes_data.append({
                 "name": name,
-                "price": index * 10 
+                "price": index * product.sizes_option.price_step
             })
         # --- 修改結束 ---
 
@@ -473,6 +508,7 @@ def view_vendor_product_detail(vendor_id, product_id):
                         "sugar_option": product.sugar_option.get_options_list(),
                         "ice_option": product.ice_option.get_options_list(),
                         "size_option": sizes_data, # 這裡回傳含有價格的結構
+                        "price_step": product.sizes_option.price_step if product.sizes_option else 0,
                     },
                 }
             ),

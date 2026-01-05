@@ -190,7 +190,7 @@ def view_cart(cart_id : int):
                     if item.selected_size in size_list:
                         index = size_list.index(item.selected_size)
                         # 4. 計算加價：第 0 個 +0，第 1 個 +10，第 2 個 +20...
-                        size_delta = index * 10
+                        size_delta = index * item.product.sizes_option.price_step
                 
                 # 5. 計算正確的單價 (基本價 + 尺寸加價)
                 final_unit_price = product.price + size_delta
@@ -521,7 +521,7 @@ def view_cart_guest(*args, **kwargs):
             if current_size_name in size_list:
                 index = size_list.index(current_size_name)
                 # 3. 計算加價
-                size_delta = index * 10
+                size_delta = index * product.sizes_option.price_step
         
         # 4. 算出最終單價
         final_unit_price = product.price + size_delta

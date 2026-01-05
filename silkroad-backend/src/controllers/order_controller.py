@@ -87,7 +87,7 @@ def generate_new_order(cart, policy_id, note, payment_methods, is_delivered, add
                 size_list = [s.strip() for s in product.sizes_option.options.split(',') if s.strip()]
                 if selected_size_str in size_list:
                     index = size_list.index(selected_size_str)
-                    size_delta = index * 10
+                    size_delta = index * product.sizes_option.price_step
 
             unit_price = product.price + size_delta
             total_price_accumulated += unit_price * item.quantity
@@ -169,7 +169,7 @@ def store_and_calculate_item(new_order, item):
         if selected_size_str in size_list:
             index = size_list.index(selected_size_str)
             # 4. 計算加價：第 0 個 +0，第 1 個 +10...
-            size_delta = index * 10
+            size_delta = index * item.product.sizes_option.price_step
     
     # 5. 計算正確單價
     unit_price = product.price + size_delta

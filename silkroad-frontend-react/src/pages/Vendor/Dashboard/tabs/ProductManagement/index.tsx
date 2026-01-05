@@ -88,7 +88,7 @@ export default function ProductTab() {
     );
   };
 
-  const handleEditProduct = async (
+const handleEditProduct = async (
     productId: number,
     formData: ProductEditFormData
   ) => {
@@ -101,9 +101,9 @@ export default function ProductTab() {
       size: formData.size,
       sugar: formData.sugar,
       ice: formData.ice,
+      price_step: formData.price_step, 
     });
   };
-
   const handleEditUpload = async (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       cloudinaryUploadMutation.mutate(file, {
