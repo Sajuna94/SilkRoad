@@ -13,13 +13,91 @@ from controllers.user_controller import (
     topup_balance,
     get_vendor_reviews,
     verify_email,
-    resend_verification_code
+    resend_verification_code,
+    forgot_password_send_code,
+    forgot_password_verify_code,
+    reset_password
 )
 
 user_routes = Blueprint('user', __name__)
 
 user_routes.route('/verify-email', methods=['POST'])(verify_email)
 user_routes.route('/resend-code', methods=['POST'])(resend_verification_code)
+
+user_routes.route('/forgot-password/send-code', methods=['POST'])(forgot_password_send_code)
+"""
+Forgot Password - Send Verification Code
+URL: /api/user/forgot-password/send-code
+Method: POST
+
+Expect:
+{
+    "email": string
+}
+
+Return (Success):
+{
+    "success": true,
+    "message": "驗證碼已發送至您的信箱"
+}
+
+Return (Failure):
+{
+    "message": "...",
+    "success": false
+}
+"""
+
+user_routes.route('/forgot-password/verify-code', methods=['POST'])(forgot_password_verify_code)
+"""
+Forgot Password - Verify Code
+URL: /api/user/forgot-password/verify-code
+Method: POST
+
+Expect:
+{
+    "email": string,
+    "code": string (6 digits)
+}
+
+Return (Success):
+{
+    "success": true,
+    "message": "驗證成功，請設定新密碼"
+}
+
+Return (Failure):
+{
+    "message": "...",
+    "success": false
+}
+"""
+
+user_routes.route('/forgot-password/reset-password', methods=['POST'])(reset_password)
+"""
+Forgot Password - Reset Password
+URL: /api/user/forgot-password/reset-password
+Method: POST
+
+Expect:
+{
+    "email": string,
+    "code": string (6 digits),
+    "new_password": string
+}
+
+Return (Success):
+{
+    "success": true,
+    "message": "密碼重置成功，請重新登入"
+}
+
+Return (Failure):
+{
+    "message": "...",
+    "success": false
+}
+"""
 
 user_routes.route('/register/guest', methods=['POST'])(register_step1)
 """

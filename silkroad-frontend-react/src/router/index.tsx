@@ -15,6 +15,7 @@ export const routes = [
       { path: "login", element: <Auth type={"login"} /> },
       { path: "register", element: <Auth type={"register"} /> },
       { path: "verify-email", element: <Auth type={"verify-email"} /> },
+      { path: "forgot-password", element: <Auth type={"forgot-password"} /> },
       { path: "cart", element: <Cart /> },
       { path: "home", element: <Home /> },
       { path: "topup", element: <TopUpPage /> },

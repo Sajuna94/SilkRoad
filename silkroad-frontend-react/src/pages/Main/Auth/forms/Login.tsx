@@ -60,6 +60,19 @@ export const LoginForm = () => {
                 />
 
                 <Error message={error} />
+
+                <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                    <Link
+                        to="/forgot-password"
+                        style={{
+                            fontSize: '0.85rem',
+                            color: '#1890ff',
+                            textDecoration: 'none'
+                        }}
+                    >
+                        忘記密碼？
+                    </Link>
+                </div>
             </div>
 
 

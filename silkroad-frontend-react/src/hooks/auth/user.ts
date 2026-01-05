@@ -196,3 +196,36 @@ export const useResendCode = () => {
     },
   });
 };
+
+// ==================== Forgot Password Hooks ====================
+
+type ForgotPasswordSendCodeReq = { email: string };
+type ForgotPasswordVerifyCodeReq = { email: string; code: string };
+type ResetPasswordReq = { email: string; code: string; new_password: string };
+
+export const useForgotPasswordSendCode = () => {
+  return useMutation<any, ApiErrorBody, ForgotPasswordSendCodeReq>({
+    mutationFn: async (payload) => {
+      const res = await api.post("/user/forgot-password/send-code", payload);
+      return res.data;
+    },
+  });
+};
+
+export const useForgotPasswordVerifyCode = () => {
+  return useMutation<any, ApiErrorBody, ForgotPasswordVerifyCodeReq>({
+    mutationFn: async (payload) => {
+      const res = await api.post("/user/forgot-password/verify-code", payload);
+      return res.data;
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation<any, ApiErrorBody, ResetPasswordReq>({
+    mutationFn: async (payload) => {
+      const res = await api.post("/user/forgot-password/reset-password", payload);
+      return res.data;
+    },
+  });
+};

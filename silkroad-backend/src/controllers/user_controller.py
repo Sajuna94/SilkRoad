@@ -10,11 +10,11 @@ import random
 import string
 from datetime import datetime, timedelta, timezone
 
-def send_verification_email(user_email, code):
+def send_verification_email(user_email, code, subject="SilkRoad Email Verification"):
     """發送驗證碼郵件"""
     try:
         msg = Message(
-            "SilkRoad Email Verification",
+            subject,
             recipients=[user_email]
         )
         msg.body = f"Your verification code is: {code}\nThis code will expire in 10 minutes."
@@ -982,6 +982,113 @@ def resend_verification_code():
             "message": "Verification code resent",
             "success": True,
             "mail_sent": mail_sent
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
+
+# ==================== Forgot Password Functions ====================
+
+def forgot_password_send_code():
+    """忘記密碼 - 發送驗證碼"""
+    data = request.get_json()
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"message": "Email is required", "success": False}), 400
+
+    # 查找用戶（只能是已驗證的用戶才能重置密碼）
+    user = User.query.filter_by(email=email, is_verified=True).first()
+    if not user:
+        return jsonify({"message": "找不到該帳號或帳號未驗證", "success": False}), 404
+
+    try:
+        # 生成6位驗證碼
+        code = generate_verification_code()
+        user.verification_code = code
+        user.verification_code_expires_at = datetime.now() + timedelta(minutes=10)
+        db.session.commit()
+
+        # 發送驗證碼郵件
+        mail_sent = send_verification_email(user.email, code, subject="密碼重置驗證碼")
+
+        return jsonify({
+            "message": "驗證碼已發送至您的信箱",
+            "success": True,
+            "mail_sent": mail_sent
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Database error: {str(e)}", "success": False}), 500
+
+
+def forgot_password_verify_code():
+    """忘記密碼 - 驗證驗證碼"""
+    data = request.get_json()
+    email = data.get('email')
+    code = data.get('code')
+
+    if not email or not code:
+        return jsonify({"message": "Email and code are required", "success": False}), 400
+
+    user = User.query.filter_by(email=email, is_verified=True).first()
+    if not user:
+        return jsonify({"message": "User not found", "success": False}), 404
+
+    # 檢查驗證碼
+    if user.verification_code != code:
+        return jsonify({"message": "驗證碼錯誤", "success": False}), 400
+
+    # 檢查是否過期
+    if user.verification_code_expires_at and datetime.now() > user.verification_code_expires_at:
+        return jsonify({"message": "驗證碼已過期，請重新發送", "success": False}), 400
+
+    return jsonify({
+        "message": "驗證成功，請設定新密碼",
+        "success": True
+    }), 200
+
+
+def reset_password():
+    """忘記密碼 - 重置密碼"""
+    data = request.get_json()
+    email = data.get('email')
+    code = data.get('code')
+    new_password = data.get('new_password')
+
+    if not email or not code or not new_password:
+        return jsonify({
+            "message": "Email, code, and new_password are required",
+            "success": False
+        }), 400
+
+    # 驗證密碼強度
+    if len(new_password) < 6:
+        return jsonify({"message": "密碼長度至少需要6個字元", "success": False}), 400
+
+    user = User.query.filter_by(email=email, is_verified=True).first()
+    if not user:
+        return jsonify({"message": "User not found", "success": False}), 404
+
+    # 再次檢查驗證碼（安全考量）
+    if user.verification_code != code:
+        return jsonify({"message": "驗證碼錯誤", "success": False}), 400
+
+    # 檢查是否過期
+    if user.verification_code_expires_at and datetime.now() > user.verification_code_expires_at:
+        return jsonify({"message": "驗證碼已過期，請重新發送", "success": False}), 400
+
+    try:
+        # 更新密碼
+        user.set_password(new_password)
+        # 清除驗證碼（防止重複使用）
+        user.verification_code = None
+        user.verification_code_expires_at = None
+        db.session.commit()
+
+        return jsonify({
+            "message": "密碼重置成功，請重新登入",
+            "success": True
         }), 200
     except Exception as e:
         db.session.rollback()
