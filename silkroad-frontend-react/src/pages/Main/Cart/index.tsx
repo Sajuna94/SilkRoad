@@ -469,7 +469,7 @@ function CartList({
             </div>
             <div className={styles["price"]}>
               <h3>${item.subtotal}</h3>
-              <div className={styles["quantity"]}>數量: {item.quantity}</div>
+              <div className={styles["quantity"]}>數量: x{item.quantity}</div>
 
               <button
                 className={styles["btnRemove"]}
@@ -480,6 +480,7 @@ function CartList({
                   cursor: "pointer",
                   fontSize: "0.8rem",
                   marginTop: "5px",
+									marginLeft:"20px",
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
