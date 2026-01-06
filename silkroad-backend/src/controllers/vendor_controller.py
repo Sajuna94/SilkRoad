@@ -327,56 +327,89 @@ def add_product():
         }), 500
 
 '''
-@require_login(role=["vendor"]) #c
 def add_product():
     data: dict = request.get_json() or {}
 
-    # 1. 定義產品基本屬性與類型檢查
+    # 1. 基礎欄位與型別檢查 (保持原樣)
     required_fields = {
         "name": str,
         "price": int,
         "description": str,
+        "options": dict,
         "image_url": str,
     }
 
-    # 2. 驗證必要欄位
     for field, field_type in required_fields.items():
-        if field not in data:
-            return jsonify({"message": f"Missing field: {field}", "success": False}), 400
-        if not isinstance(data[field], field_type):
-            return jsonify({"message": f"Invalid type for {field}", "success": False}), 400
+        if field not in data or not isinstance(data[field], field_type):
+            return jsonify({"message": f"Invalid or missing field: {field}", "success": False}), 400
+
+    # 2. 驗證 options 內部欄位
+    options: dict = data["options"]
+    options_required = ["size", "ice", "sugar"]
+    for key in options_required:
+        if key not in options or not isinstance(options[key], str):
+            return jsonify({"message": f"'{key}' must be a comma-separated string", "success": False}), 400
+
+    # 3. 解析價格增量 (price_step)
+    try:
+        price_step = int(options.get("price_step", 0))
+    except ValueError:
+        return jsonify({"message": "price_step must be an integer", "success": False}), 400
+
+    # 4. 將字串轉換為 List
+    size_list = [s.strip() for s in options["size"].split(",") if s.strip()]
+    sugar_list = [s.strip() for s in options["sugar"].split(",") if s.strip()]
+    ice_list = [s.strip() for s in options["ice"].split(",") if s.strip()]
 
     vendor_id = session.get("user_id")
+    
+    # 5. 創建產品主表
+    new_product = Product(
+        vendor_id=vendor_id,
+        name=data.get("name"),
+        price=data.get("price"),
+        description=data.get("description"),
+        is_listed=False, # 預設下架，讓商家手動上架
+        image_url=data.get("image_url"),
+    )
 
-    # 3. 創建並保存產品主體
     try:
-        new_product = Product(
-            vendor_id=vendor_id,
-            name=data.get("name"),
-            price=data.get("price"),
-            description=data.get("description"),
-            image_url=data.get("image_url"),
-            is_listed=False  # 預設為下架狀態
-        )
-
         db.session.add(new_product)
+        db.session.flush() # 取得 new_product.id
+
+        # 6. [關鍵修改] 跑迴圈寫入選項（每一筆都是獨立的一行）
+        
+        # 寫入糖度
+        for s_name in sugar_list:
+            db.session.add(Sugar_Option(product_id=new_product.id, options=s_name))
+        
+        # 寫入冰量
+        for i_name in ice_list:
+            db.session.add(Ice_Option(product_id=new_product.id, options=i_name))
+
+        # 寫入尺寸與加價邏輯
+        # 假設前端傳 L, M, S，且 price_step 為 10
+        # 這裡根據 index 存入：S (0*10), M (1*10), L (2*10)
+        # 或是根據你的需求統一存入 price_step 也可以
+        for index, sz_name in enumerate(size_list):
+            calculated_step = index * price_step
+            db.session.add(Sizes_Option(
+                product_id=new_product.id, 
+                options=sz_name, 
+                price_step=calculated_step # 存入算好的加價
+            ))
+
         db.session.commit()
 
         return jsonify({
-            "message": "Product created successfully (without options)",
+            "message": "Product added successfully",
             "success": True,
-            "data": {
-                "id": new_product.id,
-                "name": new_product.name
-            }
+            "data": {"id": new_product.id}
         }), 201
-
+        
     except Exception as e:
         db.session.rollback()
-        return jsonify({
-            "message": f"Failed to save product: {str(e)}", 
-            "success": False
-        }), 500
+        return jsonify({"message": f"Failed to add product: {str(e)}", "success": False}), 500
     
 @require_login(role=["vendor"])#c
 def add_single_option(): # 路由函式通常不帶參數
