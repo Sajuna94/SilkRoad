@@ -1283,6 +1283,7 @@ def view_customer_discounts():
             is_expired = policy.expiry_date and policy.expiry_date < today
             is_not_started = policy.start_date and policy.start_date > today
             level_not_met = policy.membership_limit > user_level
+            is_used = policy.id in used_ids
             
             # 建議補充：如果 expiry_date 為 None，仍要檢查 start_date 是否大於今天。
             # # 判斷是否符合條件 (等級與日期)
@@ -1294,6 +1295,9 @@ def view_customer_discounts():
             # # 即使 expiry_date 為 None，也要檢查 start_date
             # is_not_started = policy.start_date and policy.start_date > today
             # level_not_met = policy.membership_limit > user_level
+
+            if is_expired and not is_used:
+                continue
 
             # 核心狀態判斷邏輯
             if policy.id in used_ids:
