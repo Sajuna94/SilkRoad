@@ -14,7 +14,7 @@ SET c.membership_level =
         WHEN t.completed_order_count >= 10  THEN 1
         ELSE 0
     END;
-CREATE VIEW v_會員 AS
+-- CREATE VIEW v_會員 AS
 SELECT
     u.id AS user_id,
     u.name AS 名字,

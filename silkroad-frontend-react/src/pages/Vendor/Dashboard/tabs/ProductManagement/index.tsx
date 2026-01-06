@@ -39,11 +39,11 @@ export default function ProductTab() {
 
 	const [form, setForm] = React.useState({
 		name: "長島冰茶",
-		price: 999,
-		desc: "長島的茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶茶",
-		options: { size: "大,小", sugar: "半糖,微糖", ice: "去冰,微冰" },
+		price: 90,
+		desc: "清爽多層次口感，冰茶香氣與果味交織",
+		options: { size: "小,中,大", sugar: "微糖,半糖,全糖", ice: "去冰,微冰,半冰,正常冰" },
 		url: "https://imgs.gvm.com.tw/upload/gallery/20180227/43031_01.jpg",
-		price_step: 50,
+		price_step: 20,
 	});
 
 	const toggleListed = (id: number) => {

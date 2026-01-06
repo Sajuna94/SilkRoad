@@ -419,6 +419,7 @@ def update_orderinfo():
                         "success": False}), 404
     
     refund_status = data.get("refund_status")
+    
     refund_at = data.get("refund_at") #格式： YYYY-MM-DD HH:mm:ss
     is_completed = data.get("is_completed")
     is_delivered = data.get("is_delivered")
@@ -480,6 +481,28 @@ def update_orderinfo():
                 if vendor:
                     revenue_increase = order.total_price
                     vendor.revenue += revenue_increase
+                    
+                # --- 更新會員等級 ---
+                customer = Customer.query.filter_by(user_id=order.user_id).first()
+                if customer:
+                    # 查詢該顧客已完成的訂單數量
+                    completed_orders_count = (
+                        Order.query
+                        .filter_by(user_id=order.user_id, is_completed=True)
+                        .count()
+                    )
+
+                    # 根據規則更新 membership_level
+                    if completed_orders_count >= 100:
+                        customer.membership_level = 4
+                    elif completed_orders_count >= 50:
+                        customer.membership_level = 3
+                    elif completed_orders_count >= 20:
+                        customer.membership_level = 2
+                    elif completed_orders_count >= 10:
+                        customer.membership_level = 1
+                    else:
+                        customer.membership_level = 0
 
             order.is_completed = is_completed
 
@@ -494,7 +517,7 @@ def update_orderinfo():
                 return jsonify({"message": "deliver_status 傳值錯誤，必須是 'delivering', 'delivered' 或 None",
                                 "success": False}), 400
             order.deliver_status = deliver_status
-
+        
         db.session.commit()
         # return jsonify({"message": "訂單資訊更新成功",
         #                 "success": True}), 200
