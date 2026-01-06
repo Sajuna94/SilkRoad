@@ -41,9 +41,8 @@ export default function ProductTab() {
 		name: "長島冰茶",
 		price: 90,
 		desc: "清爽多層次口感，冰茶香氣與果味交織",
-		options: { size: "小,中,大", sugar: "微糖,半糖,全糖", ice: "去冰,微冰,半冰,正常冰" },
+		options: { size: "小,中,大", step: "0,20,40", sugar: "微糖,半糖,全糖", ice: "去冰,微冰,半冰,正常冰" },
 		url: "https://imgs.gvm.com.tw/upload/gallery/20180227/43031_01.jpg",
-		price_step: 20,
 	});
 
 	const toggleListed = (id: number) => {
@@ -73,9 +72,9 @@ export default function ProductTab() {
 				size: form.options.size,
 				ice: form.options.ice,
 				sugar: form.options.sugar,
+				step: form.options.step,
 			},
 			image_url: form.url,
-			price_step: form.price_step,
 		});
 	};
 
@@ -203,9 +202,12 @@ export default function ProductTab() {
 					<div>
 						<label>加價</label>
 						<input
-							value={form.price_step}
+							value={form.options.step}
 							onChange={(e) =>
-								setForm((f) => ({ ...f, price_step: Number(e.target.value) }))
+								setForm((f) => ({
+									...f,
+									options: { ...f.options, step: e.target.value },
+								}))
 							}
 						/>
 					</div>

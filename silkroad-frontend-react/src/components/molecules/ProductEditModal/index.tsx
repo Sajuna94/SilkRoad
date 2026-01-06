@@ -21,7 +21,7 @@ export interface ProductEditFormData {
     size: string;
     sugar: string;
     ice: string;
-    price_step: number;
+    price_step: string;
 }
 
 export const ProductEditModal = forwardRef<ProductEditModalRef, ProductEditModalProps>(
@@ -37,7 +37,7 @@ export const ProductEditModal = forwardRef<ProductEditModalRef, ProductEditModal
             size: "",
             sugar: "",
             ice: "",
-            price_step: 0,
+            price_step: "",
         });
         
         const [pending, setPending] = useState(false);
@@ -50,7 +50,10 @@ export const ProductEditModal = forwardRef<ProductEditModalRef, ProductEditModal
                 // [修正] 讀取 price_step
                 // 因為後端現在會在 get_products 回傳 price_step，所以直接讀取
                 // 如果 TS 報錯說 Product 沒有 price_step，請先用 (product as any).price_step
-                const currentPriceStep = (product as any).price_step || 0;
+                // // const currentPriceStep = (product as any).price_step || 0;
+								// console.log(Array.isArray(product.options?.size) 
+                //         ? product.options.size.map(s => s.price).join(",") 
+                //         : "",);
 
                 setForm({
                     name: product.name,
@@ -60,13 +63,15 @@ export const ProductEditModal = forwardRef<ProductEditModalRef, ProductEditModal
                     
                     // 處理 Size: 如果是物件陣列 (來自 API)，轉回逗號分隔字串
                     size: Array.isArray(product.options?.size) 
-                        ? product.options.size.map(s => typeof s === 'string' ? s : s.name).join(",") 
+                        ? product.options.size.map(s => s.name).join(",") 
                         : "",
                         
                     sugar: product.options?.sugar?.join(",") || "",
                     ice: product.options?.ice?.join(",") || "",
-                    
-                    price_step: currentPriceStep,
+
+                    price_step: Array.isArray(product.options?.size) 
+                        ? product.options.size.map(s => s.price).join(",") 
+                        : "",
                 });
                 dialogRef.current?.open();
             },
@@ -157,12 +162,12 @@ export const ProductEditModal = forwardRef<ProductEditModalRef, ProductEditModal
                             <label htmlFor="price-step">尺寸加價金額 ($)</label>
                             <input
                                 id="price-step"
-                                type="number"
+                                type="text"
                                 value={form.price_step}
-                                onChange={(e) => setForm({ ...form, price_step: Number(e.target.value) })}
+                                onChange={(e) => setForm({ ...form, price_step: e.target.value })}
                                 required
-                                min="0"
-                                placeholder="例如: 10"
+                                // min="0"
+                                placeholder="10, 20, 30"
                             />
                             <small className={styles.hint} style={{display: 'block', marginTop: '4px', color: '#666', fontSize: '0.85rem'}}>
                                 設定每個尺寸之間的價差 (例如設為 10，則第1個+0，第2個+10，第3個+20)

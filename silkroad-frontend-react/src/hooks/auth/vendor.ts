@@ -21,9 +21,9 @@ type AddProductReq = {
     size: string;
     ice: string;
     sugar: string;
+		step: string;
   };
   image_url: string;
-	price_step: number;
 };
 
 type UpdateProductFieldsPayload = {
@@ -35,7 +35,7 @@ type UpdateProductFieldsPayload = {
   size?: string | SizeOptionItem[];
   sugar?: string;
   ice?: string;
-  price_step?: number;
+  price_step?: string;
 };
 
 type UpdateVendorDescriptionReq = {

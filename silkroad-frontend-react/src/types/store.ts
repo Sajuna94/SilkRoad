@@ -14,7 +14,6 @@ export interface Product {
 		sugar: string[];
 		ice: string[];
 	};
-	price_step?: number;
 	image_url: string;
 	is_listed: boolean;
 }

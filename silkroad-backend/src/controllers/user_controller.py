@@ -293,7 +293,7 @@ def login_user():
 
     # 2. 透過 email 尋找使用者
     # 由於 SQLAlchemy 的多型特性，這裡取出的 user 會自動是 Customer, Vendor 或 Admin 的實例
-    user = User.query.filter_by(email=email).first()
+    user: User = User.query.filter_by(email=email).first()
 
     # 3. 檢查使用者是否存在，並驗證密碼
     if not user or not user.check_password(password):
@@ -310,6 +310,15 @@ def login_user():
             "requires_verification": True,
             "email": user.email
         }), 403
+    
+    if user.role == "customer" or user.role == "vendor":
+        if not user.is_active:
+            return jsonify({
+                "message": "Account suspended",
+                "success": False,
+                "requires_verification": False,
+                "email": user.email
+            }), 403
 
     # 4. 登入成功：設定 Session
     session["user_id"] = user.id

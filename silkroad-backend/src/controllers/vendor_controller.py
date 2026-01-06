@@ -178,7 +178,7 @@ def get_products():
     for p in products:
         # --- 1. 取得排序後的選項列表 (由舊到新) ---
         # 使用 sorted 並根據 created_at 排序
-        sorted_sizes = sorted(p.sizes_options, key=lambda x: x.created_at)
+        sorted_sizes = sorted(p.sizes_options, key=lambda x: x.price_step)
         sorted_sugars = sorted(p.sugar_options, key=lambda x: x.created_at)
         sorted_ices = sorted(p.ice_options, key=lambda x: x.created_at)
         
@@ -330,6 +330,7 @@ def add_product():
 def add_product():
     data: dict = request.get_json() or {}
 
+
     # 1. 基礎欄位與型別檢查 (保持原樣)
     required_fields = {
         "name": str,
@@ -337,7 +338,6 @@ def add_product():
         "description": str,
         "options": dict,
         "image_url": str,
-        "price_step": int,
     }
 
     for field, field_type in required_fields.items():
@@ -346,21 +346,22 @@ def add_product():
 
     # 2. 驗證 options 內部欄位
     options: dict = data["options"]
-    options_required = ["size", "ice", "sugar"]
+    options_required = ["size", "ice", "sugar", "step"]
     for key in options_required:
         if key not in options or not isinstance(options[key], str):
             return jsonify({"message": f"'{key}' must be a comma-separated string", "success": False}), 400
 
-    # 3. 解析價格增量 (price_step)
-    try:
-        price_step = int(data.get("price_step", 0))
-    except ValueError:
-        return jsonify({"message": "price_step must be an integer", "success": False}), 400
+    # # 3. 解析價格增量 (price_step)
+    # try:
+    #     price_step = int(data.get("price_step", 0))
+    # except ValueError:
+    #     return jsonify({"message": "price_step must be an integer", "success": False}), 400
 
     # 4. 將字串轉換為 List
     size_list = [s.strip() for s in options["size"].split(",") if s.strip()]
     sugar_list = [s.strip() for s in options["sugar"].split(",") if s.strip()]
     ice_list = [s.strip() for s in options["ice"].split(",") if s.strip()]
+    step_list = [s.strip() for s in options["step"].split(",") if s.strip()]
 
     vendor_id = session.get("user_id")
     
@@ -392,12 +393,11 @@ def add_product():
         # 假設前端傳 L, M, S，且 price_step 為 10
         # 這裡根據 index 存入：S (0*10), M (1*10), L (2*10)
         # 或是根據你的需求統一存入 price_step 也可以
-        for index, sz_name in enumerate(size_list):
-            calculated_step = index * price_step
+        for index in range(len(size_list)):
             db.session.add(Sizes_Option(
                 product_id=new_product.id, 
-                options=sz_name, 
-                price_step=calculated_step # 存入算好的加價
+                options=size_list[index], 
+                price_step=step_list[index] # 存入算好的加價
             ))
 
         db.session.commit()
@@ -2125,12 +2125,14 @@ def update_product(product_id):
         
         # --- 2. 處理 Sizes Options ---
         size_str = data.get("size")
+        step_str = data.get("price_step")
+        step_list = [int(s.strip()) for s in step_str.split(",") if s.strip()]
         if size_str:
             product.sizes_options.clear()
             for index, opt_name in enumerate([s.strip() for s in size_str.split(",") if s.strip()]):
                 product.sizes_options.append(Sizes_Option(
                     options=opt_name,
-                    price_step=data.get("price_step", 0) * index
+                    price_step=step_list[index]
                 ))
 
         # --- 3. 處理 Sugar Options ---
