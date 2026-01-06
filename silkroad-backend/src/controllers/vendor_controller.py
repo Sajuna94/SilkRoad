@@ -340,7 +340,6 @@ def add_product():
         "options": dict,
         "image_url": str,
     }
-    print(data)
 
     for field, field_type in required_fields.items():
         if field not in data or not isinstance(data[field], field_type):
@@ -355,8 +354,7 @@ def add_product():
 
     # 3. 解析價格增量 (price_step)
     try:
-        # price_step = int(options.get("price_step", 0))
-        price_step = 20
+        price_step = int(options.get("price_step", 0))
     except ValueError:
         return jsonify({"message": "price_step must be an integer", "success": False}), 400
 
@@ -382,7 +380,6 @@ def add_product():
         db.session.flush() # 取得 new_product.id
 
         # 6. [關鍵修改] 跑迴圈寫入選項（每一筆都是獨立的一行）
-        print(new_product.id)
         
         # 寫入糖度
         for s_name in sugar_list:
