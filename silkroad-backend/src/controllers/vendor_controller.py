@@ -327,58 +327,53 @@ def add_product():
         }), 500
 
 '''
+@require_login(role=["vendor"])
 def add_product():
     data: dict = request.get_json() or {}
 
-    # 1. 基礎欄位與型別檢查 (保持原樣)
-    required_fields = {
-        "name": str,
-        "price": int,
-        "description": str,
-        "options": dict,
-        "image_url": str,
-    }
+    # 1. 修正欄位對齊：將前端的 desc/url 對應到資料庫欄位
+    name = data.get("name")
+    price = data.get("price")
+    description = data.get("desc")  # 前端傳的是 desc
+    image_url = data.get("url")     # 前端傳的是 url
+    options_raw = data.get("options", {})
 
-    for field, field_type in required_fields.items():
-        if field not in data or not isinstance(data[field], field_type):
-            return jsonify({"message": f"Invalid or missing field: {field}", "success": False}), 400
+    if not all([name, price, options_raw]):
+        return jsonify({"message": "缺少必要資訊", "success": False}), 400
 
-    # 2. 驗證 options 內部欄位
-    options: dict = data["options"]
-    options_required = ["size", "ice", "sugar"]
-    for key in options_required:
-        if key not in options or not isinstance(options[key], str):
-            return jsonify({"message": f"'{key}' must be a comma-separated string", "success": False}), 400
-
-    # 3. 解析價格增量 (price_step)
+    # 2. 獲取並解析 price_step
     try:
-        price_step = int(options.get("price_step", 0))
+        price_step = int(options_raw.get("price_step", 0))
     except ValueError:
-        return jsonify({"message": "price_step must be an integer", "success": False}), 400
+        price_step = 0
 
-    # 4. 將字串轉換為 List
-    size_list = [s.strip() for s in options["size"].split(",") if s.strip()]
-    sugar_list = [s.strip() for s in options["sugar"].split(",") if s.strip()]
-    ice_list = [s.strip() for s in options["ice"].split(",") if s.strip()]
+    # 3. 處理選項字串 (轉為 List 並去重，防止 1062 錯誤)
+    def clean_options(opt_str):
+        if not opt_str: return []
+        # 使用 set() 去重，確保不會在同一個產品下存入兩個相同的選項
+        return list(dict.fromkeys([s.strip() for s in opt_str.split(",") if s.strip()]))
+
+    size_list = clean_options(options_raw.get("size"))
+    sugar_list = clean_options(options_raw.get("sugar"))
+    ice_list = clean_options(options_raw.get("ice"))
 
     vendor_id = session.get("user_id")
-    
-    # 5. 創建產品主表
+
+    # 4. 創建產品主表
     new_product = Product(
         vendor_id=vendor_id,
-        name=data.get("name"),
-        price=data.get("price"),
-        description=data.get("description"),
-        is_listed=False, # 預設下架，讓商家手動上架
-        image_url=data.get("image_url"),
+        name=name,
+        price=price,
+        description=description,
+        is_listed=True,  # 建議直接設為 True 方便測試
+        image_url=image_url,
     )
 
     try:
         db.session.add(new_product)
-        db.session.flush() # 取得 new_product.id
+        db.session.flush() # 取得新 ID
 
-        # 6. [關鍵修改] 跑迴圈寫入選項（每一筆都是獨立的一行）
-        
+        # 5. [關鍵修改] 每一筆選項都獨立存成一行
         # 寫入糖度
         for s_name in sugar_list:
             db.session.add(Sugar_Option(product_id=new_product.id, options=s_name))
@@ -387,29 +382,21 @@ def add_product():
         for i_name in ice_list:
             db.session.add(Ice_Option(product_id=new_product.id, options=i_name))
 
-        # 寫入尺寸與加價邏輯
-        # 假設前端傳 L, M, S，且 price_step 為 10
-        # 這裡根據 index 存入：S (0*10), M (1*10), L (2*10)
-        # 或是根據你的需求統一存入 price_step 也可以
+        # 寫入尺寸 (配合 price_step 加價邏輯)
         for index, sz_name in enumerate(size_list):
-            calculated_step = index * price_step
             db.session.add(Sizes_Option(
                 product_id=new_product.id, 
                 options=sz_name, 
-                price_step=calculated_step # 存入算好的加價
+                price_step=index * price_step
             ))
 
         db.session.commit()
-
-        return jsonify({
-            "message": "Product added successfully",
-            "success": True,
-            "data": {"id": new_product.id}
-        }), 201
+        return jsonify({"message": "新增商品成功", "success": True, "data": {"id": new_product.id}}), 201
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({"message": f"Failed to add product: {str(e)}", "success": False}), 500
+        # 回傳具體錯誤訊息方便除錯
+        return jsonify({"message": f"資料庫寫入失敗: {str(e)}", "success": False}), 500
     
 @require_login(role=["vendor"])#c
 def add_single_option(): # 路由函式通常不帶參數
