@@ -5,11 +5,12 @@ User controllers package : 定義所有api 被呼叫後要執行的function
 from controllers.user_controller import register_step1,register_step2, login_user, logout_user, update_user, update_password, delete_user, current_user,get_all_announcements,get_vendor_reviews
 from controllers.cart_controller import add_to_cart, add_to_cart_guest, remove_from_cart, remove_from_cart_guest, update_cart_item, update_cart_item_guest, view_cart, view_cart_guest, clean_cart
 from controllers.admin_controller import block_user, post_announcement, update_announcement, delete_announcement, unblock_user,get_all_customers,get_all_vendors,get_all_announcements,get_all_users,get_block_records
-from controllers.vendor_controller import update_products_listed, update_products, get_products, add_product, view_vendor_products, add_discount_policy, view_discount_policy, invalid_discount_policy, update_discount_policy, view_vendor_product_detail, get_public_vendors, update_vendor_description, get_info, update_vendor_manager_info, view_customer_discounts, update_vendor_logo, get_vendor_sales, add_single_option, delete_single_option
+from controllers.vendor_controller import update_product, update_products_listed, update_products, get_products, add_product, view_vendor_products, add_discount_policy, view_discount_policy, invalid_discount_policy, update_discount_policy, view_vendor_product_detail, get_public_vendors, update_vendor_description, get_info, update_vendor_manager_info, view_customer_discounts, update_vendor_logo, get_vendor_sales, add_single_option, delete_single_option
 from controllers.order_controller import trans_to_order, view_order, update_orderinfo, view_all_user_orders, view_all_vendor_orders,check_order_review_status
 from controllers.customer_controller import post_vendor_review
 
 __all__ = [
+    'update_product',
     'update_products_listed',
     'register_step1',
     'register_step2',

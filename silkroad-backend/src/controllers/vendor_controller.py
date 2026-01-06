@@ -195,7 +195,7 @@ def get_products():
         for index, s_obj in enumerate(sorted_sizes):
             sizes_data.append({
                 "name": s_obj.options,
-                "price": p.price + s_obj.price_step
+                "price": s_obj.price_step
             })
 
         data.append({
@@ -214,8 +214,6 @@ def get_products():
             "is_listed": p.is_listed,
         })
         
-    print(data[-1])
-
     return jsonify({"message": "", "success": True, "products": data})
 
 
@@ -339,6 +337,7 @@ def add_product():
         "description": str,
         "options": dict,
         "image_url": str,
+        "price_step": int,
     }
 
     for field, field_type in required_fields.items():
@@ -354,7 +353,7 @@ def add_product():
 
     # 3. 解析價格增量 (price_step)
     try:
-        price_step = int(options.get("price_step", 0))
+        price_step = int(data.get("price_step", 0))
     except ValueError:
         return jsonify({"message": "price_step must be an integer", "success": False}), 400
 
@@ -587,7 +586,7 @@ def update_products():
 @require_login(role=["vendor"]) #c
 def update_products():
     data = request.get_json()
-
+    
     if not data or not isinstance(data, list):
         return jsonify({
             "message": "Expected a non-empty list",
@@ -596,7 +595,7 @@ def update_products():
 
     # 移除所有選項相關欄位，僅保留產品主表屬性
     MUTABLE_FIELDS = {
-        "name", "price", "description", "is_listed", "image_url"
+        "name", "price", "description", "is_listed", "image_url", "price_step"
     }
 
     updated_products = []
@@ -949,7 +948,7 @@ def view_vendor_product_detail(vendor_id, product_id): #c
         for s in sorted_sizes:
             sizes_data.append({
                 "name": s.options,
-                "price": product.price + s.price_step  # 修改這裡：原價 + 該尺寸加價
+                "price": s.price_step  # 修改這裡：原價 + 該尺寸加價
             })
         # --- 修改結束 ---
 
@@ -2106,3 +2105,53 @@ def update_vendor_logo():
             "message": f"Database error: {str(e)}",
             "success": False
         }), 500
+
+@require_login(role=["vendor"])
+def update_product(product_id):
+    vendor_id = session.get("user_id")
+    data = request.get_json()
+
+    try:
+        product = Product.query.filter_by(id=product_id, vendor_id=vendor_id).first()
+        if not product:
+            return jsonify({"message": "Product not found", "success": False}), 404
+
+        # --- 1. 更新 Product 主欄位 ---
+        product.name = data.get("name", product.name)
+        product.price = data.get("price", product.price)
+        product.description = data.get("description", product.description)
+        product.image_url = data.get("image_url", product.image_url)
+        product.is_listed = data.get("is_listed", product.is_listed)
+        
+        # --- 2. 處理 Sizes Options ---
+        size_str = data.get("size")
+        if size_str:
+            product.sizes_options.clear()
+            for index, opt_name in enumerate([s.strip() for s in size_str.split(",") if s.strip()]):
+                product.sizes_options.append(Sizes_Option(
+                    options=opt_name,
+                    price_step=data.get("price_step", 0) * index
+                ))
+
+        # --- 3. 處理 Sugar Options ---
+        sugar_str = data.get("sugar")
+        if sugar_str:
+            product.sugar_options.clear()
+            for opt_name in [s.strip() for s in sugar_str.split(",") if s.strip()]:
+                product.sugar_options.append(Sugar_Option(options=opt_name))
+
+        # --- 4. 處理 Ice Options ---
+        ice_str = data.get("ice")
+        if ice_str:
+            product.ice_options.clear()
+            for opt_name in [s.strip() for s in ice_str.split(",") if s.strip()]:
+                product.ice_options.append(Ice_Option(options=opt_name))
+
+        # --- 5. 提交更新 ---
+        db.session.commit()
+
+        return jsonify({"message": "Product updated successfully", "success": True})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": f"Update failed: {str(e)}", "success": False}), 500

@@ -21,9 +21,9 @@ type AddProductReq = {
     size: string;
     ice: string;
     sugar: string;
-    price_step?: number;
   };
   image_url: string;
+	price_step: number;
 };
 
 type UpdateProductFieldsPayload = {
@@ -68,7 +68,6 @@ export const useAddProduct = () => {
   return useMutation<Product, ApiErrorBody, AddProductReq>({
     mutationFn: async (payload) => {
       const res = await api.post("/vendor/product/add", payload);
-      console.log(res);
       return res.data.data;
     },
     onSuccess: (product) => {
@@ -104,7 +103,6 @@ export const useVendors = () => {
     queryKey: ["vendors"],
     queryFn: async () => {
       const res = await api.get("/vendor/vendors");
-			console.log(res.data);
       return res.data.data;
     },
     retry: false,
@@ -222,68 +220,68 @@ export const useUpdateProduct = () => {
 
   return useMutation<any, ApiErrorBody, UpdateProductFieldsPayload>({
     mutationFn: async (payload) => {
-      const { product_id, ...fields } = payload;
+      // const { product_id, ...fields } = payload;
 
-      const updates = [];
+      // const updates = [];
 
-      if (fields.name !== undefined) {
-        updates.push({
-          product_id,
-          behavior: { col_name: "name", value: fields.name },
-        });
-      }
-      if (fields.price !== undefined) {
-        updates.push({
-          product_id,
-          behavior: { col_name: "price", value: String(fields.price) },
-        });
-      }
+      // if (fields.name !== undefined) {
+      //   updates.push({
+      //     product_id,
+      //     behavior: { col_name: "name", value: fields.name },
+      //   });
+      // }
+      // if (fields.price !== undefined) {
+      //   updates.push({
+      //     product_id,
+      //     behavior: { col_name: "price", value: String(fields.price) },
+      //   });
+      // }
       
-      // [確認] 這段邏輯是正確的，確保 fields.price_step 有值時會加入
-      if (fields.price_step !== undefined) {
-        updates.push({
-          product_id,
-          behavior: { col_name: "price_step", value: String(fields.price_step) },
-        });
-      }
+      // // [確認] 這段邏輯是正確的，確保 fields.price_step 有值時會加入
+      // if (fields.price_step !== undefined) {
+      //   updates.push({
+      //     product_id,
+      //     behavior: { col_name: "price_step", value: String(fields.price_step) },
+      //   });
+      // }
       
-      if (fields.description !== undefined) {
-        updates.push({
-          product_id,
-          behavior: { col_name: "description", value: fields.description },
-        });
-      }
-      if (fields.image_url !== undefined) {
-        updates.push({
-          product_id,
-          behavior: { col_name: "image_url", value: fields.image_url },
-        });
-      }
+      // if (fields.description !== undefined) {
+      //   updates.push({
+      //     product_id,
+      //     behavior: { col_name: "description", value: fields.description },
+      //   });
+      // }
+      // if (fields.image_url !== undefined) {
+      //   updates.push({
+      //     product_id,
+      //     behavior: { col_name: "image_url", value: fields.image_url },
+      //   });
+      // }
     
-      if (fields.size !== undefined) {
-        updates.push({
-          product_id,
-          behavior: { col_name: "size_options", value: fields.size },
-        });
-      }
+      // if (fields.size !== undefined) {
+      //   updates.push({
+      //     product_id,
+      //     behavior: { col_name: "size_options", value: fields.size },
+      //   });
+      // }
       
-      if (fields.sugar !== undefined) {
-        updates.push({
-          product_id,
-          behavior: { col_name: "sugar_options", value: fields.sugar },
-        });
-      }
-      if (fields.ice !== undefined) {
-        updates.push({
-          product_id,
-          behavior: { col_name: "ice_options", value: fields.ice },
-        });
-      }
+      // if (fields.sugar !== undefined) {
+      //   updates.push({
+      //     product_id,
+      //     behavior: { col_name: "sugar_options", value: fields.sugar },
+      //   });
+      // }
+      // if (fields.ice !== undefined) {
+      //   updates.push({
+      //     product_id,
+      //     behavior: { col_name: "ice_options", value: fields.ice },
+      //   });
+      // }
 
-      // [新增] 防呆：如果沒有任何欄位要更新，則不發送請求
-      if (updates.length === 0) return { message: "No changes detected", success: true };
+      // // [新增] 防呆：如果沒有任何欄位要更新，則不發送請求
+      // if (updates.length === 0) return { message: "No changes detected", success: true };
 
-      const res = await api.patch("/vendor/products", updates);
+      const res = await api.patch(`/vendor/products/${payload.product_id}`, payload);
       return res.data;
     },
     onSuccess: () => {

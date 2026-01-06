@@ -2,6 +2,7 @@ from flask import Blueprint
 from controllers import (
     update_products_listed,
     update_products,
+    update_product,
     get_products,
     add_product,
     add_discount_policy,
@@ -21,7 +22,7 @@ from controllers import (
     delete_single_option
 )
 vendor_routes = Blueprint('vendor', __name__)
-
+vendor_routes.route("/products/<int:product_id>", methods=["PATCH"])(update_product)
 vendor_routes.route("/products/listed", methods=["PATCH"])(update_products_listed) #WIP same vendor check
 vendor_routes.route("/products", methods=["PATCH"])(update_products) #WIP same vendor check
 '''
