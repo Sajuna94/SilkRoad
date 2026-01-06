@@ -77,6 +77,7 @@ export const useAddToCart = () => {
 
 	return useMutation<any, ApiErrorBody, AddToCartReq>({
 		mutationFn: async (payload) => {
+			console.log(payload)
 			const res = await api.post("/cart/add", payload);
 			return res.data;
 		},

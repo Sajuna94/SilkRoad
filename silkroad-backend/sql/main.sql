@@ -125,16 +125,6 @@ CREATE TABLE `store`.`ice_options` (
     FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`) ON DELETE CASCADE
 );
 
-DROP TABLE IF EXISTS `store`.`sizes_options`;
-CREATE TABLE `store`.`sizes_options` (
-    `product_id` int NOT NULL,
-    `options` varchar(50) NOT NULL COMMENT '大小選項， eg. L, M, S',
-    `price_step` int NOT NULL DEFAULT 0,
-    `created_at` timestamp NOT NULL DEFAULT(now()),
-    PRIMARY KEY (`product_id`, `options`),
-    FOREIGN KEY (`product_id`) REFERENCES `store`.`products` (`id`) ON DELETE CASCADE
-);
-
 CREATE TABLE `store`.`reviews` (
     `id` int PRIMARY KEY AUTO_INCREMENT,
     `customer_id` int NOT NULL,

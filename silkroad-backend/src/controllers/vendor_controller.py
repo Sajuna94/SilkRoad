@@ -174,14 +174,14 @@ def get_products():
         .all()
     )
     data = []
-
+    
     for p in products:
         # --- 1. 取得排序後的選項列表 (由舊到新) ---
         # 使用 sorted 並根據 created_at 排序
         sorted_sizes = sorted(p.sizes_options, key=lambda x: x.created_at)
         sorted_sugars = sorted(p.sugar_options, key=lambda x: x.created_at)
         sorted_ices = sorted(p.ice_options, key=lambda x: x.created_at)
-
+        
         # --- 2. 提取屬性 ---
         # 取得第一個尺寸的 price_step 作為代表 (若無則 0)
         step = sorted_sizes[0].price_step if sorted_sizes else 0 
@@ -213,6 +213,8 @@ def get_products():
             "image_url": p.image_url,
             "is_listed": p.is_listed,
         })
+        
+    print(data[-1])
 
     return jsonify({"message": "", "success": True, "products": data})
 
@@ -338,6 +340,7 @@ def add_product():
         "options": dict,
         "image_url": str,
     }
+    print(data)
 
     for field, field_type in required_fields.items():
         if field not in data or not isinstance(data[field], field_type):
@@ -352,7 +355,8 @@ def add_product():
 
     # 3. 解析價格增量 (price_step)
     try:
-        price_step = int(options.get("price_step", 0))
+        # price_step = int(options.get("price_step", 0))
+        price_step = 20
     except ValueError:
         return jsonify({"message": "price_step must be an integer", "success": False}), 400
 
@@ -378,6 +382,7 @@ def add_product():
         db.session.flush() # 取得 new_product.id
 
         # 6. [關鍵修改] 跑迴圈寫入選項（每一筆都是獨立的一行）
+        print(new_product.id)
         
         # 寫入糖度
         for s_name in sugar_list:

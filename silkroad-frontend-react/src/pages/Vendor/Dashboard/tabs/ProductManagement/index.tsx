@@ -34,7 +34,8 @@ export default function ProductTab() {
   React.useEffect(() => {
     if (vendorProductsQuery.isSuccess) {
       setProducts(vendorProductsQuery.data);
-      console.log(vendorProductsQuery.data);
+      console.log("vendorProductsQuery", vendorProductsQuery.data);
+      console.log("products set", products);
     }
   }, [vendorProductsQuery.data, vendorProductsQuery.isSuccess]);
 
