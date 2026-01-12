@@ -5,7 +5,7 @@ $vendor-red-dark: #6f2c2c;
 $vendor-red-light: #a05757;
 $vendor-border: rgba(255, 255, 255, 0.2);
 $vendor-text: #ffffff;
-$vendor-dark-text: #333333; // 深灰色文字 (用於淺色背景)
+$vendor-dark-text: #333333;
 $container-bg: #f8f0f0;
 $content-bg: #fff8f8; // info/add 區塊使用淺米白色
 $input-border: #ddd;
@@ -211,9 +211,8 @@ $input-bg: #fff;
       flex-direction: column;
       gap: 16px;
       overflow-y: auto;
-      padding-right: 4px; // 預留捲軸空間
+      padding-right: 4px;
 
-      /* 自訂捲軸 */
       &::-webkit-scrollbar {
         width: 4px;
       }

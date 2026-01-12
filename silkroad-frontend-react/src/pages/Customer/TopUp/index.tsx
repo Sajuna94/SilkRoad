@@ -3,7 +3,7 @@ import styles from "./TopUpPage.module.scss";
 import { useTopUp, useCurrentUser } from "@/hooks/auth/user";
 import { FaFileInvoice } from "react-icons/fa";
 import { useUserOrders } from "@/hooks/order/order";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 const LEVEL_CONFIG = [
   { threshold: 10, label: "銅", color: "#cd7f32" },

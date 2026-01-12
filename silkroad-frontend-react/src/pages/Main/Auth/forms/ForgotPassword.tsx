@@ -5,7 +5,7 @@ import LabeledInput from "@/components/molecules/LabeledInput";
 import {
   useForgotPasswordSendCode,
   useForgotPasswordVerifyCode,
-  useResetPassword
+  useResetPassword,
 } from "@/hooks/auth/user";
 
 type Step = 1 | 2 | 3;
@@ -14,19 +14,19 @@ export function ForgotPasswordForm() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>(1);
 
-  // Step 1: Email
   const [email, setEmail] = useState("");
 
-  // Step 2: OTP
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Step 3: New Password
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [countdown, setCountdown] = useState(0);
-  const [message, setMessage] = useState<{ type: 'error' | 'success', text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: "error" | "success";
+    text: string;
+  } | null>(null);
 
   const sendCode = useForgotPasswordSendCode();
   const verifyCode = useForgotPasswordVerifyCode();
@@ -55,7 +55,10 @@ export function ForgotPasswordForm() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
@@ -64,7 +67,7 @@ export function ForgotPasswordForm() {
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text").slice(0, 6).split("");
-    if (pastedData.every(char => !isNaN(Number(char)))) {
+    if (pastedData.every((char) => !isNaN(Number(char)))) {
       const newOtp = [...otp];
       pastedData.forEach((char, index) => {
         if (index < 6) newOtp[index] = char;
@@ -82,11 +85,14 @@ export function ForgotPasswordForm() {
     try {
       setMessage(null);
       await sendCode.mutateAsync({ email });
-      setMessage({ type: 'success', text: "驗證碼已發送至您的信箱" });
+      setMessage({ type: "success", text: "驗證碼已發送至您的信箱" });
       setCountdown(60);
       setTimeout(() => setStep(2), 1000);
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.response?.data?.message || "發送失敗" });
+      setMessage({
+        type: "error",
+        text: err.response?.data?.message || "發送失敗",
+      });
     }
   };
 
@@ -99,10 +105,13 @@ export function ForgotPasswordForm() {
     try {
       setMessage(null);
       await verifyCode.mutateAsync({ email, code });
-      setMessage({ type: 'success', text: "驗證成功！請設定新密碼" });
+      setMessage({ type: "success", text: "驗證成功！請設定新密碼" });
       setTimeout(() => setStep(3), 1000);
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.response?.data?.message || "驗證失敗" });
+      setMessage({
+        type: "error",
+        text: err.response?.data?.message || "驗證失敗",
+      });
     }
   };
 
@@ -112,27 +121,34 @@ export function ForgotPasswordForm() {
     const code = otp.join("");
 
     if (!newPassword || !confirmPassword) {
-      setMessage({ type: 'error', text: "請填寫所有欄位" });
+      setMessage({ type: "error", text: "請填寫所有欄位" });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setMessage({ type: 'error', text: "兩次密碼輸入不一致" });
+      setMessage({ type: "error", text: "兩次密碼輸入不一致" });
       return;
     }
 
     if (newPassword.length < 6) {
-      setMessage({ type: 'error', text: "密碼長度至少需要6個字元" });
+      setMessage({ type: "error", text: "密碼長度至少需要6個字元" });
       return;
     }
 
     try {
       setMessage(null);
-      await resetPassword.mutateAsync({ email, code, new_password: newPassword });
-      setMessage({ type: 'success', text: "密碼重置成功！正在跳轉..." });
+      await resetPassword.mutateAsync({
+        email,
+        code,
+        new_password: newPassword,
+      });
+      setMessage({ type: "success", text: "密碼重置成功！正在跳轉..." });
       setTimeout(() => navigate("/login"), 2000);
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.response?.data?.message || "重置失敗" });
+      setMessage({
+        type: "error",
+        text: err.response?.data?.message || "重置失敗",
+      });
     }
   };
 
@@ -143,10 +159,13 @@ export function ForgotPasswordForm() {
     try {
       setMessage(null);
       await sendCode.mutateAsync({ email });
-      setMessage({ type: 'success', text: "驗證碼已重發！" });
+      setMessage({ type: "success", text: "驗證碼已重發！" });
       setCountdown(60);
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.response?.data?.message || "重發失敗" });
+      setMessage({
+        type: "error",
+        text: err.response?.data?.message || "重發失敗",
+      });
     }
   };
 
@@ -167,7 +186,11 @@ export function ForgotPasswordForm() {
       </div>
 
       {message && (
-        <div className={`${styles["error"]} ${message.type === 'success' ? styles.success : ''}`}>
+        <div
+          className={`${styles["error"]} ${
+            message.type === "success" ? styles.success : ""
+          }`}
+        >
           {message.text}
         </div>
       )}
@@ -199,7 +222,8 @@ export function ForgotPasswordForm() {
       {step === 2 && (
         <>
           <p className={styles.description}>
-            我們已發送 6 位數驗證碼至<br />
+            我們已發送 6 位數驗證碼至
+            <br />
             <strong>{email}</strong>
           </p>
 
@@ -208,7 +232,9 @@ export function ForgotPasswordForm() {
               {otp.map((data, index) => (
                 <input
                   key={index}
-                  ref={(el) => { inputRefs.current[index] = el; }}
+                  ref={(el) => {
+                    inputRefs.current[index] = el;
+                  }}
                   type="text"
                   maxLength={1}
                   value={data}
@@ -246,9 +272,7 @@ export function ForgotPasswordForm() {
       {/* Step 3: 設定新密碼 */}
       {step === 3 && (
         <form onSubmit={handleResetPassword}>
-          <p className={styles.description}>
-            請設定您的新密碼
-          </p>
+          <p className={styles.description}>請設定您的新密碼</p>
           <LabeledInput
             label="新密碼（至少6個字元）"
             type="password"
@@ -266,14 +290,15 @@ export function ForgotPasswordForm() {
           <button
             type="submit"
             className={styles["button"]}
-            disabled={resetPassword.isPending || !newPassword || !confirmPassword}
+            disabled={
+              resetPassword.isPending || !newPassword || !confirmPassword
+            }
           >
             {resetPassword.isPending ? "重置中..." : "重置密碼"}
           </button>
         </form>
       )}
 
-      {/* 返回登入 */}
       <div className={styles.footer}>
         <Link to="/login">返回登入</Link>
       </div>

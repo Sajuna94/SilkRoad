@@ -9,7 +9,7 @@ import {
 } from "@/hooks/order/discount";
 import { useCurrentUser } from "@/hooks/auth/user";
 import type { DiscountPolicy } from "@/types/order";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 const extractErrorMessage = (error: any): string => {
   if (error.response?.data?.message) {

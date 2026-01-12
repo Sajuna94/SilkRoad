@@ -2,15 +2,15 @@ import { useMemo, useState } from "react";
 import VendorList, {
   type Vendor as BaseVendor,
 } from "@/components/molecules/VendorList";
-import SystemBulletin from "@/components/molecules/SystemBulletin/SystemBulletin";
+import SystemBulletin from "@/components/molecules/SystemBulletin";
 import {
   useAllAnnouncements,
   type Announcement as ApiAnnouncement,
 } from "@/hooks/auth/admin";
 import { useVendors } from "@/hooks/auth/vendor";
-import type { Announcement as BulletinAnnouncement } from "@/components/molecules/SystemBulletin/AnnouncementModal";
+import type { Announcement as BulletinAnnouncement } from "@/components/molecules/AnnouncementModal";
 import styles from "./Home.module.scss";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 type VendorCard = BaseVendor & {
   rating: number;
@@ -20,15 +20,9 @@ export default function Home() {
   const { data: vendorData, isLoading } = useVendors();
   const { data: apiAnnouncements } = useAllAnnouncements();
 
-  // const logout = useLogout();
-  // const user = useCurrentUser().data;
-
   const vendors: VendorCard[] = useMemo(() => {
     return (
       vendorData?.map((v) => {
-        // const mockRating = parseFloat(
-        //   (Math.random() * (5 - 3.5) + 3.5).toFixed(1)
-        // );
         return {
           id: String(v.id),
           name: v.name,

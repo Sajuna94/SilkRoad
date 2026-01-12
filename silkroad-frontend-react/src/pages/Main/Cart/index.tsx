@@ -8,7 +8,7 @@ import {
 import {
   PolicyModal,
   type DisplayPolicy,
-} from "@/components/molecules/PolicyModal/PolicyModal";
+} from "@/components/molecules/PolicyModal";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
 import { Link } from "react-router-dom";
 
@@ -23,7 +23,7 @@ import { useCurrentUser } from "@/hooks/auth/user";
 import { useViewCustomerDiscountPolicies } from "@/hooks/order/discount";
 import type { Product } from "@/types/store";
 import type { CustomerDiscountPolicy } from "@/types/order";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -418,30 +418,28 @@ function CartList({
     });
   };
 
-  const handleUpdateSubmit = async () =>
-    // form: { size: SizeOptionItem; ice: string; sugar: string; quantity: number }
-    {
-      if (!editingCartItemId) return;
+  const handleUpdateSubmit = async () => {
+    if (!editingCartItemId) return;
 
-      const form = modalRef.current?.getForm();
-      if (!form) return;
+    const form = modalRef.current?.getForm();
+    if (!form) return;
 
-      try {
-        await updateMutation.mutateAsync({
-          cart_item_id: editingCartItemId,
-          quantity: form.quantity,
-          selected_size: form.size.name,
-          selected_ice: form.ice,
-          selected_sugar: form.sugar,
-        });
-        alert("購物車項目已更新");
-        setEditingCartItemId(null);
-      } catch (err) {
-        console.error("更新失敗", err);
-        alert("更新失敗，請稍後再試");
-        throw err;
-      }
-    };
+    try {
+      await updateMutation.mutateAsync({
+        cart_item_id: editingCartItemId,
+        quantity: form.quantity,
+        selected_size: form.size.name,
+        selected_ice: form.ice,
+        selected_sugar: form.sugar,
+      });
+      alert("購物車項目已更新");
+      setEditingCartItemId(null);
+    } catch (err) {
+      console.error("更新失敗", err);
+      alert("更新失敗，請稍後再試");
+      throw err;
+    }
+  };
 
   if (items.length === 0)
     return <p className={styles["empty"]}>您的購物車目前空空如也。</p>;
@@ -480,7 +478,7 @@ function CartList({
                   cursor: "pointer",
                   fontSize: "0.8rem",
                   marginTop: "5px",
-									marginLeft:"20px",
+                  marginLeft: "20px",
                 }}
                 onClick={(e) => {
                   e.stopPropagation();

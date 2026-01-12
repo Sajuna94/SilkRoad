@@ -10,7 +10,7 @@ import styles from "./Profile.module.scss";
 import { UserRole } from "@/types/user";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 dayjs.extend(utc);
 
 const DEFAULT_AVATAR =

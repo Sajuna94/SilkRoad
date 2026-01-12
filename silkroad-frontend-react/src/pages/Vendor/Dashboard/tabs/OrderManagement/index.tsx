@@ -5,8 +5,8 @@ import { useCurrentUser } from "@/hooks/auth/user";
 import { useVendorOrders, useUpdateOrder } from "@/hooks/order/order";
 import styles from "./OrderManagement.module.scss";
 import type { VendorOrderSummary } from "@/types/order";
-import RefundModal from "../RefundModal/RefundModal";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import RefundModal from "../RefundModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 type StatusFilter = "ALL" | "COMPLETED" | "PENDING" | "REFUND" | "DELIVERING";
 type DeliveryFilter = "ALL" | "DELIVERY" | "PICKUP";

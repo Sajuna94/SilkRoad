@@ -13,7 +13,7 @@ import {
   Bar,
   //   Legend,
 } from "recharts";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 export default function SalesDashboard() {
   const { data: currentUser } = useCurrentUser();

@@ -5,7 +5,7 @@ interface FadeInImageProps {
   previewSrc?: string;
   fullSrc: string;
   alt?: string;
-  fade?: boolean; // 是否漸變
+  fade?: boolean;
 }
 
 export const FadeInImage = React.memo(

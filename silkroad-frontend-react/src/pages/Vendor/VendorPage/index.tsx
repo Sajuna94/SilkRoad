@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
-import ProductGallery from "@/components/organisms/ProductGallery/ProductGallery";
+import ProductGallery from "@/components/organisms/ProductGallery";
 import StarRating from "@/components/atoms/StarRating";
 import { useVendor, useVendorProductsByVendorId } from "@/hooks/auth/vendor";
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useVendorReviews } from "@/hooks/store/review";
 import styles from "./VendorPage.module.scss";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 export default function VendorPage() {
   const navigate = useNavigate();

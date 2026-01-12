@@ -1,7 +1,7 @@
 import { useState } from "react";
 import StarRating from "../../atoms/StarRating";
 import styles from "./ReviewInput.module.scss";
-// 1. 引入你的 API Hook (請確認路徑是否正確)
+// 1. 引入 API Hook
 import { usePostReview } from "@/hooks/store/review";
 
 interface ReviewInputProps {
@@ -44,13 +44,12 @@ export default function ReviewInput({
           setRating(0);
           setComment("");
 
-          // 4. 成功後呼叫 callback (這會關閉 Modal)
+          // 4. 成功後呼叫 callback (關閉 Modal)
           if (onSubmitSuccess) {
             onSubmitSuccess();
           }
         },
         onError: (error: any) => {
-          // 處理錯誤訊息
           const msg = error.response?.data?.message || "評價提交失敗";
           alert(msg);
         },
@@ -70,7 +69,7 @@ export default function ReviewInput({
           onRatingChange={(newRating) => setRating(newRating)}
           size={32}
           // 可以在送出中時鎖定評分 (可選)
-          // disabled={isPending} 
+          // disabled={isPending}
         />
       </div>
 
@@ -82,11 +81,14 @@ export default function ReviewInput({
         disabled={isPending} // 送出中時禁止編輯
       />
 
-      <button 
-        className={styles.submitBtn} 
+      <button
+        className={styles.submitBtn}
         onClick={handleSubmit}
         disabled={isPending} // 送出中時禁止點擊
-        style={{ opacity: isPending ? 0.7 : 1, cursor: isPending ? 'not-allowed' : 'pointer' }}
+        style={{
+          opacity: isPending ? 0.7 : 1,
+          cursor: isPending ? "not-allowed" : "pointer",
+        }}
       >
         {isPending ? "送出中..." : "送出評價"}
       </button>

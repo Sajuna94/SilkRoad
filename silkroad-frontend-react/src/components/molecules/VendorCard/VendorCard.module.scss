@@ -7,7 +7,7 @@ $shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 .card {
   display: flex;
   align-items: center;
-  gap: 1.5rem; // Logo 和文字的間距
+  gap: 1.5rem;
 
   width: 100%;
   padding: 1.2rem;
@@ -36,7 +36,7 @@ $shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
   width: 64px;
   height: 64px;
-  border-radius: 50%; // 圓形 Logo
+  border-radius: 50%;
   overflow: hidden;
   border: 2px solid rgba(255, 255, 255, 0.8);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);

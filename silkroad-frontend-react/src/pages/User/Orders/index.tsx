@@ -5,9 +5,9 @@ import { useCurrentUser } from "@/hooks/auth/user";
 import { useUserOrders } from "@/hooks/order/order";
 import styles from "./Orders.module.scss";
 import { FadeInImage } from "@/components/atoms/FadeInImage";
-import ReviewInput from "@/components/molecules/ReviewInput/ReviewInput";
+import ReviewInput from "@/components/molecules/ReviewInput";
 import type { OrderDetailItem, OrderSummary } from "@/types/order";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 const X_OFFSET = 240;
 const VISIBLE_COUNT = 4; // 左右各顯示幾張

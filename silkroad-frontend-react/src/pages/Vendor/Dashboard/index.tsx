@@ -4,7 +4,7 @@ import OrderTab from "./tabs/OrderManagement";
 import ProductTab from "./tabs/ProductManagement";
 import DiscountManagement from "./tabs/DiscountManagement";
 import SalesDashboard from "./tabs/SalesDashboard";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 export default function VendorDashboardPage() {
   const navigate = useNavigate();
@@ -43,19 +43,5 @@ export default function VendorDashboardPage() {
         {tabs.find((t) => t.id === currentId)?.element ?? null}
       </main>
     </div>
-
-    // <div className={styles["container"]}>
-    //   <aside>
-    //     <ul>
-    //       {tabs.map((t) => (
-    //         <li key={t.id} onClick={() => navigate(`#${t.id}`)}>
-    //           {t.label}
-    //         </li>
-    //       ))}
-    //     </ul>
-    //   </aside>
-
-    //   <main>{tabs.find((t) => t.id === currentId)?.element ?? null}</main>
-    // </div>
   );
 }

@@ -46,7 +46,6 @@
   overflow-y: auto;
   min-height: 0;
 
-  // background: linear-gradient(to bottom, white, #f9fafb);
   color: #333;
 }
 
@@ -140,7 +139,7 @@
 }
 
 .featureBox {
-	cursor: pointer;
+  cursor: pointer;
   background: white;
   padding: 1.75rem;
   border-radius: 0.75rem;
@@ -164,7 +163,7 @@
     transform: translateY(-4px);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
   }
-	&:active {
-		transform: translateY(-2px);
-	}
+  &:active {
+    transform: translateY(-2px);
+  }
 }

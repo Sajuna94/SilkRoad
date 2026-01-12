@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import ReviewItem from "@/components/molecules/ReviewItem";
 import styles from "./ReviewPage.module.scss";
 import { useVendorReviews } from "@/hooks/store/review";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 type SortOption = "newest" | "oldest" | "highest" | "lowest";
 type DateRangeOption = "custom" | "week" | "month" | "quarter" | "year";

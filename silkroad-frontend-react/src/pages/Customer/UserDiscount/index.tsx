@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useCurrentUser } from "@/hooks/auth/user";
 import { useViewCustomerDiscountPolicies } from "@/hooks/order/discount";
 import type { CustomerDiscountPolicy } from "@/types/order";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 export type DiscountType = "PERCENTAGE" | "FIXED";
 export type MembershipLevel = "ALL" | "BRONZE" | "SILVER" | "GOLD" | "DIAMOND";

@@ -1,5 +1,3 @@
-// src/types/user.ts
-
 export enum UserRole {
   ADMIN = "admin",
   VENDOR = "vendor",

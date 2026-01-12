@@ -8,23 +8,9 @@ const DEFAULT_AVATAR =
   "https://ui-avatars.com/api/?background=random&color=fff&name=";
 
 export default function Header() {
-  // const user: User = {
-  //     id: 2,
-  //     name: "test",
-  //     email: "test@gmail.com",
-  //     phone_number: "2222",
-  //     role: "admin",
-  //     created_at: "22020/22/22"
-  // };
-
-  //   const qc = useQueryClient();
-  //   const user = qc.getQueryData<User>(["user"]);
   const logout = useLogout();
   const navigate = useNavigate();
   const { data: user } = useCurrentUser();
-  // if (!user) {
-  // logout
-  // }
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -74,9 +60,6 @@ export default function Header() {
           <li>
             <Link to="/about">關於我們</Link>
           </li>
-          {/* <li>
-            <Link to="/vendor">Vendor</Link>
-          </li> */}
           {(!user || user.role === "customer") && (
             <li>
               <Link to="/cart">查看購物車</Link>

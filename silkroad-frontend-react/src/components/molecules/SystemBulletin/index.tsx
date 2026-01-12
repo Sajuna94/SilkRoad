@@ -1,6 +1,6 @@
 import { useState } from "react";
 import styles from "./SystemBulletin.module.scss";
-import AnnouncementModal, { type Announcement } from "./AnnouncementModal";
+import AnnouncementModal, { type Announcement } from "../AnnouncementModal";
 
 interface SystemBulletinProps {
   announcements: Announcement[];

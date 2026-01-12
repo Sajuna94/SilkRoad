@@ -1,4 +1,4 @@
-import type { Product, SizeOptionItem } from "@/types/store"; // 記得引入 SizeOptionItem
+import type { Product, SizeOptionItem } from "@/types/store";
 import {
   forwardRef,
   useImperativeHandle,
@@ -13,7 +13,6 @@ import { QuantityInput } from "@/components/atoms/QuantityInput";
 import { useProductDetail } from "@/hooks/auth/vendor";
 
 export interface ProductModalRef {
-  // 修改 open 的參數，讓初始狀態也能支援新的結構
   open: (
     product: Product,
     quantity?: number,
@@ -23,7 +22,6 @@ export interface ProductModalRef {
   getForm: () => FormState;
 }
 
-// [修改] FormState 的 size 改存物件，方便後續計算
 interface FormState {
   size: SizeOptionItem;
   ice: string;
@@ -37,7 +35,6 @@ interface ProductModalProps {
   needFetch?: boolean;
 }
 
-// 預設的空尺寸物件
 const defaultSize: SizeOptionItem = { name: "", price: 0 };
 
 export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
@@ -49,7 +46,6 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
 
     const [product, setProduct] = useState<Product>({} as Product);
 
-    // [修改] 初始狀態 size 改為物件
     const [form, setForm] = useState<FormState>({
       size: defaultSize,
       ice: "",
@@ -65,7 +61,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
 
     const { data: productDetail } = useProductDetail(vendorId, productId);
 
-    // [新增] 計算總價： (基本價 + 尺寸加價) * 數量
+    // 計算總價： (基本價 + 尺寸加價) * 數量
     const totalPrice = useMemo(() => {
       const basePrice = product.price || 0;
       const sizeDelta = form.size?.price || 0;
@@ -123,7 +119,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
       ) => {
         initialFormStateRef.current = formState;
         setModalOpenTrigger((prev) => prev + 1);
-        setDetailLoaded(false); // Reset detail loaded state
+        setDetailLoaded(false);
 
         setProduct(newProduct);
         setVendorId(newProduct.vendor_id);
@@ -172,7 +168,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
             <>
               <header>
                 <div className={styles["name"]}>{product.name}</div>
-                {/* [修改] 顯示計算後的總價 */}
+                {/* 顯示計算後的總價 */}
                 <div className={styles["price"]}>
                   NT$ {totalPrice}
                   {form.size.price > 0 && (
@@ -184,7 +180,7 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
                 <div className={styles["desc"]}>{product.description}</div>
               </header>
               <div className={styles["content"]}>
-                {/* [修改] Size 下拉選單：傳入物件陣列 */}
+                {/* Size 下拉選單：傳入物件陣列 */}
                 <OptionDropdown
                   id="size"
                   label="大小"
@@ -239,15 +235,13 @@ export const ProductModal = forwardRef<ProductModalRef, ProductModalProps>(
   }
 );
 
-// --- 修改 Dropdown 元件以支援物件與字串 ---
-
 interface OptionDropdownProps {
   id: string;
   label: string;
   value: string; // 當前選中的值 (名稱)
   options: string[] | SizeOptionItem[]; // 支援兩種型別
   onChange: (val: string) => void;
-  isSizeOption?: boolean; // 新增旗標
+  isSizeOption?: boolean;
 }
 
 const OptionDropdown = ({

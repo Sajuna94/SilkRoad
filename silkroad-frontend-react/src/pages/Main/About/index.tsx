@@ -1,7 +1,7 @@
 import styles from "./About.module.scss";
 import { useNavigate } from "react-router-dom";
 import { useVendorIds } from "@/hooks/auth/user";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 export default function About() {
   const navigate = useNavigate();

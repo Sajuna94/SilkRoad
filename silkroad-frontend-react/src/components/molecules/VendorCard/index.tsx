@@ -4,7 +4,7 @@ import styles from "./VendorCard.module.scss";
 interface VendorCardProps {
   name: string;
   logoUrl: string;
-  description?: string; // 店家說明(選填：例如 "販售手搖飲、咖啡")
+  description?: string;
   onClick?: () => void;
 }
 

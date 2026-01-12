@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useOrderDetails, useUpdateOrder } from "@/hooks/order/order";
 import { useCurrentUser } from "@/hooks/auth/user";
 import styles from "./OrderDetail.module.scss";
-import BlockModal from "@/components/atoms/BlockModal/BlockModal";
+import BlockModal from "@/components/atoms/BlockModal";
 
 export default function OrderDetail() {
   const { orderId } = useParams<{ orderId: string }>();
